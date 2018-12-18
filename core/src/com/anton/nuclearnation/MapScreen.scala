@@ -9,6 +9,7 @@ import com.badlogic.gdx.maps.tiled.TiledMap
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell
 import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile
+import com.badlogic.gdx.math.Vector3
 
 class MapScreen(game: NuclearNation) extends Screen{
 
@@ -57,8 +58,8 @@ class MapScreen(game: NuclearNation) extends Screen{
   val mapWidthPixels = (mainLayer.getWidth * mainLayer.getTileWidth).asInstanceOf[Int]
   val mapHeightPixels = (mainLayer.getHeight * mainLayer.getTileHeight).asInstanceOf[Int]
 
-  var dropImagePosX = mapWidthPixels/2
-  var dropImagePosY = mapHeightPixels /2
+  var dropImagePosX = mapWidthPixels/2 - dropImage.getWidth / 2
+  var dropImagePosY = mapHeightPixels /2 - dropImage.getHeight /2
 
 
   override def show(): Unit = {}
@@ -66,28 +67,22 @@ class MapScreen(game: NuclearNation) extends Screen{
   override def render(delta: Float): Unit = {
 
 
-    var dirx=0
-    var diry=0
-
     if (Gdx.input.isKeyPressed(Keys.UP)){
       dropImagePosY+=10
-      diry=1
       if (dropImagePosY + dropImage.getHeight > mapHeightPixels){
-        dropImagePosY = mapHeightPixels -  dropImage.getHeight
+        dropImagePosY = mapHeightPixels - dropImage.getHeight
       }
     }
 
     if (Gdx.input.isKeyPressed(Keys.DOWN)){
       dropImagePosY-=10
-      diry = -1
-      if (dropImagePosY - dropImage.getHeight <0) {
+      if (dropImagePosY <0) {
         dropImagePosY = 0
       }
     }
 
     if (Gdx.input.isKeyPressed(Keys.LEFT)){
       dropImagePosX-=10
-      dirx = -1
       if (dropImagePosX <0){
         dropImagePosX = 0
       }
@@ -95,44 +90,44 @@ class MapScreen(game: NuclearNation) extends Screen{
 
     if (Gdx.input.isKeyPressed(Keys.RIGHT)){
       dropImagePosX+=10
-      diry = +1
       if (dropImagePosX + dropImage.getWidth > mapWidthPixels){
         dropImagePosX = mapWidthPixels - dropImage.getWidth
       }
     }
 
-    setCameraPosition(camera,dropImagePosX,dropImagePosY,dirx,diry)
+    setCameraPosition(camera,dropImagePosX,dropImagePosY)
 
 
   }
 
-  private def setCameraPosition(camera: OrthographicCamera,playerPosX: Float, playerPosY: Float,dirX:Int, dirY:Int): Unit ={
+  private def setCameraPosition(camera: OrthographicCamera,playerPosX: Float, playerPosY: Float): Unit ={
 
     var cameraX = 0f
     var cameraY = 0f
 
-    val dropImageX = dropImagePosX + dropImage.getWidth / 2
-    val dropImageY = dropImagePosY + dropImage.getHeight / 2
-
-    if (dropImageX - camera.viewportWidth /2 < camera.viewportWidth /2){
-      if (dirX == -1 || dirX == 0){
+    if (dropImagePosX - camera.viewportWidth /2 < camera.viewportWidth /2){
+      if (dropImagePosX < camera.viewportWidth /2){
         cameraX =  camera.viewportWidth /2
       } else {
-        cameraX = dropImageX
+        cameraX = dropImagePosX
       }
 
-    }  else if (dropImageX + camera.viewportWidth /2 > mapWidthPixels){
+    }  else if (dropImagePosX + camera.viewportWidth /2 > mapWidthPixels){
        cameraX = mapWidthPixels - camera.viewportWidth /2
     } else {
-        cameraX = dropImageX
+        cameraX = dropImagePosX
     }
 
-    if (dropImageY - camera.viewportHeight /2 < camera.viewportHeight /2){
-      cameraY = camera.viewportHeight /2
-    }  else if (dropImageY + camera.viewportHeight /2 > mapHeightPixels){
-      cameraY = mapHeightPixels - camera.viewportHeight
+    if (dropImagePosY - camera.viewportHeight /2 < camera.viewportHeight /2){
+      if (dropImagePosY <  camera.viewportHeight /2) {
+        cameraY = camera.viewportHeight / 2
+      } else {
+        cameraY = dropImagePosY
+      }
+    }  else if (dropImagePosY + camera.viewportHeight /2 > mapHeightPixels){
+        cameraY = mapHeightPixels - camera.viewportHeight /2
     } else {
-      cameraY = dropImageY
+      cameraY = dropImagePosY
     }
 
 
@@ -144,7 +139,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
     game.batch.begin()
     game.batch.setProjectionMatrix(camera.combined)
-    game.font.draw(game.batch,s"Camera position: ($cameraX,$cameraY), camera viewport width: ${camera.viewportWidth} ,player position: ($dropImagePosX,$dropImagePosY)",camera.position.x-200,camera.position.y)
+    game.font.draw(game.batch,s"Camera position: ($cameraX,$cameraY), camera viewport width: ${camera.viewportWidth} ,player position: ($dropImagePosX,$dropImagePosY)",camera.unproject(new Vector3(0,0,0)).x,camera.position.y)
     game.batch.draw(dropImage, dropImagePosX, dropImagePosY , dropImage.getWidth, dropImage.getHeight)
     game.batch.end()
   }
