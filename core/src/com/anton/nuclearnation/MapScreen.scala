@@ -9,7 +9,7 @@ import com.badlogic.gdx.maps.tiled.TiledMap
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell
 import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile
-import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.math.{Vector2, Vector3}
 
 class MapScreen(game: NuclearNation) extends Screen{
 
@@ -21,25 +21,32 @@ class MapScreen(game: NuclearNation) extends Screen{
   val map = new TiledMap
   val layers = map.getLayers
 
-  val mapWidthTiles = 10
-  val mapHeightTiles = 10
+  val mapWidthTiles = 20
+  val mapHeightTiles = 20
 
   val texture = new Texture(Gdx.files.internal("desert_tile.png"))
   val layer0 = new TiledMapTileLayer(mapHeightTiles, mapWidthTiles, texture.getWidth, texture.getHeight)
+  val townLayer = new TiledMapTileLayer(mapHeightTiles, mapWidthTiles, texture.getWidth, texture.getHeight)
   val cell:Cell = new Cell
 
   val region = new TextureRegion(texture)
 
+
   val dropImage = new Texture(Gdx.files.internal("droplet.png"))
+  val townImage = new Texture(Gdx.files.internal("town.png"))
 
   cell.setTile(new StaticTiledMapTile(region))
 
   import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer
 
   private val camera = new OrthographicCamera()
-  camera.setToOrtho(false, 800, 480)
+  camera.setToOrtho(false, 1600, 960)
   camera.update()
 
+
+  case class CityInfo(name:String,x:Int,y:Int)
+
+  val cities = List[CityInfo](CityInfo("Hope",5,5),CityInfo("New Reno",1,2),CityInfo("Modoc",15,13))
 
 
   for (
@@ -47,8 +54,22 @@ class MapScreen(game: NuclearNation) extends Screen{
     y <- 0 until mapHeightTiles
   ) yield  {
     layer0.setCell(x, y, cell)
+
+    cities.foreach(cityInfo=>{
+      if (x == cityInfo.x && y == cityInfo.y){
+        val townRegion = new TextureRegion(townImage)
+        val townTile = new StaticTiledMapTile(townRegion)
+        val townCell = new Cell
+        townCell.setTile(townTile)
+        townLayer.setCell(x,y,townCell)
+      }
+    })
+
+
   }
+  map.getLayers.add(townLayer)
   map.getLayers.add(layer0)
+
 
   println("Map generated")
 
@@ -135,7 +156,11 @@ class MapScreen(game: NuclearNation) extends Screen{
     camera.position.set(cameraX,cameraY,0)
     camera.update()
     renderer.setView(camera)
-    renderer.render()
+
+    renderer.getBatch.begin()
+    renderer.renderTileLayer(layer0)
+    renderer.renderTileLayer(townLayer)
+    renderer.getBatch.end()
 
     game.batch.begin()
     game.batch.setProjectionMatrix(camera.combined)
