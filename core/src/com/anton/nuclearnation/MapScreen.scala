@@ -11,6 +11,8 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell
 import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile
 import com.badlogic.gdx.math.{Vector2, Vector3}
 
+import scala.util.Random
+
 class MapScreen(game: NuclearNation) extends Screen{
 
 
@@ -46,7 +48,11 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   case class CityInfo(name:String,x:Int,y:Int)
 
-  val cities = List[CityInfo](CityInfo("Hope",5,5),CityInfo("New Reno",1,2),CityInfo("Modoc",15,13))
+  val cities = List[CityInfo](
+    CityInfo("Hope",Random.nextInt(mapWidthTiles),Random.nextInt(mapHeightTiles)),
+    CityInfo("New Reno",Random.nextInt(mapWidthTiles),Random.nextInt(mapHeightTiles)),
+    CityInfo("Modoc",Random.nextInt(mapWidthTiles),Random.nextInt(mapHeightTiles))
+  )
 
 
   for (
@@ -180,6 +186,8 @@ class MapScreen(game: NuclearNation) extends Screen{
   override def dispose(): Unit = {
     map.dispose()
     texture.dispose()
+    townImage.dispose()
+    dropImage.dispose()
     renderer.dispose()
   }
 }
