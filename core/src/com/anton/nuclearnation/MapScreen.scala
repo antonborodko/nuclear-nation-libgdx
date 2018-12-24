@@ -2,9 +2,11 @@ package com.anton.nuclearnation
 
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.assets.AssetManager
+import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver
 import com.badlogic.gdx.{Gdx, Input, InputProcessor, Screen}
 import com.badlogic.gdx.graphics.{Camera, Color, OrthographicCamera, Texture}
-import com.badlogic.gdx.graphics.g2d.TextureRegion
+import com.badlogic.gdx.graphics.g2d.{BitmapFont, TextureRegion}
+import com.badlogic.gdx.graphics.g2d.freetype.{FreeTypeFontGenerator, FreeTypeFontGeneratorLoader, FreetypeFontLoader}
 import com.badlogic.gdx.maps.MapLayers
 import com.badlogic.gdx.maps.tiled.TiledMap
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer
@@ -18,6 +20,17 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader.FreeTypeFontLoa
 class MapScreen(game: NuclearNation) extends Screen{
 
   val assetManager = new AssetManager
+  val resolver = new InternalFileHandleResolver
+  val fontGenerator = new FreeTypeFontGeneratorLoader(resolver)
+  assetManager.setLoader(classOf[FreeTypeFontGenerator], fontGenerator)
+  assetManager.setLoader(classOf[BitmapFont], ".ttf", new FreetypeFontLoader(resolver))
+
+  val mySmallFont = new FreeTypeFontLoaderParameter()
+  mySmallFont.fontFileName = "fonts/lunchtime-doubly-so/lunchds.ttf"
+  mySmallFont.fontParameters.size = 30
+  assetManager.load("fonts/lunchtime-doubly-so/lunchds.ttf", classOf[BitmapFont], mySmallFont)
+
+
   val map = new TiledMap
   val layers = map.getLayers
 
@@ -32,7 +45,13 @@ class MapScreen(game: NuclearNation) extends Screen{
   val region = new TextureRegion(texture)
 
 
-  val dropImage = new Texture(Gdx.files.internal("droplet.png"))
+  assetManager.load("droplet.png",classOf[Texture])
+
+  assetManager.finishLoading()
+
+  val dropImage = assetManager.get("droplet.png",classOf[Texture])
+
+
   val townImage = new Texture(Gdx.files.internal("town.png"))
 
   cell.setTile(new StaticTiledMapTile(region))
@@ -116,24 +135,10 @@ class MapScreen(game: NuclearNation) extends Screen{
   var dropImagePosX = mapWidthPixels/2 - dropImage.getWidth / 2
   var dropImagePosY = mapHeightPixels /2 - dropImage.getHeight /2
 
-  import com.badlogic.gdx.assets.loaders.FileHandleResolver
-  import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver
-  import com.badlogic.gdx.graphics.g2d.BitmapFont
-  import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
-  import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGeneratorLoader
-  import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader
 
-  val resolver = new InternalFileHandleResolver
-  val fontGenerator = new FreeTypeFontGeneratorLoader(resolver)
-  assetManager.setLoader(classOf[FreeTypeFontGenerator], fontGenerator)
-  assetManager.setLoader(classOf[BitmapFont], ".ttf", new FreetypeFontLoader(resolver))
 
-  val mySmallFont = new FreeTypeFontLoaderParameter()
-  mySmallFont.fontFileName = "fonts/lunchtime-doubly-so/lunchds.ttf"
-  mySmallFont.fontParameters.size = 30
-  assetManager.load("fonts/lunchtime-doubly-so/lunchds.ttf", classOf[BitmapFont], mySmallFont)
 
-  assetManager.finishLoading()
+
 
   val gameFont = assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf",classOf[BitmapFont])
 
@@ -252,7 +257,6 @@ class MapScreen(game: NuclearNation) extends Screen{
     map.dispose()
     texture.dispose()
     townImage.dispose()
-    dropImage.dispose()
     renderer.dispose()
   }
 
