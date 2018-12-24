@@ -2,7 +2,7 @@ package com.anton.nuclearnation
 
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.assets.AssetManager
-import com.badlogic.gdx.{Gdx, Screen}
+import com.badlogic.gdx.{Gdx, Input, Screen}
 import com.badlogic.gdx.graphics.{Camera, Color, OrthographicCamera, Texture}
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.maps.MapLayers
@@ -45,6 +45,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
 
   case class CityInfo(name:String,x:Int,y:Int)
+  case class MapClickInfo(pixelX:Int, pixelY: Int, tileX:Int,tileY:Int)
 
   val cities = List[CityInfo](
     CityInfo("Hope",Random.nextInt(mapWidthTiles),Random.nextInt(mapHeightTiles)),
@@ -141,6 +142,13 @@ class MapScreen(game: NuclearNation) extends Screen{
       }
     }
 
+    if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
+      val coords = getClickInfo(Gdx.input.getX(),Gdx.input.getY())
+
+      Gdx.app.log("INFO",s"Clicked X: ${coords.pixelX}, Y: ${coords.pixelY}")
+      Gdx.app.log("INFO",s"Clicked TileX: ${coords.tileX}, TileY: ${coords.tileY}")
+    }
+
     setCameraPosition(camera,dropImagePosX,dropImagePosY)
 
 
@@ -217,5 +225,13 @@ class MapScreen(game: NuclearNation) extends Screen{
     townImage.dispose()
     dropImage.dispose()
     renderer.dispose()
+  }
+
+  private def getClickInfo(cameraXPixel:Int,cameraYPixel:Int):MapClickInfo = {
+    val coordX = camera.unproject(new Vector3(cameraXPixel,0,0)).x.toInt
+    val coordY = camera.unproject(new Vector3(0,cameraYPixel,0)).y.toInt
+    val clickedTileX = (coordX / mainLayer.getTileWidth).toInt
+    val clickedTileY = (coordY / mainLayer.getTileHeight).toInt
+    MapClickInfo(coordX,coordY,clickedTileX,clickedTileY)
   }
 }
