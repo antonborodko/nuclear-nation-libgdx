@@ -17,6 +17,8 @@ import com.badlogic.gdx.math.{Vector2, Vector3}
 import scala.util.Random
 import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader.FreeTypeFontLoaderParameter
 
+import scala.collection.mutable.ListBuffer
+
 class MapScreen(game: NuclearNation) extends Screen{
 
   val assetManager = new AssetManager
@@ -65,7 +67,9 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   case class CityInfo(name:String,x:Int,y:Int)
   case class MapClickInfo(pixelX:Int, pixelY: Int, tileX:Int,tileY:Int)
+  case class ExpeditionInfo(originGlobalPixelX:Int, originGlobalPixelY:Int,destinationGlobalPixelX:Int,destinationGlobalPixelY:Int,marker:Texture)
 
+  val expeditions = ListBuffer[ExpeditionInfo]()
 
   val mapInputProcessor = new InputProcessor() {
 
@@ -146,6 +150,8 @@ class MapScreen(game: NuclearNation) extends Screen{
   override def show(): Unit = {}
 
   override def render(delta: Float): Unit = {
+
+
 
 
     if (Gdx.input.isKeyPressed(Keys.UP)){
@@ -232,6 +238,13 @@ class MapScreen(game: NuclearNation) extends Screen{
     game.batch.begin()
     game.batch.setProjectionMatrix(camera.combined)
 
+    expeditions.foreach(expedition => {
+      val newOriginX = expedition.originGlobalPixelX+5
+      val newOriginY = expedition.originGlobalPixelY+5
+      expeditions(0) = expedition.copy(originGlobalPixelX = newOriginX,originGlobalPixelY = newOriginY)
+      game.batch.draw(expedition.marker,expeditions(0).originGlobalPixelX,expeditions(0).originGlobalPixelY)
+    })
+
     //drawing cities name
     cities.foreach(city=>{
       val cityPixelX : Int = (city.x * mainLayer.getTileWidth).asInstanceOf[Int]
@@ -269,8 +282,14 @@ class MapScreen(game: NuclearNation) extends Screen{
   }
 
   private def mapRightClicked(screenX: Int, screenY: Int) = {
-    val coords = getClickInfo(screenX,screenY)
-    Gdx.app.log("INFO",s"Right Clicked X: ${coords.pixelX}, Y: ${coords.pixelY}")
-    Gdx.app.log("INFO",s"Right Clicked TileX: ${coords.tileX}, TileY: ${coords.tileY}")
+    if (expeditions.size<1) {
+      expeditions += ExpeditionInfo(dropImagePosX,dropImagePosY,screenX, screenY,assetManager.get("droplet.png",classOf[Texture]))
+    } else {
+      Gdx.app.log("INFO","Expedition already sent")
+    }
+
+//    val coords = getClickInfo(screenX,screenY)
+//    Gdx.app.log("INFO",s"Right Clicked X: ${coords.pixelX}, Y: ${coords.pixelY}")
+//    Gdx.app.log("INFO",s"Right Clicked TileX: ${coords.tileX}, TileY: ${coords.tileY}")
   }
 }
