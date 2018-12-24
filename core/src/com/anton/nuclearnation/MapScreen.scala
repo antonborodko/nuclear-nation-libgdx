@@ -2,7 +2,7 @@ package com.anton.nuclearnation
 
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.assets.AssetManager
-import com.badlogic.gdx.{Gdx, Input, Screen}
+import com.badlogic.gdx.{Gdx, Input, InputProcessor, Screen}
 import com.badlogic.gdx.graphics.{Camera, Color, OrthographicCamera, Texture}
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.maps.MapLayers
@@ -46,6 +46,35 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   case class CityInfo(name:String,x:Int,y:Int)
   case class MapClickInfo(pixelX:Int, pixelY: Int, tileX:Int,tileY:Int)
+
+
+  val mapInputProcessor = new InputProcessor() {
+
+    override def touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean = {
+      if (button == Input.Buttons.RIGHT) {
+        mapRightClicked(screenX,screenY)
+        return true
+      }
+      false
+    }
+
+    override def keyDown(keycode: Int): Boolean = {true}
+
+    override def keyUp(keycode: Int): Boolean = {true}
+
+    override def keyTyped(character: Char): Boolean = {true}
+
+    override def touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean = {true}
+
+    override def touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean = {true}
+
+    override def mouseMoved(screenX: Int, screenY: Int): Boolean = {true}
+
+    override def scrolled(amount: Int): Boolean = {true}
+  }
+
+  Gdx.input.setInputProcessor(mapInputProcessor)
+
 
   val cities = List[CityInfo](
     CityInfo("Hope",Random.nextInt(mapWidthTiles),Random.nextInt(mapHeightTiles)),
@@ -233,5 +262,11 @@ class MapScreen(game: NuclearNation) extends Screen{
     val clickedTileX = (coordX / mainLayer.getTileWidth).toInt
     val clickedTileY = (coordY / mainLayer.getTileHeight).toInt
     MapClickInfo(coordX,coordY,clickedTileX,clickedTileY)
+  }
+
+  private def mapRightClicked(screenX: Int, screenY: Int) = {
+    val coords = getClickInfo(screenX,screenY)
+    Gdx.app.log("INFO",s"Right Clicked X: ${coords.pixelX}, Y: ${coords.pixelY}")
+    Gdx.app.log("INFO",s"Right Clicked TileX: ${coords.tileX}, TileY: ${coords.tileY}")
   }
 }
