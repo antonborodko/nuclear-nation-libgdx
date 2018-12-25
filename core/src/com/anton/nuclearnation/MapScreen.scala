@@ -1,5 +1,7 @@
 package com.anton.nuclearnation
 
+import java.lang.Math
+
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver
@@ -66,8 +68,8 @@ class MapScreen(game: NuclearNation) extends Screen{
 
 
   case class CityInfo(name:String,x:Int,y:Int)
-  case class MapClickInfo(pixelX:Int, pixelY: Int, tileX:Int,tileY:Int)
-  case class ExpeditionInfo(originGlobalPixelX:Int, originGlobalPixelY:Int,destinationGlobalPixelX:Int,destinationGlobalPixelY:Int,marker:Texture)
+  case class MapClickInfo(pixelX:Float, pixelY: Float, tileX:Int,tileY:Int)
+  case class ExpeditionInfo(originGlobalPixelX:Float, originGlobalPixelY:Float,destinationGlobalPixelX:Float,destinationGlobalPixelY:Float,marker:Texture, originalDirection:Option[Vector2])
 
   val expeditions = ListBuffer[ExpeditionInfo]()
 
@@ -141,9 +143,6 @@ class MapScreen(game: NuclearNation) extends Screen{
 
 
 
-
-
-
   val gameFont = assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf",classOf[BitmapFont])
 
 
@@ -189,12 +188,12 @@ class MapScreen(game: NuclearNation) extends Screen{
       Gdx.app.log("INFO",s"Clicked TileX: ${coords.tileX}, TileY: ${coords.tileY}")
     }
 
-    setCameraPosition(camera,dropImagePosX,dropImagePosY)
+    setCameraPosition(camera,dropImagePosX,dropImagePosY,delta)
 
 
   }
 
-  private def setCameraPosition(camera: OrthographicCamera,playerPosX: Float, playerPosY: Float): Unit ={
+  private def setCameraPosition(camera: OrthographicCamera,playerPosX: Float, playerPosY: Float,delta: Float): Unit ={
 
     var cameraX = 0f
     var cameraY = 0f
@@ -239,10 +238,34 @@ class MapScreen(game: NuclearNation) extends Screen{
     game.batch.setProjectionMatrix(camera.combined)
 
     expeditions.foreach(expedition => {
-      val newOriginX = expedition.originGlobalPixelX+5
-      val newOriginY = expedition.originGlobalPixelY+5
-      expeditions(0) = expedition.copy(originGlobalPixelX = newOriginX,originGlobalPixelY = newOriginY)
-      game.batch.draw(expedition.marker,expeditions(0).originGlobalPixelX,expeditions(0).originGlobalPixelY)
+
+      if(expedition.originGlobalPixelX != expedition.destinationGlobalPixelX || expedition.originGlobalPixelY !=expedition.destinationGlobalPixelY) {
+
+        val currentPos = new Vector2(expedition.originGlobalPixelX,expedition.originGlobalPixelY)
+        val destination = new Vector2(expedition.destinationGlobalPixelX,expedition.destinationGlobalPixelY)
+
+        val direction = currentPos.sub(destination).nor()
+
+        if (expedition.originalDirection.isDefined && !direction.hasSameDirection(expedition.originalDirection.get)){
+          expeditions.remove(0)
+        } else {
+          val pathX = expedition.destinationGlobalPixelX - expedition.originGlobalPixelX
+
+          val pathY = expedition.destinationGlobalPixelY - expedition.originGlobalPixelY
+
+          val distance = Math.sqrt(pathX * pathX + pathY * pathY).toFloat
+          val directionX = pathX / distance
+          val directionY = pathY / distance
+
+          val newOriginX = expedition.originGlobalPixelX + directionX * 50 * delta
+          val newOriginY = expedition.originGlobalPixelY + directionY * 50 * delta
+
+          expeditions(0) = expedition.copy(originGlobalPixelX = newOriginX, originGlobalPixelY = newOriginY,originalDirection = Some(direction))
+          game.batch.draw(expedition.marker, expeditions.head.originGlobalPixelX, expeditions.head.originGlobalPixelY)
+        }
+
+
+      }
     })
 
     //drawing cities name
@@ -273,9 +296,9 @@ class MapScreen(game: NuclearNation) extends Screen{
     renderer.dispose()
   }
 
-  private def getClickInfo(cameraXPixel:Int,cameraYPixel:Int):MapClickInfo = {
-    val coordX = camera.unproject(new Vector3(cameraXPixel,0,0)).x.toInt
-    val coordY = camera.unproject(new Vector3(0,cameraYPixel,0)).y.toInt
+  private def getClickInfo(cameraXPixel:Float,cameraYPixel:Float):MapClickInfo = {
+    val coordX = camera.unproject(new Vector3(cameraXPixel,0,0)).x
+    val coordY = camera.unproject(new Vector3(0,cameraYPixel,0)).y
     val clickedTileX = (coordX / mainLayer.getTileWidth).toInt
     val clickedTileY = (coordY / mainLayer.getTileHeight).toInt
     MapClickInfo(coordX,coordY,clickedTileX,clickedTileY)
@@ -283,13 +306,14 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   private def mapRightClicked(screenX: Int, screenY: Int) = {
     if (expeditions.size<1) {
-      expeditions += ExpeditionInfo(dropImagePosX,dropImagePosY,screenX, screenY,assetManager.get("droplet.png",classOf[Texture]))
+      val clickInfo = getClickInfo(screenX,screenY)
+      expeditions += ExpeditionInfo(dropImagePosX,dropImagePosY,clickInfo.pixelX, clickInfo.pixelY,assetManager.get("droplet.png",classOf[Texture]),None)
     } else {
       Gdx.app.log("INFO","Expedition already sent")
     }
 
 //    val coords = getClickInfo(screenX,screenY)
-//    Gdx.app.log("INFO",s"Right Clicked X: ${coords.pixelX}, Y: ${coords.pixelY}")
+
 //    Gdx.app.log("INFO",s"Right Clicked TileX: ${coords.tileX}, TileY: ${coords.tileY}")
   }
 }
