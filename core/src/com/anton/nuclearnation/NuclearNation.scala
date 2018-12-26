@@ -1,5 +1,7 @@
 package com.anton.nuclearnation
 
+import java.io.File
+
 import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Game
 import com.badlogic.gdx.Gdx
@@ -20,13 +22,13 @@ class NuclearNation extends Game {
   val resolver = new InternalFileHandleResolver
   val fontGenerator = new FreeTypeFontGeneratorLoader(resolver)
 
-//  assetManager.setLoader(classOf[FreeTypeFontGenerator], fontGenerator)
-//  assetManager.setLoader(classOf[BitmapFont], ".ttf", new FreetypeFontLoader(resolver))
-//
-//  val gameFontParam = new FreeTypeFontLoaderParameter()
-//  gameFontParam.fontFileName = "fonts/lunchtime-doubly-so/lunchds.ttf"
-//  gameFontParam.fontParameters.size = 30
-//  assetManager.load("fonts/lunchtime-doubly-so/lunchds.ttf", classOf[BitmapFont], gameFontParam)
+  assetManager.setLoader(classOf[FreeTypeFontGenerator], fontGenerator)
+  assetManager.setLoader(classOf[BitmapFont], ".ttf", new FreetypeFontLoader(resolver))
+
+  val gameFontParam = new FreeTypeFontLoaderParameter()
+  gameFontParam.fontFileName = "fonts/lunchtime-doubly-so/lunchds.ttf"
+  gameFontParam.fontParameters.size = 30
+  assetManager.load("fonts/lunchtime-doubly-so/lunchds.ttf", classOf[BitmapFont], gameFontParam)
 
   assetManager.load("droplet.png",classOf[Texture])
   assetManager.load("raider_camp.png",classOf[Texture])
