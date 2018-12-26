@@ -50,10 +50,12 @@ class MapScreen(game: NuclearNation) extends Screen{
 
 
   assetManager.load("droplet.png",classOf[Texture])
+  assetManager.load("raider_camp.png",classOf[Texture])
 
   assetManager.finishLoading()
 
   val dropImage = assetManager.get("droplet.png",classOf[Texture])
+  val raiderCampImage = assetManager.get("raider_camp.png",classOf[Texture])
 
 
   val townImage = new Texture(Gdx.files.internal("town.png"))
@@ -68,6 +70,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
 
   case class CityInfo(name:String,x:Int,y:Int)
+  case class RaiderCampInfo(name:String,tileX:Int,tileY:Int)
   case class MapClickInfo(pixelX:Float, pixelY: Float, tileX:Int,tileY:Int)
   case class ExpeditionInfo(originGlobalPixelX:Float, originGlobalPixelY:Float,destinationGlobalPixelX:Float,destinationGlobalPixelY:Float,marker:Texture, originalDirection:Option[Vector2])
 
@@ -107,6 +110,11 @@ class MapScreen(game: NuclearNation) extends Screen{
     CityInfo("Modoc",Random.nextInt(mapWidthTiles),Random.nextInt(mapHeightTiles))
   )
 
+  val raiderCamps = List[RaiderCampInfo](
+    RaiderCampInfo("Mad dogs",Random.nextInt(mapWidthTiles),Random.nextInt(mapHeightTiles))
+  )
+
+
 
   for (
     x <- 0 until mapWidthTiles;
@@ -123,6 +131,17 @@ class MapScreen(game: NuclearNation) extends Screen{
         townLayer.setCell(x,y,townCell)
       }
     })
+
+    raiderCamps.foreach(raiderCampInfo=>{
+      if (x == raiderCampInfo.tileX && y == raiderCampInfo.tileY){
+        val campRegion = new TextureRegion(raiderCampImage)
+        val raiderTile = new StaticTiledMapTile(campRegion)
+        val raiderCell = new Cell
+        raiderCell.setTile(raiderTile)
+        townLayer.setCell(x,y,raiderCell)
+      }
+    })
+
 
 
   }
@@ -261,11 +280,18 @@ class MapScreen(game: NuclearNation) extends Screen{
       }
     })
 
-    //drawing cities name
+    //drawing cities names
     cities.foreach(city=>{
       val cityPixelX : Int = (city.x * mainLayer.getTileWidth).asInstanceOf[Int]
       val cityPixelY : Int = (city.y * mainLayer.getTileHeight).asInstanceOf[Int]
       assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf", classOf[BitmapFont]).draw(game.batch,city.name,cityPixelX,cityPixelY)
+    })
+
+    //drawing raider camps names
+    raiderCamps.foreach(raiderCampInfo=>{
+      val campPixelX : Int = (raiderCampInfo.tileX * mainLayer.getTileWidth).asInstanceOf[Int]
+      val campPixelY : Int = (raiderCampInfo.tileY * mainLayer.getTileHeight).asInstanceOf[Int]
+      assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf", classOf[BitmapFont]).draw(game.batch,raiderCampInfo.name,campPixelX,campPixelY)
     })
 
     game.font.draw(game.batch,s"Camera position: ($cameraX,$cameraY), camera viewport width: ${camera.viewportWidth} ,player position: ($dropImagePosX,$dropImagePosY)",camera.unproject(new Vector3(0,0,0)).x,camera.position.y)
