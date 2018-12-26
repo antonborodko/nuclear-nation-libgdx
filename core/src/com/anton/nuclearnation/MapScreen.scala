@@ -244,21 +244,14 @@ class MapScreen(game: NuclearNation) extends Screen{
         val currentPos = new Vector2(expedition.originGlobalPixelX,expedition.originGlobalPixelY)
         val destination = new Vector2(expedition.destinationGlobalPixelX,expedition.destinationGlobalPixelY)
 
-        val direction = currentPos.sub(destination).nor()
+        val direction = destination.sub(currentPos).nor()
 
         if (expedition.originalDirection.isDefined && !direction.hasSameDirection(expedition.originalDirection.get)){
           expeditions.remove(0)
         } else {
-          val pathX = expedition.destinationGlobalPixelX - expedition.originGlobalPixelX
 
-          val pathY = expedition.destinationGlobalPixelY - expedition.originGlobalPixelY
-
-          val distance = Math.sqrt(pathX * pathX + pathY * pathY).toFloat
-          val directionX = pathX / distance
-          val directionY = pathY / distance
-
-          val newOriginX = expedition.originGlobalPixelX + directionX * 50 * delta
-          val newOriginY = expedition.originGlobalPixelY + directionY * 50 * delta
+          val newOriginX = expedition.originGlobalPixelX + direction.x * 50 * delta
+          val newOriginY = expedition.originGlobalPixelY + direction.y * 50 * delta
 
           expeditions(0) = expedition.copy(originGlobalPixelX = newOriginX, originGlobalPixelY = newOriginY,originalDirection = Some(direction))
           game.batch.draw(expedition.marker, expeditions.head.originGlobalPixelX, expeditions.head.originGlobalPixelY)
