@@ -23,17 +23,7 @@ import scala.collection.mutable.ListBuffer
 
 class MapScreen(game: NuclearNation) extends Screen{
 
-  val assetManager = new AssetManager
-  val resolver = new InternalFileHandleResolver
-  val fontGenerator = new FreeTypeFontGeneratorLoader(resolver)
-  assetManager.setLoader(classOf[FreeTypeFontGenerator], fontGenerator)
-  assetManager.setLoader(classOf[BitmapFont], ".ttf", new FreetypeFontLoader(resolver))
-
-  val mySmallFont = new FreeTypeFontLoaderParameter()
-  mySmallFont.fontFileName = "fonts/lunchtime-doubly-so/lunchds.ttf"
-  mySmallFont.fontParameters.size = 30
-  assetManager.load("fonts/lunchtime-doubly-so/lunchds.ttf", classOf[BitmapFont], mySmallFont)
-
+  val assetManager = game.assetManager
 
   val map = new TiledMap
   val layers = map.getLayers
