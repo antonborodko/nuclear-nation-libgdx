@@ -16,16 +16,23 @@ class NuclearNation extends Game {
   var batch:SpriteBatch = _
   var font:BitmapFont = _
   val assetManager = new AssetManager
+
   val resolver = new InternalFileHandleResolver
   val fontGenerator = new FreeTypeFontGeneratorLoader(resolver)
-  assetManager.setLoader(classOf[FreeTypeFontGenerator], fontGenerator)
-  assetManager.setLoader(classOf[BitmapFont], ".ttf", new FreetypeFontLoader(resolver))
 
-  val mySmallFont = new FreeTypeFontLoaderParameter()
-  mySmallFont.fontFileName = "fonts/lunchtime-doubly-so/lunchds.ttf"
-  mySmallFont.fontParameters.size = 30
-  assetManager.load("fonts/lunchtime-doubly-so/lunchds.ttf", classOf[BitmapFont], mySmallFont)
+//  assetManager.setLoader(classOf[FreeTypeFontGenerator], fontGenerator)
+//  assetManager.setLoader(classOf[BitmapFont], ".ttf", new FreetypeFontLoader(resolver))
+//
+//  val gameFontParam = new FreeTypeFontLoaderParameter()
+//  gameFontParam.fontFileName = "fonts/lunchtime-doubly-so/lunchds.ttf"
+//  gameFontParam.fontParameters.size = 30
+//  assetManager.load("fonts/lunchtime-doubly-so/lunchds.ttf", classOf[BitmapFont], gameFontParam)
 
+  assetManager.load("droplet.png",classOf[Texture])
+  assetManager.load("raider_camp.png",classOf[Texture])
+  assetManager.load("desert_tile.png",classOf[Texture])
+  assetManager.load("town.png",classOf[Texture])
+  assetManager.finishLoading()
 
 
   override def create(): Unit = {

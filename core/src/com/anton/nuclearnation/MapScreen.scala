@@ -31,24 +31,17 @@ class MapScreen(game: NuclearNation) extends Screen{
   val mapWidthTiles = 20
   val mapHeightTiles = 20
 
-  val texture = new Texture(Gdx.files.internal("desert_tile.png"))
-  val layer0 = new TiledMapTileLayer(mapHeightTiles, mapWidthTiles, texture.getWidth, texture.getHeight)
-  val townLayer = new TiledMapTileLayer(mapHeightTiles, mapWidthTiles, texture.getWidth, texture.getHeight)
+  val desertTileTexture = assetManager.get("desert_tile.png",classOf[Texture])
+  val layer0 = new TiledMapTileLayer(mapHeightTiles, mapWidthTiles, desertTileTexture.getWidth, desertTileTexture.getHeight)
+  val townLayer = new TiledMapTileLayer(mapHeightTiles, mapWidthTiles, desertTileTexture.getWidth, desertTileTexture.getHeight)
   val cell:Cell = new Cell
 
-  val region = new TextureRegion(texture)
-
-
-  assetManager.load("droplet.png",classOf[Texture])
-  assetManager.load("raider_camp.png",classOf[Texture])
-
-  assetManager.finishLoading()
+  val region = new TextureRegion(desertTileTexture)
 
   val dropImage = assetManager.get("droplet.png",classOf[Texture])
   val raiderCampImage = assetManager.get("raider_camp.png",classOf[Texture])
 
-
-  val townImage = new Texture(Gdx.files.internal("town.png"))
+  val townImage = assetManager.get("town.png",classOf[Texture])
 
   cell.setTile(new StaticTiledMapTile(region))
 
@@ -152,7 +145,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
 
 
-  val gameFont = assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf",classOf[BitmapFont])
+  val gameFont = assetManager.get("assets/fonts/lunchtime-doubly-so/lunchds.ttf",classOf[BitmapFont])
 
 
   override def show(): Unit = {}
@@ -274,14 +267,14 @@ class MapScreen(game: NuclearNation) extends Screen{
     cities.foreach(city=>{
       val cityPixelX : Int = (city.x * mainLayer.getTileWidth).asInstanceOf[Int]
       val cityPixelY : Int = (city.y * mainLayer.getTileHeight).asInstanceOf[Int]
-      assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf", classOf[BitmapFont]).draw(game.batch,city.name,cityPixelX,cityPixelY)
+      assetManager.get("assets/fonts/lunchtime-doubly-so/lunchds.ttf", classOf[BitmapFont]).draw(game.batch,city.name,cityPixelX,cityPixelY)
     })
 
     //drawing raider camps names
     raiderCamps.foreach(raiderCampInfo=>{
       val campPixelX : Int = (raiderCampInfo.tileX * mainLayer.getTileWidth).asInstanceOf[Int]
       val campPixelY : Int = (raiderCampInfo.tileY * mainLayer.getTileHeight).asInstanceOf[Int]
-      assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf", classOf[BitmapFont]).draw(game.batch,raiderCampInfo.name,campPixelX,campPixelY)
+      assetManager.get("assets/fonts/lunchtime-doubly-so/lunchds.ttf", classOf[BitmapFont]).draw(game.batch,raiderCampInfo.name,campPixelX,campPixelY)
     })
 
     game.font.draw(game.batch,s"Camera position: ($cameraX,$cameraY), camera viewport width: ${camera.viewportWidth} ,player position: ($dropImagePosX,$dropImagePosY)",camera.unproject(new Vector3(0,0,0)).x,camera.position.y)
@@ -299,7 +292,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   override def dispose(): Unit = {
     map.dispose()
-    texture.dispose()
+    desertTileTexture.dispose()
     townImage.dispose()
     renderer.dispose()
   }
