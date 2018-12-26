@@ -298,7 +298,6 @@ class MapScreen(game: NuclearNation) extends Screen{
   override def hide(): Unit = {}
 
   override def dispose(): Unit = {
-    assetManager.dispose()
     map.dispose()
     texture.dispose()
     townImage.dispose()

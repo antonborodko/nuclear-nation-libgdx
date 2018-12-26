@@ -42,6 +42,7 @@ class NuclearNation extends Game {
   override def dispose(): Unit = {
     batch.dispose()
     font.dispose()
+    assetManager.dispose()
   }
 
 }
