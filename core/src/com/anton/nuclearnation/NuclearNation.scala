@@ -16,7 +16,6 @@ import com.badlogic.gdx.graphics.g2d.{BitmapFont, SpriteBatch}
 
 class NuclearNation extends Game {
   var batch:SpriteBatch = _
-  var font:BitmapFont = _
   val assetManager = new AssetManager
 
   val resolver = new InternalFileHandleResolver
@@ -32,7 +31,6 @@ class NuclearNation extends Game {
 
   override def create(): Unit = {
     batch = new SpriteBatch
-    font = new BitmapFont
 
     gameFontParam.fontFileName = "fonts/lunchtime-doubly-so/lunchds.ttf"
     gameFontParam.fontParameters.size = 30
@@ -54,7 +52,6 @@ class NuclearNation extends Game {
 
   override def dispose(): Unit = {
     batch.dispose()
-    font.dispose()
     assetManager.dispose()
   }
 
