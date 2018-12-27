@@ -58,9 +58,9 @@ class SituationScreen(game:NuclearNation) extends Screen{
     renderer.renderTileLayer(mainLayer)
     renderer.getBatch.end()
 
-    game.batch.begin()
-    game.font.draw(game.batch,s"Test",camera.unproject(new Vector3(0,0,0)).x,camera.position.y)
-    game.batch.end()
+//    game.batch.begin()
+//    game.font.draw(game.batch,s"Test",camera.unproject(new Vector3(0,0,0)).x,camera.position.y)
+//    game.batch.end()
   }
 
   override def resize(width: Int, height: Int): Unit = {}

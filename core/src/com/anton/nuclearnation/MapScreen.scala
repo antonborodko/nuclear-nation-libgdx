@@ -18,6 +18,7 @@ import com.badlogic.gdx.math.{Vector2, Vector3}
 
 import scala.util.Random
 import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader.FreeTypeFontLoaderParameter
+import com.badlogic.gdx.maps.tiled.renderers.{IsometricStaggeredTiledMapRenderer, IsometricTiledMapRenderer, OrthogonalTiledMapRenderer}
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog
 
 import scala.collection.mutable.ListBuffer
@@ -45,8 +46,6 @@ class MapScreen(game: NuclearNation) extends Screen{
   val townImage = assetManager.get("town.png",classOf[Texture])
 
   cell.setTile(new StaticTiledMapTile(region))
-
-  import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer
 
   private val camera = new OrthographicCamera()
   camera.setToOrtho(false, 1600, 960)
@@ -279,7 +278,7 @@ class MapScreen(game: NuclearNation) extends Screen{
       gameFont.draw(game.batch,raiderCampInfo.name,campPixelX,campPixelY)
     })
 
-    game.font.draw(game.batch,s"Camera position: ($cameraX,$cameraY), camera viewport width: ${camera.viewportWidth} ,player position: ($dropImagePosX,$dropImagePosY)",camera.unproject(new Vector3(0,0,0)).x,camera.position.y)
+    gameFont.draw(game.batch,s"Camera position: ($cameraX,$cameraY), camera viewport width: ${camera.viewportWidth} ,player position: ($dropImagePosX,$dropImagePosY)",camera.unproject(new Vector3(0,0,0)).x,camera.position.y)
     game.batch.draw(dropImage, dropImagePosX, dropImagePosY , dropImage.getWidth, dropImage.getHeight)
     game.batch.end()
   }
