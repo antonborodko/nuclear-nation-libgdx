@@ -6,7 +6,7 @@ import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Game
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.assets.AssetManager
-import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver
+import com.badlogic.gdx.assets.loaders.resolvers.{ExternalFileHandleResolver, InternalFileHandleResolver}
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.freetype.{FreeTypeFontGenerator, FreeTypeFontGeneratorLoader, FreetypeFontLoader}
@@ -26,20 +26,24 @@ class NuclearNation extends Game {
   assetManager.setLoader(classOf[BitmapFont], ".ttf", new FreetypeFontLoader(resolver))
 
   val gameFontParam = new FreeTypeFontLoaderParameter()
-  gameFontParam.fontFileName = "fonts/lunchtime-doubly-so/lunchds.ttf"
-  gameFontParam.fontParameters.size = 30
-  assetManager.load("fonts/lunchtime-doubly-so/lunchds.ttf", classOf[BitmapFont], gameFontParam)
 
-  assetManager.load("droplet.png",classOf[Texture])
-  assetManager.load("raider_camp.png",classOf[Texture])
-  assetManager.load("desert_tile.png",classOf[Texture])
-  assetManager.load("town.png",classOf[Texture])
-  assetManager.finishLoading()
+
 
 
   override def create(): Unit = {
     batch = new SpriteBatch
     font = new BitmapFont
+
+    gameFontParam.fontFileName = "fonts/lunchtime-doubly-so/lunchds.ttf"
+    gameFontParam.fontParameters.size = 30
+    assetManager.load("fonts/lunchtime-doubly-so/lunchds.ttf", classOf[BitmapFont], gameFontParam)
+
+    assetManager.load("droplet.png",classOf[Texture])
+    assetManager.load("raider_camp.png",classOf[Texture])
+    assetManager.load("desert_tile.png",classOf[Texture])
+    assetManager.load("town.png",classOf[Texture])
+    assetManager.finishLoading()
+
     this.setScreen(new MapScreen(this))
   }
 

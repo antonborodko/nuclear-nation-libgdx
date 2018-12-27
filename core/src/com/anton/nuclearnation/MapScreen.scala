@@ -145,7 +145,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
 
 
-  val gameFont = assetManager.get("assets/fonts/lunchtime-doubly-so/lunchds.ttf",classOf[BitmapFont])
+  val gameFont = assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf",classOf[BitmapFont])
 
 
   override def show(): Unit = {}
@@ -267,14 +267,14 @@ class MapScreen(game: NuclearNation) extends Screen{
     cities.foreach(city=>{
       val cityPixelX : Int = (city.x * mainLayer.getTileWidth).asInstanceOf[Int]
       val cityPixelY : Int = (city.y * mainLayer.getTileHeight).asInstanceOf[Int]
-      assetManager.get("assets/fonts/lunchtime-doubly-so/lunchds.ttf", classOf[BitmapFont]).draw(game.batch,city.name,cityPixelX,cityPixelY)
+      gameFont.draw(game.batch,city.name,cityPixelX,cityPixelY)
     })
 
     //drawing raider camps names
     raiderCamps.foreach(raiderCampInfo=>{
       val campPixelX : Int = (raiderCampInfo.tileX * mainLayer.getTileWidth).asInstanceOf[Int]
       val campPixelY : Int = (raiderCampInfo.tileY * mainLayer.getTileHeight).asInstanceOf[Int]
-      assetManager.get("assets/fonts/lunchtime-doubly-so/lunchds.ttf", classOf[BitmapFont]).draw(game.batch,raiderCampInfo.name,campPixelX,campPixelY)
+      gameFont.draw(game.batch,raiderCampInfo.name,campPixelX,campPixelY)
     })
 
     game.font.draw(game.batch,s"Camera position: ($cameraX,$cameraY), camera viewport width: ${camera.viewportWidth} ,player position: ($dropImagePosX,$dropImagePosY)",camera.unproject(new Vector3(0,0,0)).x,camera.position.y)
