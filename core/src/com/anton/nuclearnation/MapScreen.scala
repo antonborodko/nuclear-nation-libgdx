@@ -18,6 +18,7 @@ import com.badlogic.gdx.math.{Vector2, Vector3}
 
 import scala.util.Random
 import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader.FreeTypeFontLoaderParameter
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog
 
 import scala.collection.mutable.ListBuffer
 
@@ -252,11 +253,15 @@ class MapScreen(game: NuclearNation) extends Screen{
           expeditions.remove(0)
         } else {
 
-          val newOriginX = expedition.originGlobalPixelX + direction.x * 50 * delta
-          val newOriginY = expedition.originGlobalPixelY + direction.y * 50 * delta
+          val newOriginX = expedition.originGlobalPixelX + direction.x * 150 * delta
+          val newOriginY = expedition.originGlobalPixelY + direction.y * 150 * delta
 
           expeditions(0) = expedition.copy(originGlobalPixelX = newOriginX, originGlobalPixelY = newOriginY,originalDirection = Some(direction))
           game.batch.draw(expedition.marker, expeditions.head.originGlobalPixelX, expeditions.head.originGlobalPixelY)
+
+          val tileX = (newOriginX / mainLayer.getTileWidth).toInt
+          val tileY = (newOriginY / mainLayer.getTileHeight).toInt
+          checkExpeditionTile(tileX,tileY)
         }
 
 
@@ -312,9 +317,14 @@ class MapScreen(game: NuclearNation) extends Screen{
     } else {
       Gdx.app.log("INFO","Expedition already sent")
     }
+  }
 
-//    val coords = getClickInfo(screenX,screenY)
-
-//    Gdx.app.log("INFO",s"Right Clicked TileX: ${coords.tileX}, TileY: ${coords.tileY}")
+  private def checkExpeditionTile(tileX:Int,tileY:Int): Unit ={
+    raiderCamps.foreach(camp=>{
+      if (camp.tileX == tileX && camp.tileY == tileY){
+        game.setScreen(new SituationScreen(game))
+        this.dispose()
+      }
+    })
   }
 }
