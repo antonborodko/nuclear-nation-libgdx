@@ -153,32 +153,29 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   override def render(delta: Float): Unit = {
 
-
-
-
     if (Gdx.input.isKeyPressed(Keys.UP)){
-      dropImagePosY+=10
+      dropImagePosY+=25
       if (dropImagePosY + dropImage.getHeight > mapHeightPixels){
         dropImagePosY = mapHeightPixels - dropImage.getHeight
       }
     }
 
     if (Gdx.input.isKeyPressed(Keys.DOWN)){
-      dropImagePosY-=10
+      dropImagePosY-=25
       if (dropImagePosY <0) {
         dropImagePosY = 0
       }
     }
 
     if (Gdx.input.isKeyPressed(Keys.LEFT)){
-      dropImagePosX-=10
+      dropImagePosX-=25
       if (dropImagePosX <0){
         dropImagePosX = 0
       }
     }
 
     if (Gdx.input.isKeyPressed(Keys.RIGHT)){
-      dropImagePosX+=10
+      dropImagePosX+=25
       if (dropImagePosX + dropImage.getWidth > mapWidthPixels){
         dropImagePosX = mapWidthPixels - dropImage.getWidth
       }
@@ -293,12 +290,11 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   override def resume(): Unit = {}
 
-  override def hide(): Unit = {}
+  override def hide(): Unit = {
+  }
 
   override def dispose(): Unit = {
     map.dispose()
-    desertTileTexture.dispose()
-    townImage.dispose()
     renderer.dispose()
   }
 
@@ -322,8 +318,8 @@ class MapScreen(game: NuclearNation) extends Screen{
   private def checkExpeditionTile(tileX:Int,tileY:Int): Unit ={
     raiderCamps.foreach(camp=>{
       if (camp.tileX == tileX && camp.tileY == tileY){
-        game.setScreen(new SituationScreen(game))
         this.dispose()
+        game.setScreen(new SituationScreen(game))
       }
     })
   }
