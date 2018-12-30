@@ -15,10 +15,16 @@ class SituationScreen(game:NuclearNation) extends Screen{
   val map = new TiledMap
   val layers = map.getLayers
 
-  val mapWidthTiles = 15
-  val mapHeightTiles = 15
+  val mapWidthTiles = 11
+  val mapHeightTiles = 11
+
+  val middleXTile = (mapWidthTiles -1) / 2 + 1
+  val middleYTile = (mapHeightTiles -1) / 2 + 1
 
   val desertTileTexture = assetManager.get("desert_tile.png",classOf[Texture])
+  val raiderTexture = assetManager.get("raider-facing-left.png",classOf[Texture])
+  val soldierTexture = assetManager.get("soldier-facing-right.png",classOf[Texture])
+
   val mainLayer = new TiledMapTileLayer(mapHeightTiles, mapWidthTiles, desertTileTexture.getWidth, desertTileTexture.getHeight)
   val cell:Cell = new Cell
 
@@ -52,11 +58,22 @@ class SituationScreen(game:NuclearNation) extends Screen{
   override def render(delta: Float): Unit = {
     camera.position.set(camera.viewportWidth/2,camera.viewportHeight/2,0)
     camera.update()
+    game.batch.setProjectionMatrix(camera.combined)
     renderer.setView(camera)
 
     renderer.getBatch.begin()
     renderer.renderTileLayer(mainLayer)
     renderer.getBatch.end()
+
+    //rendering raiders and soldiers
+    game.batch.begin()
+    game.batch.draw(raiderTexture,(middleXTile+2) * mainLayer.getTileWidth,(middleYTile +1 ) * mainLayer.getTileHeight,raiderTexture.getWidth,raiderTexture.getHeight)
+    game.batch.draw(raiderTexture,(middleXTile+1) * mainLayer.getTileWidth,middleYTile * mainLayer.getTileHeight,raiderTexture.getWidth,raiderTexture.getHeight)
+    game.batch.draw(raiderTexture,(middleXTile+2) * mainLayer.getTileWidth,(middleYTile-1) * mainLayer.getTileHeight,raiderTexture.getWidth,raiderTexture.getHeight)
+    game.batch.draw(soldierTexture,(middleXTile-2) * mainLayer.getTileWidth,(middleYTile+1) * mainLayer.getTileHeight,soldierTexture.getWidth,soldierTexture.getHeight)
+    game.batch.draw(soldierTexture,(middleXTile-1) * mainLayer.getTileWidth,middleYTile * mainLayer.getTileHeight,soldierTexture.getWidth,soldierTexture.getHeight)
+    game.batch.draw(soldierTexture,(middleXTile-2) * mainLayer.getTileWidth,(middleYTile-1) * mainLayer.getTileHeight,soldierTexture.getWidth,soldierTexture.getHeight)
+    game.batch.end()
 
 //    game.batch.begin()
 //    game.font.draw(game.batch,s"Test",camera.unproject(new Vector3(0,0,0)).x,camera.position.y)

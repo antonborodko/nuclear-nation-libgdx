@@ -40,6 +40,8 @@ class NuclearNation extends Game {
     assetManager.load("raider_camp.png",classOf[Texture])
     assetManager.load("desert_tile.png",classOf[Texture])
     assetManager.load("town.png",classOf[Texture])
+    assetManager.load("raider-facing-left.png",classOf[Texture])
+    assetManager.load("soldier-facing-right.png",classOf[Texture])
     assetManager.finishLoading()
 
     this.setScreen(new MapScreen(this))
