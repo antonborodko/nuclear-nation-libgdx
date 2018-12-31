@@ -47,7 +47,7 @@ class SituationScreen(game:NuclearNation) extends Screen{
   val gameFont = assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf",classOf[BitmapFont])
 
   val camera = new OrthographicCamera()
-  camera.setToOrtho(false, 1600, 960)
+  camera.setToOrtho(false, 800, 480)
   camera.update()
 
 
@@ -56,7 +56,11 @@ class SituationScreen(game:NuclearNation) extends Screen{
   }
 
   override def render(delta: Float): Unit = {
-    camera.position.set(camera.viewportWidth/2,camera.viewportHeight/2,0)
+
+    Gdx.gl.glClearColor(1, 0, 0, 1)
+    Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT)
+
+    camera.position.set(middleXTile * mainLayer.getTileWidth,middleYTile * mainLayer.getTileHeight,0)
     camera.update()
     game.batch.setProjectionMatrix(camera.combined)
     renderer.setView(camera)
