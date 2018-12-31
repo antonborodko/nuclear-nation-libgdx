@@ -1,13 +1,15 @@
 package com.anton.nuclearnation
 
 import com.badlogic.gdx.graphics.{GL20, OrthographicCamera, Texture}
-import com.badlogic.gdx.graphics.g2d.{BitmapFont, TextureRegion}
-import com.badlogic.gdx.{Gdx, Screen}
+import com.badlogic.gdx.graphics.g2d.{BitmapFont, Sprite, TextureRegion}
+import com.badlogic.gdx.{Gdx, Input, InputProcessor, Screen}
 import com.badlogic.gdx.maps.tiled.{TiledMap, TiledMapTileLayer}
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer
 import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile
-import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.math.{Vector2, Vector3}
+
+import scala.collection.mutable.ListBuffer
 
 class SituationScreen(game:NuclearNation) extends Screen{
 
@@ -50,6 +52,50 @@ class SituationScreen(game:NuclearNation) extends Screen{
   camera.setToOrtho(false, 800, 480)
   camera.update()
 
+  case class RaiderInfo(texture:Texture,tileX:Int,tileY:Int)
+
+  val raiders = ListBuffer[RaiderInfo]()
+
+  raiders += RaiderInfo(assetManager.get("raider-facing-left.png",classOf[Texture]),middleXTile+1,middleYTile)
+  raiders += RaiderInfo(assetManager.get("raider-facing-left.png",classOf[Texture]),middleXTile+2,middleYTile-1)
+  raiders += RaiderInfo(assetManager.get("raider-facing-left.png",classOf[Texture]),middleXTile+2,middleYTile+1)
+
+  val situationScreenInputProcessor = new InputProcessor {
+    override def keyDown(keycode: Int): Boolean = {true}
+
+    override def keyUp(keycode: Int): Boolean = {true}
+
+    override def keyTyped(character: Char): Boolean = {true}
+
+
+    override def touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean = {true}
+
+    override def touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean = {true}
+
+    override def mouseMoved(screenX: Int, screenY: Int): Boolean = {true}
+
+    override def scrolled(amount: Int): Boolean = {true}
+
+    override def touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean = {
+      if (button == Input.Buttons.LEFT) {
+        val touchPos = camera.unproject(new Vector3(screenX,screenY,0))
+        raiders.foreach(raider=>{
+          val texture = raider.texture
+          val x = raider.tileX * mainLayer.getTileWidth
+          val y = raider.tileY * mainLayer.getTileHeight
+          if (touchPos.x > x && touchPos.x < x + texture.getWidth) {
+            if (touchPos.y > y && touchPos.y < y + texture.getHeight) {
+
+            }
+          }
+        })
+        return true
+      }
+      false
+    }
+  }
+
+  Gdx.input.setInputProcessor(situationScreenInputProcessor)
 
 
   override def show(): Unit = {
@@ -71,9 +117,12 @@ class SituationScreen(game:NuclearNation) extends Screen{
 
     //rendering raiders and soldiers
     game.batch.begin()
-    game.batch.draw(raiderTexture,(middleXTile+2) * mainLayer.getTileWidth,(middleYTile +1 ) * mainLayer.getTileHeight,raiderTexture.getWidth,raiderTexture.getHeight)
-    game.batch.draw(raiderTexture,(middleXTile+1) * mainLayer.getTileWidth,middleYTile * mainLayer.getTileHeight,raiderTexture.getWidth,raiderTexture.getHeight)
-    game.batch.draw(raiderTexture,(middleXTile+2) * mainLayer.getTileWidth,(middleYTile-1) * mainLayer.getTileHeight,raiderTexture.getWidth,raiderTexture.getHeight)
+    raiders.foreach(raider=>{
+      game.batch.draw(raider.texture,raider.tileX * mainLayer.getTileWidth,raider.tileY * mainLayer.getTileHeight,raiderTexture.getWidth,raiderTexture.getHeight)
+      game.batch.draw(raider.texture,raider.tileX * mainLayer.getTileWidth,raider.tileY * mainLayer.getTileHeight,raiderTexture.getWidth,raiderTexture.getHeight)
+      game.batch.draw(raider.texture,raider.tileX * mainLayer.getTileWidth,raider.tileY * mainLayer.getTileHeight,raiderTexture.getWidth,raiderTexture.getHeight)
+    })
+
     game.batch.draw(soldierTexture,(middleXTile-2) * mainLayer.getTileWidth,(middleYTile+1) * mainLayer.getTileHeight,soldierTexture.getWidth,soldierTexture.getHeight)
     game.batch.draw(soldierTexture,(middleXTile-1) * mainLayer.getTileWidth,middleYTile * mainLayer.getTileHeight,soldierTexture.getWidth,soldierTexture.getHeight)
     game.batch.draw(soldierTexture,(middleXTile-2) * mainLayer.getTileWidth,(middleYTile-1) * mainLayer.getTileHeight,soldierTexture.getWidth,soldierTexture.getHeight)
