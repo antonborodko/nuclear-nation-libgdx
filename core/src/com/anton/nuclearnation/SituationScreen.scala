@@ -8,6 +8,8 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer
 import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile
 import com.badlogic.gdx.math.{Vector2, Vector3}
+import com.badlogic.gdx.scenes.scene2d.Stage
+import com.badlogic.gdx.utils.viewport.ScreenViewport
 
 import scala.collection.mutable.ListBuffer
 
@@ -51,6 +53,9 @@ class SituationScreen(game:NuclearNation) extends Screen{
   val camera = new OrthographicCamera()
   camera.setToOrtho(false, 800, 480)
   camera.update()
+
+  val stage = new Stage(new ScreenViewport(camera))
+  stage.getViewport.update(800,480)
 
   case class RaiderInfo(texture:Texture,tileX:Int,tileY:Int)
 
@@ -131,6 +136,9 @@ class SituationScreen(game:NuclearNation) extends Screen{
 //    game.batch.begin()
 //    game.font.draw(game.batch,s"Test",camera.unproject(new Vector3(0,0,0)).x,camera.position.y)
 //    game.batch.end()
+
+    stage.act(delta)
+    stage.draw()
   }
 
   override def resize(width: Int, height: Int): Unit = {}
@@ -144,5 +152,6 @@ class SituationScreen(game:NuclearNation) extends Screen{
   override def dispose(): Unit = {
     renderer.dispose()
     map.dispose()
+    stage.dispose()
   }
 }
