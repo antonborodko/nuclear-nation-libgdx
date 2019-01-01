@@ -9,7 +9,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer
 import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile
 import com.badlogic.gdx.math.{Vector2, Vector3}
-import com.badlogic.gdx.scenes.scene2d.{Event, EventListener, InputEvent, Stage}
+import com.badlogic.gdx.scenes.scene2d._
 import com.badlogic.gdx.scenes.scene2d.ui.{Dialog, Skin, Window}
 import com.badlogic.gdx.scenes.scene2d.utils.{ClickListener, Drawable}
 import com.badlogic.gdx.utils.viewport.{ScreenViewport, StretchViewport}
@@ -82,32 +82,7 @@ class SituationScreen(game:NuclearNation) extends Screen{
 
     override def scrolled(amount: Int): Boolean = {true}
 
-    override def touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean = {
-      if (button == Input.Buttons.LEFT) {
-        val touchPos = camera.unproject(new Vector3(screenX,screenY,0))
-        raiders.foreach(raider=>{
-          val texture = raider.texture
-          val x = raider.tileX * mainLayer.getTileWidth
-          val y = raider.tileY * mainLayer.getTileHeight
-          if (touchPos.x > x && touchPos.x < x + texture.getWidth) {
-            if (touchPos.y > y && touchPos.y < y + texture.getHeight) {
-
-              val dialog = new Dialog("You've defeated the raiders", skin) {
-                override def result(result:Object) {
-                  Gdx.app.log("INFO","Button clicked " + result)
-                }
-              }
-
-              dialog.text("You've defeated the raiders")
-              dialog.button("OK", true).button("Cancel", false)
-              dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
-              dialog.show(stage)
-            }
-          }
-        })
-      }
-      false
-    }
+    override def touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean = {return false}
   }
 
 
@@ -120,6 +95,9 @@ class SituationScreen(game:NuclearNation) extends Screen{
 
   override def show(): Unit = {
 
+    raiders.foreach(raider=>{
+      stage.addActor(new RaiderActor(raider.tileX,raider.tileY))
+    })
 
   }
 
@@ -136,13 +114,14 @@ class SituationScreen(game:NuclearNation) extends Screen{
     renderer.renderTileLayer(mainLayer)
     renderer.getBatch.end()
 
+
     //rendering raiders and soldiers
     stage.getBatch.begin()
-    raiders.foreach(raider=>{
-      stage.getBatch.draw(raider.texture,raider.tileX * mainLayer.getTileWidth,raider.tileY * mainLayer.getTileHeight,raiderTexture.getWidth,raiderTexture.getHeight)
-      stage.getBatch.draw(raider.texture,raider.tileX * mainLayer.getTileWidth,raider.tileY * mainLayer.getTileHeight,raiderTexture.getWidth,raiderTexture.getHeight)
-      stage.getBatch.draw(raider.texture,raider.tileX * mainLayer.getTileWidth,raider.tileY * mainLayer.getTileHeight,raiderTexture.getWidth,raiderTexture.getHeight)
-    })
+//    raiders.foreach(raider=>{
+//      stage.getBatch.draw(raider.texture,raider.tileX * mainLayer.getTileWidth,raider.tileY * mainLayer.getTileHeight,raiderTexture.getWidth,raiderTexture.getHeight)
+//      stage.getBatch.draw(raider.texture,raider.tileX * mainLayer.getTileWidth,raider.tileY * mainLayer.getTileHeight,raiderTexture.getWidth,raiderTexture.getHeight)
+//      stage.getBatch.draw(raider.texture,raider.tileX * mainLayer.getTileWidth,raider.tileY * mainLayer.getTileHeight,raiderTexture.getWidth,raiderTexture.getHeight)
+//    })
 
     stage.getBatch.draw(soldierTexture,(middleXTile-2) * mainLayer.getTileWidth,(middleYTile+1) * mainLayer.getTileHeight,soldierTexture.getWidth,soldierTexture.getHeight)
     stage.getBatch.draw(soldierTexture,(middleXTile-1) * mainLayer.getTileWidth,middleYTile * mainLayer.getTileHeight,soldierTexture.getWidth,soldierTexture.getHeight)
@@ -172,5 +151,38 @@ class SituationScreen(game:NuclearNation) extends Screen{
     map.dispose()
     stage.dispose()
     skin.dispose()
+  }
+
+  import com.badlogic.gdx.Gdx
+  import com.badlogic.gdx.graphics.Texture
+  import com.badlogic.gdx.graphics.g2d.Batch
+  import com.badlogic.gdx.scenes.scene2d.Actor
+
+  class RaiderActor(tileX:Int,tileY:Int) extends Actor {
+    val texture = new Texture(Gdx.files.internal("raider-facing-left.png"))
+
+    setBounds( tileX * mainLayer.getTileWidth,tileY * mainLayer.getTileHeight,texture.getWidth(),texture.getHeight())
+
+    addListener(new InputListener(){
+        override def touchDown (event:InputEvent, x:Float, y:Float, pointer:Int, button:Int):Boolean= {
+          val dialog = new Dialog("You've defeated the raiders", skin) {
+            override def result(result:Object) {
+              Gdx.app.log("INFO","Button clicked " + result)
+            }
+          }
+
+          dialog.text("You've defeated the raiders")
+          dialog.button("OK", true).button("Cancel", false)
+          dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
+          dialog.show(stage)
+          true
+        }
+    })
+
+    override def draw(batch: Batch, alpha: Float): Unit = {
+      batch.draw(texture, tileX * mainLayer.getTileWidth,tileY * mainLayer.getTileHeight)
+    }
+
+
   }
 }
