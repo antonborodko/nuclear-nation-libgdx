@@ -104,6 +104,7 @@ class SituationScreen(game:NuclearNation) extends Screen{
   override def render(delta: Float): Unit = {
     Gdx.gl.glClearColor(1, 0, 0, 1)
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT)
+    stage.getBatch.setColor(Color.WHITE);
 
     camera.position.set(middleXTile * mainLayer.getTileWidth,middleYTile * mainLayer.getTileHeight,0)
     camera.update()
@@ -138,7 +139,12 @@ class SituationScreen(game:NuclearNation) extends Screen{
     stage.draw()
   }
 
-  override def resize(width: Int, height: Int): Unit = {}
+
+  override def resize(width: Int, height: Int): Unit = {
+    if (stage != null) {
+      stage.getViewport().update(width, height, false);
+    }
+  }
 
   override def pause(): Unit = {}
 
@@ -174,6 +180,10 @@ class SituationScreen(game:NuclearNation) extends Screen{
           dialog.text("You've defeated the raiders")
           dialog.button("OK", true).button("Cancel", false)
           dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
+          dialog.setFillParent(false)
+          dialog.setSize(100,100)
+          dialog.setX(50)
+          dialog.setY(50)
           dialog.show(stage)
           true
         }
