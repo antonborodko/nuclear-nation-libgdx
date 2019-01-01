@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.freetype.{FreeTypeFontGenerator, FreeTypeFontGeneratorLoader, FreetypeFontLoader}
 import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader.FreeTypeFontLoaderParameter
 import com.badlogic.gdx.graphics.g2d.{BitmapFont, SpriteBatch}
+import com.badlogic.gdx.scenes.scene2d.ui.Skin
 
 
 class NuclearNation extends Game {
@@ -29,8 +30,11 @@ class NuclearNation extends Game {
 
 
 
+
+
   override def create(): Unit = {
     batch = new SpriteBatch
+
 
     gameFontParam.fontFileName = "fonts/lunchtime-doubly-so/lunchds.ttf"
     gameFontParam.fontParameters.size = 30

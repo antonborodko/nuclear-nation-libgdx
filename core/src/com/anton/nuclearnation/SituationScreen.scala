@@ -1,15 +1,18 @@
 package com.anton.nuclearnation
 
-import com.badlogic.gdx.graphics.{GL20, OrthographicCamera, Texture}
-import com.badlogic.gdx.graphics.g2d.{BitmapFont, Sprite, TextureRegion}
-import com.badlogic.gdx.{Gdx, Input, InputProcessor, Screen}
+import com.badlogic.gdx.Input.Keys
+import com.badlogic.gdx.graphics.{Color, GL20, OrthographicCamera, Texture}
+import com.badlogic.gdx.graphics.g2d.{Batch, BitmapFont, Sprite, TextureRegion}
+import com.badlogic.gdx._
 import com.badlogic.gdx.maps.tiled.{TiledMap, TiledMapTileLayer}
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer
 import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile
 import com.badlogic.gdx.math.{Vector2, Vector3}
-import com.badlogic.gdx.scenes.scene2d.Stage
-import com.badlogic.gdx.utils.viewport.ScreenViewport
+import com.badlogic.gdx.scenes.scene2d.{Event, EventListener, InputEvent, Stage}
+import com.badlogic.gdx.scenes.scene2d.ui.{Dialog, Skin, Window}
+import com.badlogic.gdx.scenes.scene2d.utils.{ClickListener, Drawable}
+import com.badlogic.gdx.utils.viewport.{ScreenViewport, StretchViewport}
 
 import scala.collection.mutable.ListBuffer
 
@@ -50,14 +53,12 @@ class SituationScreen(game:NuclearNation) extends Screen{
   val mapHeightPixels = (mainLayer.getHeight * mainLayer.getTileHeight).asInstanceOf[Int]
   val gameFont = assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf",classOf[BitmapFont])
 
-  val camera = new OrthographicCamera()
-  camera.setToOrtho(false, 800, 480)
-  camera.update()
 
-  val stage = new Stage(new ScreenViewport(camera))
-  stage.getViewport.update(800,480)
+  val stage = new Stage(new StretchViewport(800,600,new OrthographicCamera()))
+  val camera = stage.getCamera
 
   case class RaiderInfo(texture:Texture,tileX:Int,tileY:Int)
+  val skin = new Skin(Gdx.files.internal("data/commodore64/skin/uiskin.json"))
 
   val raiders = ListBuffer[RaiderInfo]()
 
@@ -91,47 +92,64 @@ class SituationScreen(game:NuclearNation) extends Screen{
           if (touchPos.x > x && touchPos.x < x + texture.getWidth) {
             if (touchPos.y > y && touchPos.y < y + texture.getHeight) {
 
+              val dialog = new Dialog("You've defeated the raiders", skin) {
+                override def result(result:Object) {
+                  Gdx.app.log("INFO","Button clicked " + result)
+                }
+              }
+
+              dialog.text("You've defeated the raiders")
+              dialog.button("OK", true).button("Cancel", false)
+              dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
+              dialog.show(stage)
             }
           }
         })
-        return true
       }
       false
     }
   }
 
-  Gdx.input.setInputProcessor(situationScreenInputProcessor)
+
+  val multiplexer = new InputMultiplexer()
+  multiplexer.addProcessor(stage)
+  multiplexer.addProcessor(situationScreenInputProcessor)
+
+  Gdx.input.setInputProcessor(multiplexer)
 
 
   override def show(): Unit = {
+
+
   }
 
   override def render(delta: Float): Unit = {
-
     Gdx.gl.glClearColor(1, 0, 0, 1)
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT)
 
     camera.position.set(middleXTile * mainLayer.getTileWidth,middleYTile * mainLayer.getTileHeight,0)
     camera.update()
-    game.batch.setProjectionMatrix(camera.combined)
-    renderer.setView(camera)
+    stage.getBatch.setProjectionMatrix(camera.combined)
+    renderer.setView(camera.asInstanceOf[OrthographicCamera])
 
     renderer.getBatch.begin()
     renderer.renderTileLayer(mainLayer)
     renderer.getBatch.end()
 
     //rendering raiders and soldiers
-    game.batch.begin()
+    stage.getBatch.begin()
     raiders.foreach(raider=>{
-      game.batch.draw(raider.texture,raider.tileX * mainLayer.getTileWidth,raider.tileY * mainLayer.getTileHeight,raiderTexture.getWidth,raiderTexture.getHeight)
-      game.batch.draw(raider.texture,raider.tileX * mainLayer.getTileWidth,raider.tileY * mainLayer.getTileHeight,raiderTexture.getWidth,raiderTexture.getHeight)
-      game.batch.draw(raider.texture,raider.tileX * mainLayer.getTileWidth,raider.tileY * mainLayer.getTileHeight,raiderTexture.getWidth,raiderTexture.getHeight)
+      stage.getBatch.draw(raider.texture,raider.tileX * mainLayer.getTileWidth,raider.tileY * mainLayer.getTileHeight,raiderTexture.getWidth,raiderTexture.getHeight)
+      stage.getBatch.draw(raider.texture,raider.tileX * mainLayer.getTileWidth,raider.tileY * mainLayer.getTileHeight,raiderTexture.getWidth,raiderTexture.getHeight)
+      stage.getBatch.draw(raider.texture,raider.tileX * mainLayer.getTileWidth,raider.tileY * mainLayer.getTileHeight,raiderTexture.getWidth,raiderTexture.getHeight)
     })
 
-    game.batch.draw(soldierTexture,(middleXTile-2) * mainLayer.getTileWidth,(middleYTile+1) * mainLayer.getTileHeight,soldierTexture.getWidth,soldierTexture.getHeight)
-    game.batch.draw(soldierTexture,(middleXTile-1) * mainLayer.getTileWidth,middleYTile * mainLayer.getTileHeight,soldierTexture.getWidth,soldierTexture.getHeight)
-    game.batch.draw(soldierTexture,(middleXTile-2) * mainLayer.getTileWidth,(middleYTile-1) * mainLayer.getTileHeight,soldierTexture.getWidth,soldierTexture.getHeight)
-    game.batch.end()
+    stage.getBatch.draw(soldierTexture,(middleXTile-2) * mainLayer.getTileWidth,(middleYTile+1) * mainLayer.getTileHeight,soldierTexture.getWidth,soldierTexture.getHeight)
+    stage.getBatch.draw(soldierTexture,(middleXTile-1) * mainLayer.getTileWidth,middleYTile * mainLayer.getTileHeight,soldierTexture.getWidth,soldierTexture.getHeight)
+    stage.getBatch.draw(soldierTexture,(middleXTile-2) * mainLayer.getTileWidth,(middleYTile-1) * mainLayer.getTileHeight,soldierTexture.getWidth,soldierTexture.getHeight)
+    stage.getBatch.end()
+
+
 
 //    game.batch.begin()
 //    game.font.draw(game.batch,s"Test",camera.unproject(new Vector3(0,0,0)).x,camera.position.y)
@@ -153,5 +171,6 @@ class SituationScreen(game:NuclearNation) extends Screen{
     renderer.dispose()
     map.dispose()
     stage.dispose()
+    skin.dispose()
   }
 }
