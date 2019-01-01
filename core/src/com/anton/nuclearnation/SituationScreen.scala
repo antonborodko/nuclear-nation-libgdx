@@ -180,11 +180,13 @@ class SituationScreen(game:NuclearNation) extends Screen{
           dialog.text("You've defeated the raiders")
           dialog.button("OK", true).button("Cancel", false)
           dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
-          dialog.setFillParent(false)
-          dialog.setSize(100,100)
-          dialog.setX(50)
-          dialog.setY(50)
-          dialog.show(stage)
+          dialog.setSize(500,200)
+          val position = stage.getViewport.unproject(new Vector2(10,10))
+          Gdx.app.log("INFO",s"${position.x} ${position.y}")
+          stage.addActor(dialog)
+
+          dialog.setPosition(position.x,position.y)
+
           true
         }
     })
