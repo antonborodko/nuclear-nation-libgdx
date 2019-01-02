@@ -26,6 +26,8 @@ import scala.collection.mutable.ListBuffer
 
 class MapScreen(game: NuclearNation) extends Screen{
 
+
+
   val assetManager = game.assetManager
 
   val map = new TiledMap
@@ -90,7 +92,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     CityInfo("Modoc",Random.nextInt(mapWidthTiles),Random.nextInt(mapHeightTiles))
   )
 
-  val raiderCamps = List[RaiderCampInfo](
+  val raiderCamps = ListBuffer[RaiderCampInfo](
     RaiderCampInfo("Mad dogs",Random.nextInt(mapWidthTiles),Random.nextInt(mapHeightTiles))
   )
 
@@ -316,11 +318,22 @@ class MapScreen(game: NuclearNation) extends Screen{
   private def checkExpeditionTile(tileX:Int,tileY:Int): Unit ={
     raiderCamps.foreach(camp=>{
       if (camp.tileX == tileX && camp.tileY == tileY){
-        this.dispose()
         game.setScreen(new SituationScreen(camp,game,this))
+        expeditions.remove(0)
       }
     })
   }
+
+  def deleteCamp(camp: RaiderCampInfo) = {
+    if (raiderCamps.contains(camp)){
+      raiderCamps -= camp
+      val desertTile = new StaticTiledMapTile(new TextureRegion(desertTileTexture))
+      val desertCell = new Cell
+      desertCell.setTile(desertTile)
+      townLayer.setCell(camp.tileX,camp.tileY,desertCell)
+    }
+  }
+
 
 
 }
