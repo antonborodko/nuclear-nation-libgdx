@@ -2,6 +2,7 @@ package com.anton.nuclearnation
 
 import java.lang.Math
 
+import com.anton.nuclearnation.MapScreen.{CityInfo, ExpeditionInfo, MapClickInfo, RaiderCampInfo}
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver
@@ -52,10 +53,6 @@ class MapScreen(game: NuclearNation) extends Screen{
   camera.update()
 
 
-  case class CityInfo(name:String,x:Int,y:Int)
-  case class RaiderCampInfo(name:String,tileX:Int,tileY:Int)
-  case class MapClickInfo(pixelX:Float, pixelY: Float, tileX:Int,tileY:Int)
-  case class ExpeditionInfo(originGlobalPixelX:Float, originGlobalPixelY:Float,destinationGlobalPixelX:Float,destinationGlobalPixelY:Float,marker:Texture, originalDirection:Option[Vector2])
 
   val expeditions = ListBuffer[ExpeditionInfo]()
 
@@ -84,7 +81,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     override def scrolled(amount: Int): Boolean = {true}
   }
 
-  Gdx.input.setInputProcessor(mapInputProcessor)
+
 
 
   val cities = List[CityInfo](
@@ -148,7 +145,9 @@ class MapScreen(game: NuclearNation) extends Screen{
   val gameFont = assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf",classOf[BitmapFont])
 
 
-  override def show(): Unit = {}
+  override def show(): Unit = {
+    Gdx.input.setInputProcessor(mapInputProcessor)
+  }
 
   override def render(delta: Float): Unit = {
 
@@ -318,8 +317,17 @@ class MapScreen(game: NuclearNation) extends Screen{
     raiderCamps.foreach(camp=>{
       if (camp.tileX == tileX && camp.tileY == tileY){
         this.dispose()
-        game.setScreen(new SituationScreen(game))
+        game.setScreen(new SituationScreen(camp,game,this))
       }
     })
   }
+
+
+}
+
+object MapScreen{
+  case class CityInfo(name:String,x:Int,y:Int)
+  case class RaiderCampInfo(name:String,tileX:Int,tileY:Int)
+  case class MapClickInfo(pixelX:Float, pixelY: Float, tileX:Int,tileY:Int)
+  case class ExpeditionInfo(originGlobalPixelX:Float, originGlobalPixelY:Float,destinationGlobalPixelX:Float,destinationGlobalPixelY:Float,marker:Texture, originalDirection:Option[Vector2])
 }

@@ -16,7 +16,7 @@ import com.badlogic.gdx.utils.viewport.{ScreenViewport, StretchViewport}
 
 import scala.collection.mutable.ListBuffer
 
-class SituationScreen(game:NuclearNation) extends Screen{
+class SituationScreen(currentCamp: MapScreen.RaiderCampInfo, game:NuclearNation, mapScreen:MapScreen) extends Screen{
 
   val assetManager = game.assetManager
   val map = new TiledMap
@@ -142,7 +142,7 @@ class SituationScreen(game:NuclearNation) extends Screen{
 
   override def resize(width: Int, height: Int): Unit = {
     if (stage != null) {
-      stage.getViewport().update(width, height, false);
+      stage.getViewport.update(width, height, false);
     }
   }
 
@@ -174,18 +174,19 @@ class SituationScreen(game:NuclearNation) extends Screen{
           val dialog = new Dialog("You've defeated the raiders", skin) {
             override def result(result:Object) {
               Gdx.app.log("INFO","Button clicked " + result)
+              dispose()
+              mapScreen.deleteCamp(currentCamp)
+              game.setScreen(mapScreen)
             }
           }
 
           dialog.text("You've defeated the raiders")
-          dialog.button("OK", true).button("Cancel", false)
+          dialog.button("OK", true)
           dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
           dialog.setSize(500,200)
-          val position = stage.getViewport.unproject(new Vector2(10,10))
-          Gdx.app.log("INFO",s"${position.x} ${position.y}")
           stage.addActor(dialog)
 
-          dialog.setPosition(position.x,position.y)
+          dialog.setPosition(100,100)
 
           true
         }
