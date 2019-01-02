@@ -319,7 +319,17 @@ class MapScreen(game: NuclearNation) extends Screen{
     raiderCamps.foreach(camp=>{
       if (camp.tileX == tileX && camp.tileY == tileY){
         game.setScreen(new SituationScreen(camp,game,this))
+        val oldExpedition = expeditions(0)
+
+        val newExpedition = expeditions(0).copy(oldExpedition.destinationGlobalPixelX,
+          oldExpedition.destinationGlobalPixelY,
+          oldExpedition.originGlobalPixelX,
+          oldExpedition.originGlobalPixelY,
+          oldExpedition.marker,
+          None)
+
         expeditions.remove(0)
+        expeditions += newExpedition
       }
     })
   }
