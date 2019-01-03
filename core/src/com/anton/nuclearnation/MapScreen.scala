@@ -181,12 +181,6 @@ class MapScreen(game: NuclearNation) extends Screen{
       }
     }
 
-    if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
-      val coords = getClickInfo(Gdx.input.getX(),Gdx.input.getY())
-
-      Gdx.app.log("INFO",s"Clicked X: ${coords.pixelX}, Y: ${coords.pixelY}")
-      Gdx.app.log("INFO",s"Clicked TileX: ${coords.tileX}, TileY: ${coords.tileY}")
-    }
 
     setCameraPosition(camera,dropImagePosX,dropImagePosY,delta)
 
@@ -247,6 +241,9 @@ class MapScreen(game: NuclearNation) extends Screen{
         val direction = destination.sub(currentPos).nor()
 
         if (expedition.originalDirection.isDefined && !direction.hasSameDirection(expedition.originalDirection.get)){
+          val tileX = (expedition.positionGlobalPixelX / mainLayer.getTileWidth).toInt
+          val tileY = (expedition.positionGlobalPixelY / mainLayer.getTileHeight).toInt
+          checkExpeditionTile(tileX,tileY,expeditions.head)
           expeditions.remove(0)
         } else {
 
@@ -254,11 +251,8 @@ class MapScreen(game: NuclearNation) extends Screen{
           val newOriginY = expedition.positionGlobalPixelY + direction.y * 150 * delta
 
           expeditions(0) = expedition.copy(positionGlobalPixelX = newOriginX, positionGlobalPixelY = newOriginY,originalDirection = Some(direction))
-          game.batch.draw(expedition.marker, expeditions.head.positionGlobalPixelX, expeditions.head.positionGlobalPixelY)
+          game.batch.draw(expedition.marker, expeditions.head.positionGlobalPixelX - expedition.marker.getWidth/2, expeditions.head.positionGlobalPixelY - expedition.marker.getHeight/2)
 
-          val tileX = (newOriginX / mainLayer.getTileWidth).toInt
-          val tileY = (newOriginY / mainLayer.getTileHeight).toInt
-          checkExpeditionTile(tileX,tileY)
         }
 
 
@@ -276,7 +270,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     raiderCamps.foreach(raiderCampInfo=>{
       val campPixelX : Int = (raiderCampInfo.tileX * mainLayer.getTileWidth).asInstanceOf[Int]
       val campPixelY : Int = (raiderCampInfo.tileY * mainLayer.getTileHeight).asInstanceOf[Int]
-      gameFont.draw(game.batch,raiderCampInfo.name,campPixelX,campPixelY)
+      gameFont.draw(game.batch,s"${raiderCampInfo.name} (${raiderCampInfo.tileX},${raiderCampInfo.tileY})",campPixelX,campPixelY)
     })
 
     gameFont.draw(game.batch,s"Camera position: ($cameraX,$cameraY), camera viewport width: ${camera.viewportWidth} ,player position: ($dropImagePosX,$dropImagePosY)",camera.unproject(new Vector3(0,0,0)).x,camera.position.y)
@@ -309,30 +303,28 @@ class MapScreen(game: NuclearNation) extends Screen{
   private def mapRightClicked(screenX: Int, screenY: Int) = {
     if (expeditions.size<1) {
       val clickInfo = getClickInfo(screenX,screenY)
-      expeditions += ExpeditionInfo(dropImagePosX,dropImagePosY,dropImagePosX,dropImagePosY,clickInfo.pixelX, clickInfo.pixelY,assetManager.get("droplet.png",classOf[Texture]),None)
+      val texture = assetManager.get("droplet.png",classOf[Texture])
+      expeditions += ExpeditionInfo(dropImagePosX,dropImagePosY,dropImagePosX,dropImagePosY,clickInfo.pixelX, clickInfo.pixelY,texture,None)
     } else {
       Gdx.app.log("INFO","Expedition already sent")
     }
   }
 
-  private def checkExpeditionTile(tileX:Int,tileY:Int): Unit ={
+  private def checkExpeditionTile(tileX:Int,tileY:Int,expedition:ExpeditionInfo): Unit ={
     raiderCamps.foreach(camp=>{
       if (camp.tileX == tileX && camp.tileY == tileY){
         game.setScreen(new SituationScreen(camp,game,this))
-        val oldExpedition = expeditions(0)
-
-        val newExpedition = expeditions(0).copy(
-          oldExpedition.destinationGlobalPixelX,
-          oldExpedition.destinationGlobalPixelY,
-          oldExpedition.destinationGlobalPixelX,
-          oldExpedition.destinationGlobalPixelY,
-          oldExpedition.originGlobalPixelX,
-          oldExpedition.originGlobalPixelY,
-          oldExpedition.marker,
+        val newExpedition = expedition.copy(
+          expedition.destinationGlobalPixelX,
+          expedition.destinationGlobalPixelY,
+          expedition.destinationGlobalPixelX,
+          expedition.destinationGlobalPixelY,
+          expedition.originGlobalPixelX,
+          expedition.originGlobalPixelY,
+          expedition.marker,
           None
         )
 
-        expeditions.remove(0)
         expeditions += newExpedition
       }
     })
