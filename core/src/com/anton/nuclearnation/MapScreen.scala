@@ -239,9 +239,9 @@ class MapScreen(game: NuclearNation) extends Screen{
 
     expeditions.foreach(expedition => {
 
-      if(expedition.originGlobalPixelX != expedition.destinationGlobalPixelX || expedition.originGlobalPixelY !=expedition.destinationGlobalPixelY) {
+      if(expedition.positionGlobalPixelX != expedition.destinationGlobalPixelX || expedition.positionGlobalPixelY !=expedition.destinationGlobalPixelY) {
 
-        val currentPos = new Vector2(expedition.originGlobalPixelX,expedition.originGlobalPixelY)
+        val currentPos = new Vector2(expedition.positionGlobalPixelX,expedition.positionGlobalPixelY)
         val destination = new Vector2(expedition.destinationGlobalPixelX,expedition.destinationGlobalPixelY)
 
         val direction = destination.sub(currentPos).nor()
@@ -250,11 +250,11 @@ class MapScreen(game: NuclearNation) extends Screen{
           expeditions.remove(0)
         } else {
 
-          val newOriginX = expedition.originGlobalPixelX + direction.x * 150 * delta
-          val newOriginY = expedition.originGlobalPixelY + direction.y * 150 * delta
+          val newOriginX = expedition.positionGlobalPixelX + direction.x * 150 * delta
+          val newOriginY = expedition.positionGlobalPixelY + direction.y * 150 * delta
 
-          expeditions(0) = expedition.copy(originGlobalPixelX = newOriginX, originGlobalPixelY = newOriginY,originalDirection = Some(direction))
-          game.batch.draw(expedition.marker, expeditions.head.originGlobalPixelX, expeditions.head.originGlobalPixelY)
+          expeditions(0) = expedition.copy(positionGlobalPixelX = newOriginX, positionGlobalPixelY = newOriginY,originalDirection = Some(direction))
+          game.batch.draw(expedition.marker, expeditions.head.positionGlobalPixelX, expeditions.head.positionGlobalPixelY)
 
           val tileX = (newOriginX / mainLayer.getTileWidth).toInt
           val tileY = (newOriginY / mainLayer.getTileHeight).toInt
@@ -309,7 +309,7 @@ class MapScreen(game: NuclearNation) extends Screen{
   private def mapRightClicked(screenX: Int, screenY: Int) = {
     if (expeditions.size<1) {
       val clickInfo = getClickInfo(screenX,screenY)
-      expeditions += ExpeditionInfo(dropImagePosX,dropImagePosY,clickInfo.pixelX, clickInfo.pixelY,assetManager.get("droplet.png",classOf[Texture]),None)
+      expeditions += ExpeditionInfo(dropImagePosX,dropImagePosY,dropImagePosX,dropImagePosY,clickInfo.pixelX, clickInfo.pixelY,assetManager.get("droplet.png",classOf[Texture]),None)
     } else {
       Gdx.app.log("INFO","Expedition already sent")
     }
@@ -321,12 +321,16 @@ class MapScreen(game: NuclearNation) extends Screen{
         game.setScreen(new SituationScreen(camp,game,this))
         val oldExpedition = expeditions(0)
 
-        val newExpedition = expeditions(0).copy(oldExpedition.destinationGlobalPixelX,
+        val newExpedition = expeditions(0).copy(
+          oldExpedition.destinationGlobalPixelX,
+          oldExpedition.destinationGlobalPixelY,
+          oldExpedition.destinationGlobalPixelX,
           oldExpedition.destinationGlobalPixelY,
           oldExpedition.originGlobalPixelX,
           oldExpedition.originGlobalPixelY,
           oldExpedition.marker,
-          None)
+          None
+        )
 
         expeditions.remove(0)
         expeditions += newExpedition
@@ -352,5 +356,13 @@ object MapScreen{
   case class CityInfo(name:String,x:Int,y:Int)
   case class RaiderCampInfo(name:String,tileX:Int,tileY:Int)
   case class MapClickInfo(pixelX:Float, pixelY: Float, tileX:Int,tileY:Int)
-  case class ExpeditionInfo(originGlobalPixelX:Float, originGlobalPixelY:Float,destinationGlobalPixelX:Float,destinationGlobalPixelY:Float,marker:Texture, originalDirection:Option[Vector2])
+  case class ExpeditionInfo(originGlobalPixelX:Float,
+                            originGlobalPixelY:Float,
+                            positionGlobalPixelX:Float,
+                            positionGlobalPixelY:Float,
+                            destinationGlobalPixelX:Float,
+                            destinationGlobalPixelY:Float,
+                            marker:Texture,
+                            originalDirection:Option[Vector2]
+                           )
 }
