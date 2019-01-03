@@ -56,6 +56,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
 
 
+
   val expeditions = ListBuffer[ExpeditionInfo]()
 
   val mapInputProcessor = new InputProcessor() {
@@ -139,9 +140,8 @@ class MapScreen(game: NuclearNation) extends Screen{
   val mapWidthPixels = (mainLayer.getWidth * mainLayer.getTileWidth).asInstanceOf[Int]
   val mapHeightPixels = (mainLayer.getHeight * mainLayer.getTileHeight).asInstanceOf[Int]
 
-  var dropImagePosX = mapWidthPixels/2 - dropImage.getWidth / 2
-  var dropImagePosY = mapHeightPixels /2 - dropImage.getHeight /2
-
+  var cameraCenterX = cities.head.x * mainLayer.getTileWidth - mainLayer.getTileWidth/2
+  var cameraCenterY = cities.head.y * mainLayer.getTileHeight - mainLayer.getTileHeight /2
 
 
   val gameFont = assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf",classOf[BitmapFont])
@@ -154,35 +154,43 @@ class MapScreen(game: NuclearNation) extends Screen{
   override def render(delta: Float): Unit = {
 
     if (Gdx.input.isKeyPressed(Keys.UP)){
-      dropImagePosY+=25
-      if (dropImagePosY + dropImage.getHeight > mapHeightPixels){
-        dropImagePosY = mapHeightPixels - dropImage.getHeight
+      if (cameraCenterY + camera.viewportWidth /2 < mapHeightPixels) {
+        cameraCenterY += 25
+        if (cameraCenterY + dropImage.getHeight > mapHeightPixels) {
+          cameraCenterY = mapHeightPixels - dropImage.getHeight
+        }
       }
     }
 
     if (Gdx.input.isKeyPressed(Keys.DOWN)){
-      dropImagePosY-=25
-      if (dropImagePosY <0) {
-        dropImagePosY = 0
+      if (cameraCenterY - camera.viewportWidth /2 >0) {
+        cameraCenterY -= 25
+        if (cameraCenterY < 0) {
+          cameraCenterY = 0
+        }
       }
     }
 
     if (Gdx.input.isKeyPressed(Keys.LEFT)){
-      dropImagePosX-=25
-      if (dropImagePosX <0){
-        dropImagePosX = 0
+      if (cameraCenterX - camera.viewportWidth /2 > 0){
+        cameraCenterX-=25
+        if (cameraCenterX <0){
+          cameraCenterX = 0
+        }
       }
     }
 
     if (Gdx.input.isKeyPressed(Keys.RIGHT)){
-      dropImagePosX+=25
-      if (dropImagePosX + dropImage.getWidth > mapWidthPixels){
-        dropImagePosX = mapWidthPixels - dropImage.getWidth
+      if (cameraCenterX + camera.viewportWidth /2 < mapWidthPixels) {
+        cameraCenterX += 25
+        if (cameraCenterX + dropImage.getWidth > mapWidthPixels) {
+          cameraCenterX = mapWidthPixels - dropImage.getWidth
+        }
       }
     }
 
 
-    setCameraPosition(camera,dropImagePosX,dropImagePosY,delta)
+    setCameraPosition(camera,cameraCenterX,cameraCenterY,delta)
 
 
   }
@@ -192,31 +200,30 @@ class MapScreen(game: NuclearNation) extends Screen{
     var cameraX = 0f
     var cameraY = 0f
 
-    if (dropImagePosX - camera.viewportWidth /2 < camera.viewportWidth /2){
-      if (dropImagePosX < camera.viewportWidth /2){
+    if (cameraCenterX - camera.viewportWidth /2 < camera.viewportWidth /2){
+      if (cameraCenterX < camera.viewportWidth /2){
         cameraX =  camera.viewportWidth /2
       } else {
-        cameraX = dropImagePosX
+        cameraX = cameraCenterX
       }
 
-    }  else if (dropImagePosX + camera.viewportWidth /2 > mapWidthPixels){
+    }  else if (cameraCenterX + camera.viewportWidth /2 > mapWidthPixels){
        cameraX = mapWidthPixels - camera.viewportWidth /2
     } else {
-        cameraX = dropImagePosX
+        cameraX = cameraCenterX
     }
 
-    if (dropImagePosY - camera.viewportHeight /2 < camera.viewportHeight /2){
-      if (dropImagePosY <  camera.viewportHeight /2) {
+    if (cameraCenterY - camera.viewportHeight /2 < camera.viewportHeight /2){
+      if (cameraCenterY <  camera.viewportHeight /2) {
         cameraY = camera.viewportHeight / 2
       } else {
-        cameraY = dropImagePosY
+        cameraY = cameraCenterY
       }
-    }  else if (dropImagePosY + camera.viewportHeight /2 > mapHeightPixels){
+    }  else if (cameraCenterY + camera.viewportHeight /2 > mapHeightPixels){
         cameraY = mapHeightPixels - camera.viewportHeight /2
     } else {
-      cameraY = dropImagePosY
+      cameraY = cameraCenterY
     }
-
 
 
     camera.position.set(cameraX,cameraY,0)
@@ -273,8 +280,7 @@ class MapScreen(game: NuclearNation) extends Screen{
       gameFont.draw(game.batch,s"${raiderCampInfo.name} (${raiderCampInfo.tileX},${raiderCampInfo.tileY})",campPixelX,campPixelY)
     })
 
-    gameFont.draw(game.batch,s"Camera position: ($cameraX,$cameraY), camera viewport width: ${camera.viewportWidth} ,player position: ($dropImagePosX,$dropImagePosY)",camera.unproject(new Vector3(0,0,0)).x,camera.position.y)
-    game.batch.draw(dropImage, dropImagePosX, dropImagePosY , dropImage.getWidth, dropImage.getHeight)
+    gameFont.draw(game.batch,s"Camera position: ($cameraX,$cameraY), camera viewport width: ${camera.viewportWidth} ,player position: ($cameraCenterX,$cameraCenterY)",camera.unproject(new Vector3(0,0,0)).x,camera.position.y)
     game.batch.end()
   }
 
@@ -304,7 +310,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     if (expeditions.size<1) {
       val clickInfo = getClickInfo(screenX,screenY)
       val texture = assetManager.get("droplet.png",classOf[Texture])
-      expeditions += ExpeditionInfo(dropImagePosX,dropImagePosY,dropImagePosX,dropImagePosY,clickInfo.pixelX, clickInfo.pixelY,texture,None)
+      expeditions += ExpeditionInfo(cameraCenterX,cameraCenterY,cameraCenterX,cameraCenterY,clickInfo.pixelX, clickInfo.pixelY,texture,None)
     } else {
       Gdx.app.log("INFO","Expedition already sent")
     }

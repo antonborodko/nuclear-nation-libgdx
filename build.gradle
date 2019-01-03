@@ -63,7 +63,7 @@ project(":core") {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-ai:$aiVersion"
         compile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
-        compile 'org.ajbrown:name-machine:1.1.0'
+//        compile 'org.ajbrown:name-machine:1.1.0'
         compile group: 'org.scala-lang', name: 'scala-library', version: scalaVersion
     }
 }
