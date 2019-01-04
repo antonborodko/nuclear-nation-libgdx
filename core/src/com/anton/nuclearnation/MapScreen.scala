@@ -37,18 +37,20 @@ class MapScreen(game: NuclearNation) extends Screen{
   val mapHeightTiles = 20
 
   val desertTileTexture = assetManager.get("desert_tile.png",classOf[Texture])
-  val layer0 = new TiledMapTileLayer(mapHeightTiles, mapWidthTiles, desertTileTexture.getWidth, desertTileTexture.getHeight)
+  val desertLayer = new TiledMapTileLayer(mapHeightTiles, mapWidthTiles, desertTileTexture.getWidth, desertTileTexture.getHeight)
   val townLayer = new TiledMapTileLayer(mapHeightTiles, mapWidthTiles, desertTileTexture.getWidth, desertTileTexture.getHeight)
-  val cell:Cell = new Cell
+  val fogOfWarLayer = new TiledMapTileLayer(mapHeightTiles, mapWidthTiles, desertTileTexture.getWidth, desertTileTexture.getHeight)
+  val desertTileCell:Cell = new Cell
+  val fogOfWarCell = new Cell
 
   val region = new TextureRegion(desertTileTexture)
 
-  val dropImage = assetManager.get("droplet.png",classOf[Texture])
   val raiderCampImage = assetManager.get("raider_camp.png",classOf[Texture])
-
+  val fogOfWarTexture = assetManager.get("fog_of_war_tile.png",classOf[Texture])
   val townImage = assetManager.get("town.png",classOf[Texture])
 
-  cell.setTile(new StaticTiledMapTile(region))
+  desertTileCell.setTile(new StaticTiledMapTile(region))
+  fogOfWarCell.setTile(new StaticTiledMapTile(new TextureRegion(fogOfWarTexture)))
 
   private val camera = new OrthographicCamera()
   camera.setToOrtho(false, 1600, 960)
@@ -57,6 +59,8 @@ class MapScreen(game: NuclearNation) extends Screen{
   val expeditions = ListBuffer[ExpeditionInfo]()
 
   val coordsGenerator = new MapCoordsGenerator(mapWidthTiles,mapHeightTiles,3)
+
+  val mapData = new MapData(mapWidthTiles,mapHeightTiles)
 
   val mapInputProcessor = new InputProcessor() {
 
@@ -92,6 +96,9 @@ class MapScreen(game: NuclearNation) extends Screen{
   cityNames.foreach(cityName=> {
     val coords = coordsGenerator.getCoords
     citiesData += CityInfo(cityName, coords._1, coords._2)
+    if (cityName.toLowerCase() == "hope"){
+      mapData.cells.find(cell=>cell.x == coords._1 && cell.y == coords._2).get.state = MapCellState.DISCOVERED
+    }
     Gdx.app.log("INFO",s"Generated city $cityName at coords $coords")
   })
 
@@ -106,7 +113,8 @@ class MapScreen(game: NuclearNation) extends Screen{
     x <- 0 until mapWidthTiles;
     y <- 0 until mapHeightTiles
   ) yield  {
-    layer0.setCell(x, y, cell)
+    desertLayer.setCell(x, y, desertTileCell)
+
 
     citiesData.foreach(cityInfo=>{
       if (x == cityInfo.x && y == cityInfo.y){
@@ -117,6 +125,10 @@ class MapScreen(game: NuclearNation) extends Screen{
         townLayer.setCell(x,y,townCell)
       }
     })
+
+    if (mapData.cells.find(cell=>cell.x == x && cell.y == y).get.state == MapCellState.UNDISCOVERED){
+      fogOfWarLayer.setCell(x,y,fogOfWarCell)
+    }
 
     raiderCampsData.foreach(raiderCampInfo=>{
       if (x == raiderCampInfo.tileX && y == raiderCampInfo.tileY){
@@ -132,7 +144,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   }
   map.getLayers.add(townLayer)
-  map.getLayers.add(layer0)
+  map.getLayers.add(desertLayer)
 
 
   println("Map generated")
@@ -206,8 +218,10 @@ class MapScreen(game: NuclearNation) extends Screen{
     renderer.setView(camera)
 
     renderer.getBatch.begin()
-    renderer.renderTileLayer(layer0)
+    renderer.renderTileLayer(desertLayer)
     renderer.renderTileLayer(townLayer)
+    renderer.renderTileLayer(fogOfWarLayer)
+
     renderer.getBatch.end()
 
     game.batch.begin()
@@ -243,16 +257,20 @@ class MapScreen(game: NuclearNation) extends Screen{
 
     //drawing cities names
     citiesData.foreach(city=>{
-      val cityPixelX : Int = (city.x * mainLayer.getTileWidth).asInstanceOf[Int]
-      val cityPixelY : Int = (city.y * mainLayer.getTileHeight).asInstanceOf[Int]
-      gameFont.draw(game.batch,city.name,cityPixelX,cityPixelY)
+      if (mapData.cells.find(cell=>cell.x == city.x && cell.y == city.y).get.state == MapCellState.DISCOVERED){
+        val cityPixelX : Int = (city.x * mainLayer.getTileWidth).asInstanceOf[Int]
+        val cityPixelY : Int = (city.y * mainLayer.getTileHeight).asInstanceOf[Int]
+        gameFont.draw(game.batch,city.name,cityPixelX,cityPixelY)
+      }
     })
 
     //drawing raider camps names
     raiderCampsData.foreach(raiderCampInfo=>{
-      val campPixelX : Int = (raiderCampInfo.tileX * mainLayer.getTileWidth).asInstanceOf[Int]
-      val campPixelY : Int = (raiderCampInfo.tileY * mainLayer.getTileHeight).asInstanceOf[Int]
-      gameFont.draw(game.batch,s"${raiderCampInfo.name} (${raiderCampInfo.tileX},${raiderCampInfo.tileY})",campPixelX,campPixelY)
+      if (mapData.cells.find(cell=>cell.x == raiderCampInfo.tileX && cell.y == raiderCampInfo.tileY).get.state == MapCellState.DISCOVERED){
+        val campPixelX : Int = (raiderCampInfo.tileX * mainLayer.getTileWidth).asInstanceOf[Int]
+        val campPixelY : Int = (raiderCampInfo.tileY * mainLayer.getTileHeight).asInstanceOf[Int]
+        gameFont.draw(game.batch,s"${raiderCampInfo.name} (${raiderCampInfo.tileX},${raiderCampInfo.tileY})",campPixelX,campPixelY)
+      }
     })
 
     gameFont.draw(game.batch,s"Camera position: ($playerPosX,$playerPosY), camera viewport size: ${camera.viewportWidth}/${camera.viewportHeight} ,player position: ($cameraCenterX,$cameraCenterY)",camera.unproject(new Vector3(0,0,0)).x,camera.unproject(new Vector3(0,0,0)).y)

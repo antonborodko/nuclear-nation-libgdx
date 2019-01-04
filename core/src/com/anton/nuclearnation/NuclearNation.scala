@@ -40,9 +40,9 @@ class NuclearNation extends Game {
     gameFontParam.fontParameters.size = 30
     assetManager.load("fonts/lunchtime-doubly-so/lunchds.ttf", classOf[BitmapFont], gameFontParam)
 
-    assetManager.load("droplet.png",classOf[Texture])
     assetManager.load("raider_camp.png",classOf[Texture])
     assetManager.load("desert_tile.png",classOf[Texture])
+    assetManager.load("fog_of_war_tile.png",classOf[Texture])
     assetManager.load("town.png",classOf[Texture])
     assetManager.load("raider-facing-left.png",classOf[Texture])
     assetManager.load("soldier-facing-right.png",classOf[Texture])
