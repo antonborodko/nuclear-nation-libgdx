@@ -140,8 +140,6 @@ class MapScreen(game: NuclearNation) extends Screen{
       }
     })
 
-
-
   }
   map.getLayers.add(townLayer)
   map.getLayers.add(desertLayer)
@@ -169,51 +167,47 @@ class MapScreen(game: NuclearNation) extends Screen{
   override def render(delta: Float): Unit = {
 
     if (Gdx.input.isKeyPressed(Keys.UP)){
-      if (cameraCenterY + camera.viewportHeight /2 < mapHeightPixels) {
-        cameraCenterY += 25
-        if (cameraCenterY + camera.viewportHeight /2 > mapHeightPixels) {
-          cameraCenterY = mapHeightPixels - camera.viewportHeight /2
-        }
-      }
+      cameraCenterY += 25
     }
 
     if (Gdx.input.isKeyPressed(Keys.DOWN)){
-      if (cameraCenterY - camera.viewportHeight /2 >0) {
-        cameraCenterY -= 25
-        if (cameraCenterY < 0) {
-          cameraCenterY = 0
-        }
-      }
+      cameraCenterY -= 25
     }
 
     if (Gdx.input.isKeyPressed(Keys.LEFT)){
-      if (cameraCenterX - camera.viewportWidth /2 > 0){
-        cameraCenterX-=25
-        if (cameraCenterX <0){
-          cameraCenterX = 0
-        }
-      }
+      cameraCenterX-=25
     }
 
     if (Gdx.input.isKeyPressed(Keys.RIGHT)){
-      if (cameraCenterX + camera.viewportWidth /2 < mapWidthPixels) {
-        cameraCenterX += 25
-        if (cameraCenterX + camera.viewportWidth /2 > mapWidthPixels) {
-          cameraCenterX = mapWidthPixels - camera.viewportWidth /2
-        }
-      }
+      cameraCenterX += 25
     }
 
 
-    setCameraPosition(camera,cameraCenterX,cameraCenterY,delta)
+    setCameraPosition(camera,delta)
 
 
   }
 
-  private def setCameraPosition(camera: OrthographicCamera,playerPosX: Float, playerPosY: Float,delta: Float): Unit ={
+  private def setCameraPosition(camera: OrthographicCamera,delta: Float): Unit ={
 
 
-    camera.position.set(playerPosX,playerPosY,0)
+    if (cameraCenterY + camera.viewportHeight /2 > mapHeightPixels) {
+      cameraCenterY = mapHeightPixels - camera.viewportHeight /2
+    }
+
+    if (cameraCenterY - camera.viewportHeight /2 < 0) {
+      cameraCenterY = camera.viewportHeight /2
+    }
+
+    if (cameraCenterX - camera.viewportWidth/2<0){
+      cameraCenterX = camera.viewportWidth/2
+    }
+
+    if (cameraCenterX + camera.viewportWidth /2 > mapWidthPixels) {
+      cameraCenterX = mapWidthPixels - camera.viewportWidth /2
+    }
+
+    camera.position.set(cameraCenterX,cameraCenterY,0)
     camera.update()
     renderer.setView(camera)
 
@@ -273,7 +267,7 @@ class MapScreen(game: NuclearNation) extends Screen{
       }
     })
 
-    gameFont.draw(game.batch,s"Camera position: ($playerPosX,$playerPosY), camera viewport size: ${camera.viewportWidth}/${camera.viewportHeight} ,player position: ($cameraCenterX,$cameraCenterY)",camera.unproject(new Vector3(0,0,0)).x,camera.unproject(new Vector3(0,0,0)).y)
+    gameFont.draw(game.batch,s"Camera position: ($cameraCenterX,$cameraCenterY), camera viewport size: ${camera.viewportWidth}/${camera.viewportHeight} ,player position: ($cameraCenterX,$cameraCenterY)",camera.unproject(new Vector3(0,0,0)).x,camera.unproject(new Vector3(0,0,0)).y)
     game.batch.end()
   }
 
