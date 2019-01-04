@@ -54,10 +54,9 @@ class MapScreen(game: NuclearNation) extends Screen{
   camera.setToOrtho(false, 1600, 960)
   camera.update()
 
-
-
-
   val expeditions = ListBuffer[ExpeditionInfo]()
+
+  val coordsGenerator = new MapCoordsGenerator(mapWidthTiles,mapHeightTiles,3)
 
   val mapInputProcessor = new InputProcessor() {
 
@@ -84,19 +83,23 @@ class MapScreen(game: NuclearNation) extends Screen{
     override def scrolled(amount: Int): Boolean = {true}
   }
 
+  val citiesData = ListBuffer[CityInfo]()
+  val raiderCampsData = ListBuffer[RaiderCampInfo]()
 
+  val cityNames = List[String]("Hope","New Reno","Modoc","Arroyo")
+  val raiderCampsNames = List[String]("Mad Dogs","Knives","Jokers")
 
+  cityNames.foreach(cityName=> {
+    val coords = coordsGenerator.getCoords
+    citiesData += CityInfo(cityName, coords._1, coords._2)
+    Gdx.app.log("INFO",s"Generated city $cityName at coords $coords")
+  })
 
-  val cities = List[CityInfo](
-    CityInfo("Hope",Random.nextInt(mapWidthTiles),Random.nextInt(mapHeightTiles)),
-    CityInfo("New Reno",Random.nextInt(mapWidthTiles),Random.nextInt(mapHeightTiles)),
-    CityInfo("Modoc",Random.nextInt(mapWidthTiles),Random.nextInt(mapHeightTiles))
-  )
-
-  val raiderCamps = ListBuffer[RaiderCampInfo](
-    RaiderCampInfo("Mad dogs",Random.nextInt(mapWidthTiles),Random.nextInt(mapHeightTiles))
-  )
-
+  raiderCampsNames.foreach(raiderCampName=> {
+    val coords = coordsGenerator.getCoords
+    raiderCampsData += RaiderCampInfo(raiderCampName, coords._1, coords._2)
+    Gdx.app.log("INFO",s"Generated raider camp $raiderCampName at coords $coords")
+  })
 
 
   for (
@@ -105,7 +108,7 @@ class MapScreen(game: NuclearNation) extends Screen{
   ) yield  {
     layer0.setCell(x, y, cell)
 
-    cities.foreach(cityInfo=>{
+    citiesData.foreach(cityInfo=>{
       if (x == cityInfo.x && y == cityInfo.y){
         val townRegion = new TextureRegion(townImage)
         val townTile = new StaticTiledMapTile(townRegion)
@@ -115,7 +118,7 @@ class MapScreen(game: NuclearNation) extends Screen{
       }
     })
 
-    raiderCamps.foreach(raiderCampInfo=>{
+    raiderCampsData.foreach(raiderCampInfo=>{
       if (x == raiderCampInfo.tileX && y == raiderCampInfo.tileY){
         val campRegion = new TextureRegion(raiderCampImage)
         val raiderTile = new StaticTiledMapTile(campRegion)
@@ -140,8 +143,8 @@ class MapScreen(game: NuclearNation) extends Screen{
   val mapWidthPixels = (mainLayer.getWidth * mainLayer.getTileWidth).asInstanceOf[Int]
   val mapHeightPixels = (mainLayer.getHeight * mainLayer.getTileHeight).asInstanceOf[Int]
 
-  var cameraCenterX = cities.head.x * mainLayer.getTileWidth - mainLayer.getTileWidth/2
-  var cameraCenterY = cities.head.y * mainLayer.getTileHeight - mainLayer.getTileHeight /2
+  var cameraCenterX = citiesData.head.x * mainLayer.getTileWidth - mainLayer.getTileWidth/2
+  var cameraCenterY = citiesData.head.y * mainLayer.getTileHeight - mainLayer.getTileHeight /2
 
 
   val gameFont = assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf",classOf[BitmapFont])
@@ -267,14 +270,14 @@ class MapScreen(game: NuclearNation) extends Screen{
     })
 
     //drawing cities names
-    cities.foreach(city=>{
+    citiesData.foreach(city=>{
       val cityPixelX : Int = (city.x * mainLayer.getTileWidth).asInstanceOf[Int]
       val cityPixelY : Int = (city.y * mainLayer.getTileHeight).asInstanceOf[Int]
       gameFont.draw(game.batch,city.name,cityPixelX,cityPixelY)
     })
 
     //drawing raider camps names
-    raiderCamps.foreach(raiderCampInfo=>{
+    raiderCampsData.foreach(raiderCampInfo=>{
       val campPixelX : Int = (raiderCampInfo.tileX * mainLayer.getTileWidth).asInstanceOf[Int]
       val campPixelY : Int = (raiderCampInfo.tileY * mainLayer.getTileHeight).asInstanceOf[Int]
       gameFont.draw(game.batch,s"${raiderCampInfo.name} (${raiderCampInfo.tileX},${raiderCampInfo.tileY})",campPixelX,campPixelY)
@@ -317,7 +320,7 @@ class MapScreen(game: NuclearNation) extends Screen{
   }
 
   private def checkExpeditionTile(tileX:Int,tileY:Int,expedition:ExpeditionInfo): Unit ={
-    raiderCamps.foreach(camp=>{
+    raiderCampsData.foreach(camp=>{
       if (camp.tileX == tileX && camp.tileY == tileY){
         game.setScreen(new SituationScreen(camp,game,this))
         val newExpedition = expedition.copy(
@@ -337,8 +340,8 @@ class MapScreen(game: NuclearNation) extends Screen{
   }
 
   def deleteCamp(camp: RaiderCampInfo) = {
-    if (raiderCamps.contains(camp)){
-      raiderCamps -= camp
+    if (raiderCampsData.contains(camp)){
+      raiderCampsData -= camp
       val desertTile = new StaticTiledMapTile(new TextureRegion(desertTileTexture))
       val desertCell = new Cell
       desertCell.setTile(desertTile)
