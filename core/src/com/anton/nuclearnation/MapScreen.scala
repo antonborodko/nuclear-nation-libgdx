@@ -90,15 +90,17 @@ class MapScreen(game: NuclearNation) extends Screen{
   val citiesData = ListBuffer[CityInfo]()
   val raiderCampsData = ListBuffer[RaiderCampInfo]()
 
-  val cityNames = List[String]("Hope","New Reno","Modoc","Arroyo")
+  val cityNames = List[String]("New Reno","Modoc","Arroyo")
   val raiderCampsNames = List[String]("Mad Dogs","Knives","Jokers")
+
+  val capitalCoords = coordsGenerator.getCoords
+  val capital = CityInfo("Hope", capitalCoords._1, capitalCoords._2)
+  mapData.cells.find(cell=>cell.x == capitalCoords._1 && cell.y == capitalCoords._2).get.state = MapCellState.DISCOVERED
+  citiesData += capital
 
   cityNames.foreach(cityName=> {
     val coords = coordsGenerator.getCoords
     citiesData += CityInfo(cityName, coords._1, coords._2)
-    if (cityName.toLowerCase() == "hope"){
-      mapData.cells.find(cell=>cell.x == coords._1 && cell.y == coords._2).get.state = MapCellState.DISCOVERED
-    }
     Gdx.app.log("INFO",s"Generated city $cityName at coords $coords")
   })
 
@@ -297,7 +299,8 @@ class MapScreen(game: NuclearNation) extends Screen{
     if (expeditions.size<1) {
       val clickInfo = getClickInfo(screenX,screenY)
       val texture = assetManager.get("expedition.png",classOf[Texture])
-      expeditions += ExpeditionInfo(cameraCenterX,cameraCenterY,cameraCenterX,cameraCenterY,clickInfo.pixelX, clickInfo.pixelY,texture,None)
+      val coords = new Vector3(capital.x * mainLayer.getTileWidth + texture.getWidth/2,capital.y * mainLayer.getTileHeight +texture.getHeight/2,0)
+      expeditions += ExpeditionInfo(coords.x,coords.y,coords.x,coords.y,clickInfo.pixelX, clickInfo.pixelY,texture,None)
     } else {
       Gdx.app.log("INFO","Expedition already sent")
     }
