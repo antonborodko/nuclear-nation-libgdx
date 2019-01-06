@@ -13,4 +13,8 @@ class MapData(mapWidth: Int,mapHeight:Int) {
   }
 
   val cells = cellsBuffer.toList
+
+  def getCell(x:Int,y:Int): Option[MapCellData] ={
+    cells.find(cell=>cell.x == x && cell.y == y)
+  }
 }

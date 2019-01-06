@@ -190,7 +190,13 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   }
 
-  private def setCameraPosition(camera: OrthographicCamera,delta: Float): Unit ={
+  def discoverTile(tileX: Int, tileY: Int) = {
+    val tile = mapData.getCell(tileX,tileY).get
+    tile.state = MapCellState.DISCOVERED
+    fogOfWarLayer.setCell(tileX,tileY,null)
+  }
+
+  private def setCameraPosition(camera: OrthographicCamera, delta: Float): Unit ={
 
 
     if (cameraCenterY + camera.viewportHeight /2 > mapHeightPixels) {
@@ -232,18 +238,19 @@ class MapScreen(game: NuclearNation) extends Screen{
 
         val direction = destination.sub(currentPos).nor()
 
+        val tileX = (expedition.positionGlobalPixelX / mainLayer.getTileWidth).toInt
+        val tileY = (expedition.positionGlobalPixelY / mainLayer.getTileHeight).toInt
+        discoverTile(tileX,tileY)
         if (expedition.originalDirection.isDefined && !direction.hasSameDirection(expedition.originalDirection.get)){
-          val tileX = (expedition.positionGlobalPixelX / mainLayer.getTileWidth).toInt
-          val tileY = (expedition.positionGlobalPixelY / mainLayer.getTileHeight).toInt
           checkExpeditionTile(tileX,tileY,expeditions.head)
+          discoverTile(tileX,tileY)
           expeditions.remove(0)
         } else {
-
           val newOriginX = expedition.positionGlobalPixelX + direction.x * 150 * delta
           val newOriginY = expedition.positionGlobalPixelY + direction.y * 150 * delta
-
           expeditions(0) = expedition.copy(positionGlobalPixelX = newOriginX, positionGlobalPixelY = newOriginY,originalDirection = Some(direction))
           game.batch.draw(expedition.marker, expeditions.head.positionGlobalPixelX - expedition.marker.getWidth/2, expeditions.head.positionGlobalPixelY - expedition.marker.getHeight/2)
+
 
         }
 
