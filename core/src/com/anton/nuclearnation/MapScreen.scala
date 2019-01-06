@@ -296,7 +296,7 @@ class MapScreen(game: NuclearNation) extends Screen{
   private def mapRightClicked(screenX: Int, screenY: Int) = {
     if (expeditions.size<1) {
       val clickInfo = getClickInfo(screenX,screenY)
-      val texture = assetManager.get("droplet.png",classOf[Texture])
+      val texture = assetManager.get("expedition.png",classOf[Texture])
       expeditions += ExpeditionInfo(cameraCenterX,cameraCenterY,cameraCenterX,cameraCenterY,clickInfo.pixelX, clickInfo.pixelY,texture,None)
     } else {
       Gdx.app.log("INFO","Expedition already sent")
