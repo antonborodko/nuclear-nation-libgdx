@@ -58,7 +58,7 @@ class SituationScreen(currentCamp: MapScreen.RaiderCampInfo, game:NuclearNation,
   val camera = stage.getCamera
 
   case class RaiderInfo(texture:Texture,tileX:Int,tileY:Int)
-  val skin = new Skin(Gdx.files.internal("data/commodore64/skin/uiskin.json"))
+  val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
 
   val raiders = ListBuffer[RaiderInfo]()
 
@@ -156,7 +156,6 @@ class SituationScreen(currentCamp: MapScreen.RaiderCampInfo, game:NuclearNation,
     renderer.dispose()
     map.dispose()
     stage.dispose()
-    skin.dispose()
   }
 
   import com.badlogic.gdx.Gdx
