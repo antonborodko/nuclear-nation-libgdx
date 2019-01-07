@@ -6,8 +6,8 @@ import com.anton.nuclearnation.MapScreen.{CityInfo, ExpeditionInfo, MapClickInfo
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver
-import com.badlogic.gdx.{Gdx, Input, InputProcessor, Screen}
-import com.badlogic.gdx.graphics.{Camera, Color, OrthographicCamera, Texture}
+import com.badlogic.gdx._
+import com.badlogic.gdx.graphics._
 import com.badlogic.gdx.graphics.g2d.{BitmapFont, TextureRegion}
 import com.badlogic.gdx.graphics.g2d.freetype.{FreeTypeFontGenerator, FreeTypeFontGeneratorLoader, FreetypeFontLoader}
 import com.badlogic.gdx.maps.MapLayers
@@ -20,7 +20,9 @@ import com.badlogic.gdx.math.{Vector2, Vector3}
 import scala.util.Random
 import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader.FreeTypeFontLoaderParameter
 import com.badlogic.gdx.maps.tiled.renderers.{IsometricStaggeredTiledMapRenderer, IsometricTiledMapRenderer, OrthogonalTiledMapRenderer}
-import com.badlogic.gdx.scenes.scene2d.ui.Dialog
+import com.badlogic.gdx.scenes.scene2d.Stage
+import com.badlogic.gdx.scenes.scene2d.ui.{Dialog, Skin}
+import com.badlogic.gdx.utils.viewport.StretchViewport
 
 import scala.collection.mutable.ListBuffer
 
@@ -52,15 +54,15 @@ class MapScreen(game: NuclearNation) extends Screen{
   desertTileCell.setTile(new StaticTiledMapTile(region))
   fogOfWarCell.setTile(new StaticTiledMapTile(new TextureRegion(fogOfWarTexture)))
 
-  private val camera = new OrthographicCamera()
-  camera.setToOrtho(false, 1600, 960)
-  camera.update()
-
   val expeditions = ListBuffer[ExpeditionInfo]()
 
   val coordsGenerator = new MapCoordsGenerator(mapWidthTiles,mapHeightTiles,3)
 
   val mapData = new MapData(mapWidthTiles,mapHeightTiles)
+
+  val stage = new Stage(new StretchViewport(1600,960,new OrthographicCamera()))
+  val camera = stage.getCamera.asInstanceOf[OrthographicCamera]
+  val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
 
   val mapInputProcessor = new InputProcessor() {
 
@@ -163,10 +165,18 @@ class MapScreen(game: NuclearNation) extends Screen{
 
 
   override def show(): Unit = {
-    Gdx.input.setInputProcessor(mapInputProcessor)
+    val multiplexer = new InputMultiplexer()
+    multiplexer.addProcessor(stage)
+    multiplexer.addProcessor(mapInputProcessor)
+
+    Gdx.input.setInputProcessor(multiplexer)
   }
 
   override def render(delta: Float): Unit = {
+
+    Gdx.gl.glClearColor(1, 0, 0, 1)
+    Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT)
+    stage.getBatch.setColor(Color.WHITE)
 
     if (Gdx.input.isKeyPressed(Keys.UP)){
       cameraCenterY += 25
@@ -186,7 +196,8 @@ class MapScreen(game: NuclearNation) extends Screen{
 
 
     setCameraPosition(camera,delta)
-
+    stage.act(delta)
+    stage.draw()
 
   }
 
@@ -226,8 +237,8 @@ class MapScreen(game: NuclearNation) extends Screen{
 
     renderer.getBatch.end()
 
-    game.batch.begin()
-    game.batch.setProjectionMatrix(camera.combined)
+    stage.getBatch.begin()
+    stage.getBatch.setProjectionMatrix(camera.combined)
 
     expeditions.foreach(expedition => {
 
@@ -249,7 +260,7 @@ class MapScreen(game: NuclearNation) extends Screen{
           val newOriginX = expedition.positionGlobalPixelX + direction.x * 150 * delta
           val newOriginY = expedition.positionGlobalPixelY + direction.y * 150 * delta
           expeditions(0) = expedition.copy(positionGlobalPixelX = newOriginX, positionGlobalPixelY = newOriginY,originalDirection = Some(direction))
-          game.batch.draw(expedition.marker, expeditions.head.positionGlobalPixelX - expedition.marker.getWidth/2, expeditions.head.positionGlobalPixelY - expedition.marker.getHeight/2)
+          stage.getBatch.draw(expedition.marker, expeditions.head.positionGlobalPixelX - expedition.marker.getWidth/2, expeditions.head.positionGlobalPixelY - expedition.marker.getHeight/2)
 
 
         }
@@ -263,7 +274,7 @@ class MapScreen(game: NuclearNation) extends Screen{
       if (mapData.cells.find(cell=>cell.x == city.x && cell.y == city.y).get.state == MapCellState.DISCOVERED){
         val cityPixelX : Int = (city.x * mainLayer.getTileWidth).asInstanceOf[Int]
         val cityPixelY : Int = (city.y * mainLayer.getTileHeight).asInstanceOf[Int]
-        gameFont.draw(game.batch,city.name,cityPixelX,cityPixelY)
+        gameFont.draw(stage.getBatch,city.name,cityPixelX,cityPixelY)
       }
     })
 
@@ -272,12 +283,12 @@ class MapScreen(game: NuclearNation) extends Screen{
       if (mapData.cells.find(cell=>cell.x == raiderCampInfo.tileX && cell.y == raiderCampInfo.tileY).get.state == MapCellState.DISCOVERED){
         val campPixelX : Int = (raiderCampInfo.tileX * mainLayer.getTileWidth).asInstanceOf[Int]
         val campPixelY : Int = (raiderCampInfo.tileY * mainLayer.getTileHeight).asInstanceOf[Int]
-        gameFont.draw(game.batch,s"${raiderCampInfo.name} (${raiderCampInfo.tileX},${raiderCampInfo.tileY})",campPixelX,campPixelY)
+        gameFont.draw(stage.getBatch,s"${raiderCampInfo.name} (${raiderCampInfo.tileX},${raiderCampInfo.tileY})",campPixelX,campPixelY)
       }
     })
 
-    gameFont.draw(game.batch,s"Camera position: ($cameraCenterX,$cameraCenterY), camera viewport size: ${camera.viewportWidth}/${camera.viewportHeight} ,player position: ($cameraCenterX,$cameraCenterY)",camera.unproject(new Vector3(0,0,0)).x,camera.unproject(new Vector3(0,0,0)).y)
-    game.batch.end()
+    gameFont.draw(stage.getBatch,s"Camera position: ($cameraCenterX,$cameraCenterY), camera viewport size: ${camera.viewportWidth}/${camera.viewportHeight} ,player position: ($cameraCenterX,$cameraCenterY)",camera.unproject(new Vector3(0,0,0)).x,camera.unproject(new Vector3(0,0,0)).y)
+    stage.getBatch.end()
   }
 
   override def resize(width: Int, height: Int): Unit = {}
@@ -303,14 +314,32 @@ class MapScreen(game: NuclearNation) extends Screen{
   }
 
   private def mapRightClicked(screenX: Int, screenY: Int) = {
-    if (expeditions.size<1) {
-      val clickInfo = getClickInfo(screenX,screenY)
-      val texture = assetManager.get("expedition.png",classOf[Texture])
-      val coords = new Vector3(capital.x * mainLayer.getTileWidth + texture.getWidth/2,capital.y * mainLayer.getTileHeight +texture.getHeight/2,0)
-      expeditions += ExpeditionInfo(coords.x,coords.y,coords.x,coords.y,clickInfo.pixelX, clickInfo.pixelY,texture,None)
-    } else {
-      Gdx.app.log("INFO","Expedition already sent")
+    Gdx.app.log("INFO","Right clicked on map")
+    val dialog = new Dialog("You've defeated the raiders", skin) {
+      override def result(result:Object) {
+        if (result.asInstanceOf[Boolean]){
+          if (expeditions.size<1) {
+            val clickInfo = getClickInfo(screenX,screenY)
+            val texture = assetManager.get("expedition.png",classOf[Texture])
+            val coords = new Vector3(capital.x * mainLayer.getTileWidth + texture.getWidth/2,capital.y * mainLayer.getTileHeight +texture.getHeight/2,0)
+            expeditions += ExpeditionInfo(coords.x,coords.y,coords.x,coords.y,clickInfo.pixelX, clickInfo.pixelY,texture,None)
+          } else {
+            Gdx.app.log("INFO","Expedition already sent")
+          }
+        } else {
+          Gdx.app.log("INFO","Button clicked " + result)
+        }
+      }
     }
+
+    dialog.text("Choose expedition mix")
+    dialog.button("Send", true)
+    dialog.button("Cancel", false)
+    dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
+    dialog.setSize(500,200)
+    dialog.center()
+    stage.addActor(dialog)
+
   }
 
   private def checkExpeditionTile(tileX:Int,tileY:Int,expedition:ExpeditionInfo): Unit ={

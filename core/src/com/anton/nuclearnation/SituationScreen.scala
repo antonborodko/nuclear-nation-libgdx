@@ -104,7 +104,7 @@ class SituationScreen(currentCamp: MapScreen.RaiderCampInfo, game:NuclearNation,
   override def render(delta: Float): Unit = {
     Gdx.gl.glClearColor(1, 0, 0, 1)
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT)
-    stage.getBatch.setColor(Color.WHITE);
+    stage.getBatch.setColor(Color.WHITE)
 
     camera.position.set(middleXTile * mainLayer.getTileWidth,middleYTile * mainLayer.getTileHeight,0)
     camera.update()
@@ -118,22 +118,11 @@ class SituationScreen(currentCamp: MapScreen.RaiderCampInfo, game:NuclearNation,
 
     //rendering raiders and soldiers
     stage.getBatch.begin()
-//    raiders.foreach(raider=>{
-//      stage.getBatch.draw(raider.texture,raider.tileX * mainLayer.getTileWidth,raider.tileY * mainLayer.getTileHeight,raiderTexture.getWidth,raiderTexture.getHeight)
-//      stage.getBatch.draw(raider.texture,raider.tileX * mainLayer.getTileWidth,raider.tileY * mainLayer.getTileHeight,raiderTexture.getWidth,raiderTexture.getHeight)
-//      stage.getBatch.draw(raider.texture,raider.tileX * mainLayer.getTileWidth,raider.tileY * mainLayer.getTileHeight,raiderTexture.getWidth,raiderTexture.getHeight)
-//    })
 
     stage.getBatch.draw(soldierTexture,(middleXTile-2) * mainLayer.getTileWidth,(middleYTile+1) * mainLayer.getTileHeight,soldierTexture.getWidth,soldierTexture.getHeight)
     stage.getBatch.draw(soldierTexture,(middleXTile-1) * mainLayer.getTileWidth,middleYTile * mainLayer.getTileHeight,soldierTexture.getWidth,soldierTexture.getHeight)
     stage.getBatch.draw(soldierTexture,(middleXTile-2) * mainLayer.getTileWidth,(middleYTile-1) * mainLayer.getTileHeight,soldierTexture.getWidth,soldierTexture.getHeight)
     stage.getBatch.end()
-
-
-
-//    game.batch.begin()
-//    game.font.draw(game.batch,s"Test",camera.unproject(new Vector3(0,0,0)).x,camera.position.y)
-//    game.batch.end()
 
     stage.act(delta)
     stage.draw()
