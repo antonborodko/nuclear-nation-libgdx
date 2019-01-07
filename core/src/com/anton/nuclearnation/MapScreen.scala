@@ -7,6 +7,7 @@ import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver
 import com.badlogic.gdx._
+import com.badlogic.gdx.graphics.Pixmap.Format
 import com.badlogic.gdx.graphics._
 import com.badlogic.gdx.graphics.g2d.{BitmapFont, TextureRegion}
 import com.badlogic.gdx.graphics.g2d.freetype.{FreeTypeFontGenerator, FreeTypeFontGeneratorLoader, FreetypeFontLoader}
@@ -21,7 +22,10 @@ import scala.util.Random
 import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader.FreeTypeFontLoaderParameter
 import com.badlogic.gdx.maps.tiled.renderers.{IsometricStaggeredTiledMapRenderer, IsometricTiledMapRenderer, OrthogonalTiledMapRenderer}
 import com.badlogic.gdx.scenes.scene2d.Stage
-import com.badlogic.gdx.scenes.scene2d.ui.{Dialog, Skin}
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle
+import com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle
+import com.badlogic.gdx.scenes.scene2d.ui.{Dialog, Label, Skin, Table}
 import com.badlogic.gdx.utils.viewport.StretchViewport
 
 import scala.collection.mutable.ListBuffer
@@ -62,7 +66,35 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   val stage = new Stage(new StretchViewport(1600,960,new OrthographicCamera()))
   val camera = stage.getCamera.asInstanceOf[OrthographicCamera]
-  val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
+  val skin = new Skin()
+
+  // Generate a 1x1 white texture and store it in the skin named "white".
+  val pixmap = new Pixmap(1, 1, Format.RGBA8888)
+  pixmap.setColor(Color.WHITE)
+  pixmap.fill()
+  skin.add("white", new Texture(pixmap))
+
+  // Store the default libgdx font under the name "default".
+  skin.add("default", new BitmapFont())
+
+
+  // Configure a TextButtonStyle and name it "default". Skin resources are stored by type, so this doesn't overwrite the font.
+  val textButtonStyle = new TextButtonStyle()
+  textButtonStyle.up = skin.newDrawable("white", Color.DARK_GRAY)
+  textButtonStyle.down = skin.newDrawable("white", Color.DARK_GRAY)
+  textButtonStyle.checked = skin.newDrawable("white", Color.BLUE)
+  textButtonStyle.over = skin.newDrawable("white", Color.LIGHT_GRAY)
+  textButtonStyle.font = skin.getFont("default")
+  skin.add("default", textButtonStyle)
+
+  val labelStyle = new LabelStyle()
+  labelStyle.background = skin.newDrawable("white", Color.DARK_GRAY)
+  labelStyle.fontColor = Color.WHITE
+  labelStyle.font = skin.getFont("default")
+  skin.add("default", labelStyle)
+
+  skin.add("default",new WindowStyle(skin.getFont("default"),Color.WHITE, skin.newDrawable("white", Color.DARK_GRAY)))
+
 
   val mapInputProcessor = new InputProcessor() {
 
@@ -315,7 +347,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   private def mapRightClicked(screenX: Int, screenY: Int) = {
     Gdx.app.log("INFO","Right clicked on map")
-    val dialog = new Dialog("You've defeated the raiders", skin) {
+    val dialog = new Dialog("Choose expedition mix", skin) {
       override def result(result:Object) {
         if (result.asInstanceOf[Boolean]){
           if (expeditions.size<1) {
@@ -332,13 +364,16 @@ class MapScreen(game: NuclearNation) extends Screen{
       }
     }
 
-    dialog.text("Choose expedition mix")
+    val table = new Table()
+    table.add(new Label("Scientists",skin)).expandX()
+    table.add(new Label("Soldiers",skin)).expandX()
+    dialog.add(table)
     dialog.button("Send", true)
     dialog.button("Cancel", false)
     dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
-    dialog.setSize(500,200)
-    dialog.center()
-    stage.addActor(dialog)
+//    dialog.setSize(500,200)
+    dialog.setPosition(1400,300)
+    dialog.show(stage)
 
   }
 
