@@ -2,9 +2,7 @@ package com.anton.nuclearnation
 
 import java.io.File
 
-import com.badlogic.gdx.ApplicationAdapter
-import com.badlogic.gdx.Game
-import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.{ApplicationAdapter, Game, Gdx, Screen}
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.assets.loaders.resolvers.{ExternalFileHandleResolver, InternalFileHandleResolver}
 import com.badlogic.gdx.graphics.GL20
@@ -26,6 +24,8 @@ class NuclearNation extends Game {
   assetManager.setLoader(classOf[BitmapFont], ".ttf", new FreetypeFontLoader(resolver))
 
   val gameFontParam = new FreeTypeFontLoaderParameter()
+
+  lazy val mapScreen = new MapScreen(this)
 
 
 
@@ -50,7 +50,7 @@ class NuclearNation extends Game {
     assetManager.load("data/commodore64/skin/uiskin.json",classOf[Skin])
     assetManager.finishLoading()
 
-    this.setScreen(new MapScreen(this))
+    this.setScreen(mapScreen)
   }
 
 
@@ -61,6 +61,7 @@ class NuclearNation extends Game {
   override def dispose(): Unit = {
     batch.dispose()
     assetManager.dispose()
+    mapScreen.dispose()
   }
 
 }
