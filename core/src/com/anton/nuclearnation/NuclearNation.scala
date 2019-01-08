@@ -27,14 +27,8 @@ class NuclearNation extends Game {
 
   lazy val mapScreen = new MapScreen(this)
 
-
-
-
-
-
   override def create(): Unit = {
     batch = new SpriteBatch
-
 
     gameFontParam.fontFileName = "fonts/lunchtime-doubly-so/lunchds.ttf"
     gameFontParam.fontParameters.size = 30

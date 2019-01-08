@@ -29,8 +29,9 @@ class SituationScreen(currentCamp: MapScreen.RaiderCampInfo, game:NuclearNation,
   val middleYTile = (mapHeightTiles -1) / 2 + 1
 
   val desertTileTexture = assetManager.get("desert_tile.png",classOf[Texture])
-  val raiderTexture = assetManager.get("raider-facing-left.png",classOf[Texture])
-  val soldierTexture = assetManager.get("soldier-facing-right.png",classOf[Texture])
+  val defendingRaiderTexture = assetManager.get("raider-facing-left.png",classOf[Texture])
+  val attackingSoldierTexture = assetManager.get("soldier-facing-right.png",classOf[Texture])
+  val defendingSoldierTexture = assetManager.get("soldier-facing-left.png",classOf[Texture])
 
   val mainLayer = new TiledMapTileLayer(mapHeightTiles, mapWidthTiles, desertTileTexture.getWidth, desertTileTexture.getHeight)
   val cell:Cell = new Cell
@@ -119,9 +120,9 @@ class SituationScreen(currentCamp: MapScreen.RaiderCampInfo, game:NuclearNation,
     //rendering raiders and soldiers
     stage.getBatch.begin()
 
-    stage.getBatch.draw(soldierTexture,(middleXTile-2) * mainLayer.getTileWidth,(middleYTile+1) * mainLayer.getTileHeight,soldierTexture.getWidth,soldierTexture.getHeight)
-    stage.getBatch.draw(soldierTexture,(middleXTile-1) * mainLayer.getTileWidth,middleYTile * mainLayer.getTileHeight,soldierTexture.getWidth,soldierTexture.getHeight)
-    stage.getBatch.draw(soldierTexture,(middleXTile-2) * mainLayer.getTileWidth,(middleYTile-1) * mainLayer.getTileHeight,soldierTexture.getWidth,soldierTexture.getHeight)
+    stage.getBatch.draw(attackingSoldierTexture,(middleXTile-2) * mainLayer.getTileWidth,(middleYTile+1) * mainLayer.getTileHeight,attackingSoldierTexture.getWidth,attackingSoldierTexture.getHeight)
+    stage.getBatch.draw(attackingSoldierTexture,(middleXTile-1) * mainLayer.getTileWidth,middleYTile * mainLayer.getTileHeight,attackingSoldierTexture.getWidth,attackingSoldierTexture.getHeight)
+    stage.getBatch.draw(attackingSoldierTexture,(middleXTile-2) * mainLayer.getTileWidth,(middleYTile-1) * mainLayer.getTileHeight,attackingSoldierTexture.getWidth,attackingSoldierTexture.getHeight)
     stage.getBatch.end()
 
     stage.act(delta)
