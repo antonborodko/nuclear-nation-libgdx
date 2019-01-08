@@ -21,11 +21,12 @@ import com.badlogic.gdx.math.{Vector2, Vector3}
 import scala.util.Random
 import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader.FreeTypeFontLoaderParameter
 import com.badlogic.gdx.maps.tiled.renderers.{IsometricStaggeredTiledMapRenderer, IsometricTiledMapRenderer, OrthogonalTiledMapRenderer}
-import com.badlogic.gdx.scenes.scene2d.Stage
+import com.badlogic.gdx.scenes.scene2d.{InputEvent, InputListener, Stage}
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle
 import com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle
-import com.badlogic.gdx.scenes.scene2d.ui.{Dialog, Label, Skin, Table}
+import com.badlogic.gdx.scenes.scene2d.ui.{Button, Dialog, Label, Skin, Table, TextButton}
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.viewport.StretchViewport
 
 import scala.collection.mutable.ListBuffer
@@ -66,34 +67,10 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   val stage = new Stage(new StretchViewport(1600,960,new OrthographicCamera()))
   val camera = stage.getCamera.asInstanceOf[OrthographicCamera]
-  val skin = new Skin()
 
-  // Generate a 1x1 white texture and store it in the skin named "white".
-  val pixmap = new Pixmap(1, 1, Format.RGBA8888)
-  pixmap.setColor(Color.WHITE)
-  pixmap.fill()
-  skin.add("white", new Texture(pixmap))
+  val gameFont = assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf",classOf[BitmapFont])
 
-  // Store the default libgdx font under the name "default".
-  skin.add("default", new BitmapFont())
-
-
-  // Configure a TextButtonStyle and name it "default". Skin resources are stored by type, so this doesn't overwrite the font.
-  val textButtonStyle = new TextButtonStyle()
-  textButtonStyle.up = skin.newDrawable("white", Color.DARK_GRAY)
-  textButtonStyle.down = skin.newDrawable("white", Color.DARK_GRAY)
-  textButtonStyle.checked = skin.newDrawable("white", Color.BLUE)
-  textButtonStyle.over = skin.newDrawable("white", Color.LIGHT_GRAY)
-  textButtonStyle.font = skin.getFont("default")
-  skin.add("default", textButtonStyle)
-
-  val labelStyle = new LabelStyle()
-  labelStyle.background = skin.newDrawable("white", Color.DARK_GRAY)
-  labelStyle.fontColor = Color.WHITE
-  labelStyle.font = skin.getFont("default")
-  skin.add("default", labelStyle)
-
-  skin.add("default",new WindowStyle(skin.getFont("default"),Color.WHITE, skin.newDrawable("white", Color.DARK_GRAY)))
+  val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
 
 
   val mapInputProcessor = new InputProcessor() {
@@ -193,7 +170,7 @@ class MapScreen(game: NuclearNation) extends Screen{
   var cameraCenterY = citiesData.head.y * mainLayer.getTileHeight - mainLayer.getTileHeight /2
 
 
-  val gameFont = assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf",classOf[BitmapFont])
+
 
 
   override def show(): Unit = {
@@ -347,8 +324,39 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   private def mapRightClicked(screenX: Int, screenY: Int) = {
     Gdx.app.log("INFO","Right clicked on map")
+
+
+    val table = new Table()
+
+    val soldiersLabel = new Label("Soldiers",skin)
+    var soldiersCount = 0
+    val soldiersCountLabel = new Label(soldiersCount.toString,skin)
+    val plusButton = new TextButton("+",skin)
+    val minusButton = new TextButton("-",skin)
+    table.add(soldiersLabel).space(20)
+    table.add(soldiersCountLabel).space(20)
+    table.add(plusButton).space(0)
+    table.add(minusButton).space(0)
+
+    plusButton.addCaptureListener(new ClickListener(){
+      override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
+        soldiersCount +=1
+        soldiersCountLabel.setText(soldiersCount.toString)
+      }
+    })
+
+    minusButton.addCaptureListener(new ClickListener(){
+      override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
+        if (soldiersCount>0){
+          soldiersCount -=1
+        }
+        soldiersCountLabel.setText(soldiersCount.toString)
+      }
+    })
+
     val dialog = new Dialog("Choose expedition mix", skin) {
       override def result(result:Object) {
+        Gdx.app.log("INFO",s"Soldiers count: ${soldiersCountLabel.getText}")
         if (result.asInstanceOf[Boolean]){
           if (expeditions.size<1) {
             val clickInfo = getClickInfo(screenX,screenY)
@@ -364,17 +372,15 @@ class MapScreen(game: NuclearNation) extends Screen{
       }
     }
 
-    val table = new Table()
-    table.add(new Label("Scientists",skin)).expandX()
-    table.add(new Label("Soldiers",skin)).expandX()
-    dialog.add(table)
+    dialog.getContentTable.add(table)
     dialog.button("Send", true)
     dialog.button("Cancel", false)
     dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
-//    dialog.setSize(500,200)
-    dialog.setPosition(1400,300)
-    dialog.show(stage)
-
+    dialog.getContentTable.pad(20)
+    dialog.getTitleTable.pad(20)
+    dialog.pack()
+    stage.addActor(dialog)
+    dialog.setPosition(cameraCenterX - dialog.getPrefWidth/2,cameraCenterY - dialog.getPrefHeight/2)
   }
 
   private def checkExpeditionTile(tileX:Int,tileY:Int,expedition:ExpeditionInfo): Unit ={
