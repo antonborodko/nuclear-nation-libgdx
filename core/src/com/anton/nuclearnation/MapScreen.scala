@@ -40,8 +40,8 @@ class MapScreen(game: NuclearNation) extends Screen{
   val map = new TiledMap
   val layers = map.getLayers
 
-  val mapWidthTiles = 20
-  val mapHeightTiles = 20
+  val mapWidthTiles = 15
+  val mapHeightTiles = 15
 
   val desertTileTexture = assetManager.get("desert_tile.png",classOf[Texture])
   val desertLayer = new TiledMapTileLayer(mapHeightTiles, mapWidthTiles, desertTileTexture.getWidth, desertTileTexture.getHeight)
@@ -105,7 +105,7 @@ class MapScreen(game: NuclearNation) extends Screen{
   val raiderCampsNames = List[String]("Mad Dogs","Knives","Jokers")
 
   val capitalCoords = coordsGenerator.getCoords
-  val capital = CityInfo("Hope", capitalCoords._1, capitalCoords._2)
+  val capital = CityInfo("Hope", capitalCoords._1, capitalCoords._2,isOwnedByPlayer = true)
   mapData.cells.find(cell=>cell.x == capitalCoords._1 && cell.y == capitalCoords._2).get.state = MapCellState.DISCOVERED
   citiesData += capital
 
@@ -139,8 +139,9 @@ class MapScreen(game: NuclearNation) extends Screen{
       }
     })
 
+
     if (mapData.cells.find(cell=>cell.x == x && cell.y == y).get.state == MapCellState.UNDISCOVERED){
-//      fogOfWarLayer.setCell(x,y,fogOfWarCell)
+      fogOfWarLayer.setCell(x,y,fogOfWarCell)
     }
 
     raiderCampsData.foreach(raiderCampInfo=>{
@@ -244,6 +245,10 @@ class MapScreen(game: NuclearNation) extends Screen{
     renderer.renderTileLayer(townLayer)
     renderer.renderTileLayer(fogOfWarLayer)
 
+
+
+
+
     renderer.getBatch.end()
 
     stage.getBatch.begin()
@@ -266,8 +271,8 @@ class MapScreen(game: NuclearNation) extends Screen{
           discoverTile(tileX,tileY)
           expeditions.remove(0)
         } else {
-          val newOriginX = expedition.positionGlobalPixelX + direction.x * 300 * delta
-          val newOriginY = expedition.positionGlobalPixelY + direction.y * 300 * delta
+          val newOriginX = expedition.positionGlobalPixelX + direction.x * expedition.speed * delta
+          val newOriginY = expedition.positionGlobalPixelY + direction.y * expedition.speed * delta
           expeditions(0) = expedition.copy(positionGlobalPixelX = newOriginX, positionGlobalPixelY = newOriginY,originalDirection = Some(direction))
           stage.getBatch.draw(expedition.marker, expeditions.head.positionGlobalPixelX - expedition.marker.getWidth/2, expeditions.head.positionGlobalPixelY - expedition.marker.getHeight/2)
 
@@ -401,6 +406,25 @@ class MapScreen(game: NuclearNation) extends Screen{
         expeditions += newExpedition
       }
     })
+
+    citiesData.foreach(city=>{
+      if (city.x == tileX && city.y == tileY && !city.isOwnedByPlayer){
+        game.setScreen(new SituationScreen(None,DefendersType.SOLDIERS,game,this))
+        val newExpedition = expedition.copy(
+          expedition.destinationGlobalPixelX,
+          expedition.destinationGlobalPixelY,
+          expedition.destinationGlobalPixelX,
+          expedition.destinationGlobalPixelY,
+          expedition.originGlobalPixelX,
+          expedition.originGlobalPixelY,
+          expedition.marker,
+          None
+        )
+
+        expeditions += newExpedition
+      }
+    })
+
   }
 
   def deleteCamp(camp: RaiderCampInfo) = {
@@ -418,7 +442,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 }
 
 object MapScreen{
-  case class CityInfo(name:String,x:Int,y:Int)
+  case class CityInfo(name:String,x:Int,y:Int,isOwnedByPlayer:Boolean = false)
   case class RaiderCampInfo(name:String,tileX:Int,tileY:Int)
   case class MapClickInfo(pixelX:Float, pixelY: Float, tileX:Int,tileY:Int)
   case class ExpeditionInfo(originGlobalPixelX:Float,
@@ -428,6 +452,7 @@ object MapScreen{
                             destinationGlobalPixelX:Float,
                             destinationGlobalPixelY:Float,
                             marker:Texture,
-                            originalDirection:Option[Vector2]
+                            originalDirection:Option[Vector2],
+                            speed:Int = 600
                            )
 }
