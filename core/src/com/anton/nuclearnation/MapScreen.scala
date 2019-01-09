@@ -20,6 +20,7 @@ import com.badlogic.gdx.math.{Vector2, Vector3}
 
 import scala.util.Random
 import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader.FreeTypeFontLoaderParameter
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.maps.tiled.renderers.{IsometricStaggeredTiledMapRenderer, IsometricTiledMapRenderer, OrthogonalTiledMapRenderer}
 import com.badlogic.gdx.scenes.scene2d.{InputEvent, InputListener, Stage}
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle
@@ -170,16 +171,31 @@ class MapScreen(game: NuclearNation) extends Screen{
   var cameraCenterX = citiesData.head.x * mainLayer.getTileWidth - mainLayer.getTileWidth/2
   var cameraCenterY = citiesData.head.y * mainLayer.getTileHeight - mainLayer.getTileHeight /2
 
+  val roadRenderer = new ShapeRenderer()
 
 
+  import com.badlogic.gdx.Gdx
+  import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+  import com.badlogic.gdx.math.Matrix4
+  import com.badlogic.gdx.math.Vector2
+
+  def drawRoadLine(start: Vector2, end: Vector2, lineWidth: Int, color: Color = Color.BROWN, projectionMatrix: Matrix4 = camera.combined): Unit = {
+    Gdx.gl.glLineWidth(lineWidth)
+    roadRenderer.setProjectionMatrix(projectionMatrix)
+    roadRenderer.begin(ShapeRenderer.ShapeType.Line)
+    roadRenderer.setColor(color)
+    roadRenderer.line(start, end)
+    roadRenderer.end()
+    Gdx.gl.glLineWidth(1)
+  }
 
 
   override def show(): Unit = {
     val multiplexer = new InputMultiplexer()
     multiplexer.addProcessor(stage)
     multiplexer.addProcessor(mapInputProcessor)
-
     Gdx.input.setInputProcessor(multiplexer)
+
   }
 
   override def render(delta: Float): Unit = {
@@ -244,6 +260,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     renderer.renderTileLayer(desertLayer)
     renderer.renderTileLayer(townLayer)
 
+
     if (sys.env.get("DISABLE_FOG_OF_WAR").isEmpty || sys.env("DISABLE_FOG_OF_WAR").toLowerCase() != "true"){
       renderer.renderTileLayer(fogOfWarLayer)
     }
@@ -302,6 +319,17 @@ class MapScreen(game: NuclearNation) extends Screen{
 
     gameFont.draw(stage.getBatch,s"Camera position: ($cameraCenterX,$cameraCenterY), camera viewport size: ${camera.viewportWidth}/${camera.viewportHeight} ,player position: ($cameraCenterX,$cameraCenterY)",camera.unproject(new Vector3(0,0,0)).x,camera.unproject(new Vector3(0,0,0)).y)
     stage.getBatch.end()
+
+    //drawing roads between cities
+    citiesData
+      .filter(city=>city!=capital)
+      .foreach(city => {
+        if (city.isOwnedByPlayer) {
+          drawRoadLine(new Vector2(capital.x * mainLayer.getTileWidth + townImage.getWidth /2, capital.y * mainLayer.getTileHeight + townImage.getHeight/2),
+            new Vector2(city.x * mainLayer.getTileWidth + townImage.getWidth/2, city.y * mainLayer.getTileHeight + townImage.getHeight/2), 20)
+        }
+      })
+
   }
 
   override def resize(width: Int, height: Int): Unit = {}
