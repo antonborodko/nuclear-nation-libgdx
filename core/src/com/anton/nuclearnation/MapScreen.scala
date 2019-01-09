@@ -243,13 +243,10 @@ class MapScreen(game: NuclearNation) extends Screen{
     renderer.getBatch.begin()
     renderer.renderTileLayer(desertLayer)
     renderer.renderTileLayer(townLayer)
-    renderer.renderTileLayer(fogOfWarLayer)
 
     if (sys.env.get("DISABLE_FOG_OF_WAR").isEmpty || sys.env("DISABLE_FOG_OF_WAR").toLowerCase() != "true"){
       renderer.renderTileLayer(fogOfWarLayer)
     }
-
-
 
     renderer.getBatch.end()
 
@@ -393,7 +390,7 @@ class MapScreen(game: NuclearNation) extends Screen{
   private def checkExpeditionTile(tileX:Int,tileY:Int,expedition:ExpeditionInfo): Unit ={
     raiderCampsData.foreach(camp=>{
       if (camp.tileX == tileX && camp.tileY == tileY){
-        game.setScreen(new SituationScreen(Some(camp),DefendersType.RAIDERS,game,this))
+        game.setScreen(new SituationScreen(camp,DefendersType.RAIDERS,game,this))
         val newExpedition = expedition.copy(
           expedition.destinationGlobalPixelX,
           expedition.destinationGlobalPixelY,
@@ -411,7 +408,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
     citiesData.foreach(city=>{
       if (city.x == tileX && city.y == tileY && !city.isOwnedByPlayer){
-        game.setScreen(new SituationScreen(None,DefendersType.SOLDIERS,game,this))
+        game.setScreen(new SituationScreen(city,DefendersType.SOLDIERS,game,this))
         val newExpedition = expedition.copy(
           expedition.destinationGlobalPixelX,
           expedition.destinationGlobalPixelY,
@@ -444,8 +441,8 @@ class MapScreen(game: NuclearNation) extends Screen{
 }
 
 object MapScreen{
-  case class CityInfo(name:String,x:Int,y:Int,isOwnedByPlayer:Boolean = false)
-  case class RaiderCampInfo(name:String,tileX:Int,tileY:Int)
+
+
   case class MapClickInfo(pixelX:Float, pixelY: Float, tileX:Int,tileY:Int)
   case class ExpeditionInfo(originGlobalPixelX:Float,
                             originGlobalPixelY:Float,
@@ -457,4 +454,9 @@ object MapScreen{
                             originalDirection:Option[Vector2],
                             speed:Int = 600
                            )
+
+  sealed abstract class MapLocation(tileX:Int,tileY:Int)
+  case class RaiderCampInfo(name:String,tileX:Int,tileY:Int) extends MapLocation(tileX,tileY)
+  case class CityInfo(name:String,x:Int,y:Int,var isOwnedByPlayer:Boolean = false) extends MapLocation(x,y)
+
 }

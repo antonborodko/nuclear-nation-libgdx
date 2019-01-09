@@ -1,6 +1,7 @@
 package com.anton.nuclearnation
 
 import com.anton.nuclearnation.DefendersType.DefendersType
+import com.anton.nuclearnation.MapScreen.{CityInfo, MapLocation, RaiderCampInfo}
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.graphics.{Color, GL20, OrthographicCamera, Texture}
 import com.badlogic.gdx.graphics.g2d.{Batch, BitmapFont, Sprite, TextureRegion}
@@ -24,7 +25,7 @@ object DefendersType extends Enumeration {
 }
 
 
-class SituationScreen(currentCamp: Option[MapScreen.RaiderCampInfo], defendersType:DefendersType, game:NuclearNation, mapScreen:MapScreen) extends Screen{
+class SituationScreen(currentLocation:MapLocation, defendersType:DefendersType, game:NuclearNation, mapScreen:MapScreen) extends Screen{
 
   val assetManager = game.assetManager
   val map = new TiledMap
@@ -171,18 +172,24 @@ class SituationScreen(currentCamp: Option[MapScreen.RaiderCampInfo], defendersTy
           val dialog = new Dialog("You've defeated the enemy", skin) {
             override def result(result:Object) {
               Gdx.app.log("INFO","Button clicked " + result)
-              dispose()
-              if (currentCamp.isDefined){
-                mapScreen.deleteCamp(currentCamp.get)
+              currentLocation match{
+                case city:CityInfo=> city.isOwnedByPlayer = true
+                case camp:RaiderCampInfo=>
+                  mapScreen.deleteCamp(camp)
               }
               game.setScreen(mapScreen)
             }
           }
 
-          dialog.text("You've defeated the enemy")
+          val notification = currentLocation match {
+            case city:CityInfo => s"You've conquered city ${city.name}"
+            case camp:RaiderCampInfo => s"You've destroyed raider camp ${camp.name}"
+          }
+
+          dialog.text(notification)
           dialog.button("OK", true)
           dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
-          dialog.setSize(500,200)
+          dialog.pack()
           stage.addActor(dialog)
 
           dialog.setPosition(100,100)
