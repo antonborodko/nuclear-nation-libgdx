@@ -140,7 +140,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     })
 
     if (mapData.cells.find(cell=>cell.x == x && cell.y == y).get.state == MapCellState.UNDISCOVERED){
-      fogOfWarLayer.setCell(x,y,fogOfWarCell)
+//      fogOfWarLayer.setCell(x,y,fogOfWarCell)
     }
 
     raiderCampsData.foreach(raiderCampInfo=>{
@@ -266,8 +266,8 @@ class MapScreen(game: NuclearNation) extends Screen{
           discoverTile(tileX,tileY)
           expeditions.remove(0)
         } else {
-          val newOriginX = expedition.positionGlobalPixelX + direction.x * 150 * delta
-          val newOriginY = expedition.positionGlobalPixelY + direction.y * 150 * delta
+          val newOriginX = expedition.positionGlobalPixelX + direction.x * 300 * delta
+          val newOriginY = expedition.positionGlobalPixelY + direction.y * 300 * delta
           expeditions(0) = expedition.copy(positionGlobalPixelX = newOriginX, positionGlobalPixelY = newOriginY,originalDirection = Some(direction))
           stage.getBatch.draw(expedition.marker, expeditions.head.positionGlobalPixelX - expedition.marker.getWidth/2, expeditions.head.positionGlobalPixelY - expedition.marker.getHeight/2)
 
@@ -386,7 +386,7 @@ class MapScreen(game: NuclearNation) extends Screen{
   private def checkExpeditionTile(tileX:Int,tileY:Int,expedition:ExpeditionInfo): Unit ={
     raiderCampsData.foreach(camp=>{
       if (camp.tileX == tileX && camp.tileY == tileY){
-        game.setScreen(new SituationScreen(camp,game,this))
+        game.setScreen(new SituationScreen(Some(camp),DefendersType.RAIDERS,game,this))
         val newExpedition = expedition.copy(
           expedition.destinationGlobalPixelX,
           expedition.destinationGlobalPixelY,

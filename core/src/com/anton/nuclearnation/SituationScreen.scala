@@ -1,5 +1,6 @@
 package com.anton.nuclearnation
 
+import com.anton.nuclearnation.DefendersType.DefendersType
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.graphics.{Color, GL20, OrthographicCamera, Texture}
 import com.badlogic.gdx.graphics.g2d.{Batch, BitmapFont, Sprite, TextureRegion}
@@ -16,7 +17,14 @@ import com.badlogic.gdx.utils.viewport.{ScreenViewport, StretchViewport}
 
 import scala.collection.mutable.ListBuffer
 
-class SituationScreen(currentCamp: MapScreen.RaiderCampInfo, game:NuclearNation, mapScreen:MapScreen) extends Screen{
+
+object DefendersType extends Enumeration {
+  type DefendersType = Value
+  val RAIDERS, SOLDIERS = Value
+}
+
+
+class SituationScreen(currentCamp: Option[MapScreen.RaiderCampInfo], defendersType:DefendersType, game:NuclearNation, mapScreen:MapScreen) extends Screen{
 
   val assetManager = game.assetManager
   val map = new TiledMap
@@ -58,14 +66,14 @@ class SituationScreen(currentCamp: MapScreen.RaiderCampInfo, game:NuclearNation,
   val stage = new Stage(new StretchViewport(800,600,new OrthographicCamera()))
   val camera = stage.getCamera
 
-  case class RaiderInfo(texture:Texture,tileX:Int,tileY:Int)
+  case class EnemyInfo(tileX:Int, tileY:Int)
   val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
 
-  val raiders = ListBuffer[RaiderInfo]()
+  val enemies = ListBuffer[EnemyInfo]()
 
-  raiders += RaiderInfo(assetManager.get("raider-facing-left.png",classOf[Texture]),middleXTile+1,middleYTile)
-  raiders += RaiderInfo(assetManager.get("raider-facing-left.png",classOf[Texture]),middleXTile+2,middleYTile-1)
-  raiders += RaiderInfo(assetManager.get("raider-facing-left.png",classOf[Texture]),middleXTile+2,middleYTile+1)
+  enemies += EnemyInfo(middleXTile+1,middleYTile)
+  enemies += EnemyInfo(middleXTile+2,middleYTile-1)
+  enemies += EnemyInfo(middleXTile+2,middleYTile+1)
 
   val situationScreenInputProcessor = new InputProcessor {
     override def keyDown(keycode: Int): Boolean = {true}
@@ -93,11 +101,17 @@ class SituationScreen(currentCamp: MapScreen.RaiderCampInfo, game:NuclearNation,
 
   Gdx.input.setInputProcessor(multiplexer)
 
+  val texture = defendersType match {
+    case DefendersType.SOLDIERS => defendingSoldierTexture
+    case DefendersType.RAIDERS => defendingRaiderTexture
+    case _ => throw new RuntimeException(s"Unknown defender type in situation screen: $defendersType")
+  }
+
 
   override def show(): Unit = {
 
-    raiders.foreach(raider=>{
-      stage.addActor(new RaiderActor(raider.tileX,raider.tileY))
+    enemies.foreach(raider=>{
+      stage.addActor(new EnemyActor(raider.tileX,raider.tileY,texture))
     })
 
   }
@@ -148,28 +162,24 @@ class SituationScreen(currentCamp: MapScreen.RaiderCampInfo, game:NuclearNation,
     stage.dispose()
   }
 
-  import com.badlogic.gdx.Gdx
-  import com.badlogic.gdx.graphics.Texture
-  import com.badlogic.gdx.graphics.g2d.Batch
-  import com.badlogic.gdx.scenes.scene2d.Actor
 
-  class RaiderActor(tileX:Int,tileY:Int) extends Actor {
-    val texture = new Texture(Gdx.files.internal("raider-facing-left.png"))
-
+  class EnemyActor(tileX:Int, tileY:Int,texture:Texture) extends Actor {
     setBounds( tileX * mainLayer.getTileWidth,tileY * mainLayer.getTileHeight,texture.getWidth(),texture.getHeight())
 
     addListener(new InputListener(){
         override def touchDown (event:InputEvent, x:Float, y:Float, pointer:Int, button:Int):Boolean= {
-          val dialog = new Dialog("You've defeated the raiders", skin) {
+          val dialog = new Dialog("You've defeated the enemy", skin) {
             override def result(result:Object) {
               Gdx.app.log("INFO","Button clicked " + result)
               dispose()
-              mapScreen.deleteCamp(currentCamp)
+              if (currentCamp.isDefined){
+                mapScreen.deleteCamp(currentCamp.get)
+              }
               game.setScreen(mapScreen)
             }
           }
 
-          dialog.text("You've defeated the raiders")
+          dialog.text("You've defeated the enemy")
           dialog.button("OK", true)
           dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
           dialog.setSize(500,200)
