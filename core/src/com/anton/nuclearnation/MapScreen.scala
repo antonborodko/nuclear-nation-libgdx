@@ -245,7 +245,9 @@ class MapScreen(game: NuclearNation) extends Screen{
     renderer.renderTileLayer(townLayer)
     renderer.renderTileLayer(fogOfWarLayer)
 
-
+    if (sys.env.get("DISABLE_FOG_OF_WAR").isEmpty || sys.env("DISABLE_FOG_OF_WAR").toLowerCase() != "true"){
+      renderer.renderTileLayer(fogOfWarLayer)
+    }
 
 
 
