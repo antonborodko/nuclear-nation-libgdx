@@ -176,6 +176,7 @@ class SituationScreen(currentLocation:MapLocation, defendersType:DefendersType, 
                 case city:CityInfo=> city.isOwnedByPlayer = true
                 case camp:RaiderCampInfo=>
                   mapScreen.deleteCamp(camp)
+                case _ => throw new RuntimeException("Unknown location")
               }
               game.setScreen(mapScreen)
             }
@@ -184,6 +185,7 @@ class SituationScreen(currentLocation:MapLocation, defendersType:DefendersType, 
           val notification = currentLocation match {
             case city:CityInfo => s"You've conquered city ${city.name}"
             case camp:RaiderCampInfo => s"You've destroyed raider camp ${camp.name}"
+            case _ => throw new RuntimeException("Unknown notification type")
           }
 
           dialog.text(notification)

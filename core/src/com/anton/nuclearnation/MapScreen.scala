@@ -2,7 +2,7 @@ package com.anton.nuclearnation
 
 import java.lang.Math
 
-import com.anton.nuclearnation.MapScreen.{CityInfo, ExpeditionInfo, MapClickInfo, RaiderCampInfo}
+import com.anton.nuclearnation.MapScreen._
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver
@@ -41,10 +41,11 @@ class MapScreen(game: NuclearNation) extends Screen{
   val map = new TiledMap
   val layers = map.getLayers
 
-  val mapWidthTiles = 15
-  val mapHeightTiles = 15
+  val mapWidthTiles = 30
+  val mapHeightTiles = 30
 
   val desertTileTexture = assetManager.get("desert_tile.png",classOf[Texture])
+  val ruinedBuildingTexture = assetManager.get("ruined-building.png",classOf[Texture])
   val desertLayer = new TiledMapTileLayer(mapHeightTiles, mapWidthTiles, desertTileTexture.getWidth, desertTileTexture.getHeight)
   val townLayer = new TiledMapTileLayer(mapHeightTiles, mapWidthTiles, desertTileTexture.getWidth, desertTileTexture.getHeight)
   val fogOfWarLayer = new TiledMapTileLayer(mapHeightTiles, mapWidthTiles, desertTileTexture.getWidth, desertTileTexture.getHeight)
@@ -101,6 +102,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   val citiesData = ListBuffer[CityInfo]()
   val raiderCampsData = ListBuffer[RaiderCampInfo]()
+  val ruinsData = ListBuffer[RuinsInfo]()
 
   val cityNames = List[String]("New Reno","Modoc","Arroyo")
   val raiderCampsNames = List[String]("Mad Dogs","Knives","Jokers")
@@ -109,6 +111,12 @@ class MapScreen(game: NuclearNation) extends Screen{
   val capital = CityInfo("Hope", capitalCoords._1, capitalCoords._2,isOwnedByPlayer = true)
   mapData.cells.find(cell=>cell.x == capitalCoords._1 && cell.y == capitalCoords._2).get.state = MapCellState.DISCOVERED
   citiesData += capital
+
+  for (_<-0 until 10) yield {
+    val coords = coordsGenerator.getCoords
+    ruinsData += RuinsInfo("",coords._1,coords._2)
+  }
+
 
   cityNames.foreach(cityName=> {
     val coords = coordsGenerator.getCoords
@@ -128,6 +136,16 @@ class MapScreen(game: NuclearNation) extends Screen{
     y <- 0 until mapHeightTiles
   ) yield  {
     desertLayer.setCell(x, y, desertTileCell)
+
+    ruinsData.foreach(ruinInfo=>{
+      if (x == ruinInfo.x && y == ruinInfo.y){
+        val ruinRegion = new TextureRegion(ruinedBuildingTexture)
+        val ruinTile = new StaticTiledMapTile(ruinRegion)
+        val ruinCell = new Cell
+        ruinCell.setTile(ruinTile)
+        townLayer.setCell(x,y,ruinCell)
+      }
+    })
 
 
     citiesData.foreach(cityInfo=>{
@@ -486,5 +504,6 @@ object MapScreen{
   sealed abstract class MapLocation(tileX:Int,tileY:Int)
   case class RaiderCampInfo(name:String,tileX:Int,tileY:Int) extends MapLocation(tileX,tileY)
   case class CityInfo(name:String,x:Int,y:Int,var isOwnedByPlayer:Boolean = false) extends MapLocation(x,y)
+  case class RuinsInfo(name:String,x:Int,y:Int) extends MapLocation(x,y)
 
 }
