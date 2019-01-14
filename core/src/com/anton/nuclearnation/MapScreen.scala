@@ -34,7 +34,7 @@ import scala.collection.mutable.ListBuffer
 
 class MapScreen(game: NuclearNation) extends Screen{
 
-
+  val technologies = List(AdvancedTacticsTech(),AutomaticWeaponsTech())
 
   val assetManager = game.assetManager
 
@@ -486,6 +486,7 @@ class MapScreen(game: NuclearNation) extends Screen{
         expeditions += newExpedition
         ruinsData -= ruin
         townLayer.setCell(tileX,tileY,null)
+
       }
     })
 
@@ -524,5 +525,10 @@ object MapScreen{
   case class RaiderCampInfo(name:String,tileX:Int,tileY:Int) extends MapLocation(tileX,tileY)
   case class CityInfo(name:String,x:Int,y:Int,var isOwnedByPlayer:Boolean = false) extends MapLocation(x,y)
   case class RuinsInfo(name:String,x:Int,y:Int) extends MapLocation(x,y)
+
+
+  sealed abstract class Technology(name:String,enabled:Boolean = false)
+  case class AdvancedTacticsTech() extends Technology("Advanced tactics")
+  case class AutomaticWeaponsTech() extends Technology("Automatic weapons")
 
 }
