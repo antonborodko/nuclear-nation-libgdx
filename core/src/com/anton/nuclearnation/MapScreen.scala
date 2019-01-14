@@ -470,6 +470,25 @@ class MapScreen(game: NuclearNation) extends Screen{
       }
     })
 
+    ruinsData.foreach(ruin=>{
+      if (ruin.x == tileX && ruin.y == tileY){
+        val newExpedition = expedition.copy(
+          expedition.destinationGlobalPixelX,
+          expedition.destinationGlobalPixelY,
+          expedition.destinationGlobalPixelX,
+          expedition.destinationGlobalPixelY,
+          expedition.originGlobalPixelX,
+          expedition.originGlobalPixelY,
+          expedition.marker,
+          None
+        )
+
+        expeditions += newExpedition
+        ruinsData -= ruin
+        townLayer.setCell(tileX,tileY,null)
+      }
+    })
+
   }
 
   def deleteCamp(camp: RaiderCampInfo) = {
