@@ -34,7 +34,7 @@ import scala.collection.mutable.ListBuffer
 
 class MapScreen(game: NuclearNation) extends Screen{
 
-  val technologies = List(AdvancedTacticsTech(),AutomaticWeaponsTech())
+  val technologies:List[Technology] = List(Technology("Advanced tactics"),Technology("Automatic weapons"))
 
   val assetManager = game.assetManager
 
@@ -356,6 +356,8 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   override def resume(): Unit = {}
 
+
+
   override def hide(): Unit = {
   }
 
@@ -486,6 +488,30 @@ class MapScreen(game: NuclearNation) extends Screen{
         expeditions += newExpedition
         ruinsData -= ruin
         townLayer.setCell(tileX,tileY,null)
+        val tech = technologies.find(t => !t.enabled)
+
+        tech match  {
+          case Some(t) =>
+            t.enabled = true
+
+            val dialog = new Dialog("New technology discovered", skin) {
+              override def result(result:Object) {
+
+              }
+            }
+
+            dialog.text(s"New technology discovered: ${t.name}")
+            dialog.button("OK", true)
+            dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
+            dialog.getContentTable.pad(20)
+            dialog.getTitleTable.pad(20)
+            dialog.pack()
+            stage.addActor(dialog)
+            dialog.setPosition(cameraCenterX - dialog.getPrefWidth/2,cameraCenterY - dialog.getPrefHeight/2)
+
+
+          case None =>
+        }
 
       }
     })
@@ -527,8 +553,7 @@ object MapScreen{
   case class RuinsInfo(name:String,x:Int,y:Int) extends MapLocation(x,y)
 
 
-  sealed abstract class Technology(name:String,enabled:Boolean = false)
-  case class AdvancedTacticsTech() extends Technology("Advanced tactics")
-  case class AutomaticWeaponsTech() extends Technology("Automatic weapons")
+
+  case class Technology(name:String, var enabled:Boolean = false)
 
 }
