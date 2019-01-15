@@ -67,12 +67,13 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   val mapData = new MapData(mapWidthTiles,mapHeightTiles)
 
-  val stage = new Stage(new StretchViewport(1600,960,new OrthographicCamera()))
-  val camera = stage.getCamera.asInstanceOf[OrthographicCamera]
 
   val gameFont = assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf",classOf[BitmapFont])
 
   val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
+
+  val stage = new Stage(new StretchViewport(1600,960,new OrthographicCamera()))
+  val camera = stage.getCamera.asInstanceOf[OrthographicCamera]
 
 
   val mapInputProcessor = new InputProcessor() {
@@ -87,7 +88,13 @@ class MapScreen(game: NuclearNation) extends Screen{
 
     override def keyDown(keycode: Int): Boolean = {true}
 
-    override def keyUp(keycode: Int): Boolean = {true}
+    override def keyUp(keycode: Int): Boolean = {
+      if (keycode == Input.Keys.T){
+        game.setScreen(new UnitConstructionScreen(game,MapScreen.this))
+        return true
+      }
+      false
+    }
 
     override def keyTyped(character: Char): Boolean = {true}
 
