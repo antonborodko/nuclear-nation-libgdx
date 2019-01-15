@@ -61,19 +61,24 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
 
     commandoUnitButton.addCaptureListener(new ClickListener(){
       override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
-        if (mapScreen.technologies.count(t=> !t.enabled) >0){
-          val dialog = new Dialog("Requirements not met", skin) {
-            override def result(result: Object) {
-            }
-          }
 
-          dialog.button("OK", true)
-          dialog.text("Tech requirements not met")
-          dialog.key(Keys.ENTER, true)
-          dialog.pack()
-          stage.addActor(dialog)
-          dialog.setPosition(stage.getViewport.getScreenWidth/2 - dialog.getPrefWidth/2,stage.getViewport.getScreenHeight /2 - dialog.getPrefHeight/2)
+        val text = if (mapScreen.technologies.count(t=> !t.enabled) >0){
+          "Tech requirements not met"
+        } else {
+          "Unit constructed"
         }
+
+        val dialog = new Dialog(text, skin) {
+          override def result(result: Object) {
+          }
+        }
+
+        dialog.button("OK", true)
+        dialog.text(text)
+        dialog.key(Keys.ENTER, true)
+        dialog.pack()
+        stage.addActor(dialog)
+        dialog.setPosition(stage.getViewport.getScreenWidth/2 - dialog.getPrefWidth/2,stage.getViewport.getScreenHeight /2 - dialog.getPrefHeight/2)
       }
     })
 
