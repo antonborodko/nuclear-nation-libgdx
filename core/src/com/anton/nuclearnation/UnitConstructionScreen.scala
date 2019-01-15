@@ -1,9 +1,13 @@
 package com.anton.nuclearnation
 
-import com.badlogic.gdx.{Gdx, Input, InputProcessor, Screen}
-import com.badlogic.gdx.graphics.{Color, GL20, OrthographicCamera}
-import com.badlogic.gdx.scenes.scene2d.Stage
-import com.badlogic.gdx.scenes.scene2d.ui.{Button, Label, Skin, TextButton}
+import com.anton.nuclearnation.MapScreen.ExpeditionInfo
+import com.badlogic.gdx.Input.Keys
+import com.badlogic.gdx._
+import com.badlogic.gdx.graphics.{Color, GL20, OrthographicCamera, Texture}
+import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.scenes.scene2d.{InputEvent, Stage}
+import com.badlogic.gdx.scenes.scene2d.ui._
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.viewport.StretchViewport
 
 class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
@@ -42,14 +46,37 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
     override def scrolled(amount: Int): Boolean = {return true}
   }
 
-  Gdx.input.setInputProcessor(constructionScreenInputProcessor)
+  val multiplexer = new InputMultiplexer()
+  multiplexer.addProcessor(stage)
+  multiplexer.addProcessor(constructionScreenInputProcessor)
+  Gdx.input.setInputProcessor(multiplexer)
 
   override def show(): Unit = {
     val titleLabel = new Label("Unit construction",skin)
     val commandoUnitButton = new TextButton("Commando",skin)
-    commandoUnitButton.setDisabled(mapScreen.technologies.count(t => !t.enabled)>0)
-    titleLabel.setPosition(stage.getViewport.getScreenWidth/2,stage.getViewport.getScreenHeight-20)
-    commandoUnitButton.setPosition(stage.getViewport.getScreenWidth/2,stage.getViewport.getScreenHeight-100)
+
+    titleLabel.setPosition(stage.getViewport.getScreenWidth/2,stage.getViewport.getScreenHeight-titleLabel.getPrefHeight)
+    commandoUnitButton.setPosition(stage.getViewport.getScreenWidth/2,stage.getViewport.getScreenHeight - 120)
+
+
+    commandoUnitButton.addCaptureListener(new ClickListener(){
+      override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
+        if (mapScreen.technologies.count(t=> !t.enabled) >0){
+          val dialog = new Dialog("Requirements not met", skin) {
+            override def result(result: Object) {
+            }
+          }
+
+          dialog.button("OK", true)
+          dialog.text("Tech requirements not met")
+          dialog.key(Keys.ENTER, true)
+          dialog.pack()
+          stage.addActor(dialog)
+          dialog.setPosition(stage.getViewport.getScreenWidth/2 - dialog.getPrefWidth/2,stage.getViewport.getScreenHeight /2 - dialog.getPrefHeight/2)
+        }
+      }
+    })
+
     stage.addActor(titleLabel)
     stage.addActor(commandoUnitButton)
 
