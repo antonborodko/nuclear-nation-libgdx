@@ -384,15 +384,11 @@ class MapScreen(game: NuclearNation) extends Screen{
   private def mapRightClicked(screenX: Int, screenY: Int):Unit = {
     Gdx.app.log("INFO","Right clicked on map")
 
-
     val clickInfo = getClickInfo(screenX,screenY)
-
-
 
     if (
       citiesData.count(c=>c.x == clickInfo.tileX && c.y == clickInfo.tileY)>0 ||
-      raiderCampsData.count(c=>c.tileX == clickInfo.tileX && c.tileY == clickInfo.tileY)>0 ||
-      ruinsData.count(c=>c.x == clickInfo.tileX && c.y == clickInfo.tileY)>0
+      raiderCampsData.count(c=>c.tileX == clickInfo.tileX && c.tileY == clickInfo.tileY)>0
       )
     {
       game.setScreen(new ActionMixScreen(game,this))
