@@ -387,7 +387,6 @@ class MapScreen(game: NuclearNation) extends Screen{
     val clickInfo = getClickInfo(screenX,screenY)
 
     if (
-      citiesData.count(c=>c.x == clickInfo.tileX && c.y == clickInfo.tileY)>0 ||
       raiderCampsData.count(c=>c.tileX == clickInfo.tileX && c.tileY == clickInfo.tileY)>0
       )
     {
