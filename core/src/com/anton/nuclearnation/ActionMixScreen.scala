@@ -1,9 +1,11 @@
 package com.anton.nuclearnation
 
+import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx._
 import com.badlogic.gdx.graphics.{GL20, OrthographicCamera, Texture}
-import com.badlogic.gdx.scenes.scene2d.{Group, Stage}
-import com.badlogic.gdx.scenes.scene2d.ui.{Image, Label, Skin, TextButton}
+import com.badlogic.gdx.scenes.scene2d.{Group, InputEvent, Stage}
+import com.badlogic.gdx.scenes.scene2d.ui._
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.viewport.StretchViewport
 
 class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
@@ -16,6 +18,8 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
   val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
 
   val subjectPicture = new Image(assetManager.get("raider_camp.png",classOf[Texture]))
+  val meansPicture = new Image(assetManager.get("raider-facing-left.png",classOf[Texture]))
+  val crossedSwordsPicture = new Image(assetManager.get("crossed-swords.png",classOf[Texture]))
 
   val actionMixScreen = new InputProcessor() {
 
@@ -57,13 +61,22 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
 
     val applyButton = new TextButton("Apply mix",skin)
 
+    applyButton.addCaptureListener(new ClickListener() {
+      override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
+        game.setScreen(mapScreen)
+        dispose()
+      }
+    })
+
     val controlGroup = new Group()
 
     controlGroup.addActor(titleLabel)
     controlGroup.addActor(subjectLabel)
     controlGroup.addActor(subjectPicture)
     controlGroup.addActor(meansLabel)
+    controlGroup.addActor(meansPicture)
     controlGroup.addActor(resultLabel)
+    controlGroup.addActor(crossedSwordsPicture)
     controlGroup.addActor(applyButton)
 
 
@@ -71,12 +84,14 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
     subjectLabel.setPosition(controlGroup.getWidth/2,controlGroup.getHeight- titleLabel.getHeight - subjectLabel.getHeight-10)
     subjectPicture.setPosition(subjectLabel.getX,subjectLabel.getY-subjectPicture.getHeight-10)
     meansLabel.setPosition(subjectPicture.getX(),subjectPicture.getY() - meansLabel.getHeight - 10)
-    resultLabel.setPosition(meansLabel.getX(),meansLabel.getY - resultLabel.getHeight - 10)
-    applyButton.setPosition(resultLabel.getX,resultLabel.getY - applyButton.getHeight - 10)
+    meansPicture.setPosition(meansLabel.getX,meansLabel.getY - meansPicture.getHeight - 10)
+    resultLabel.setPosition(meansPicture.getX(),meansPicture.getY - resultLabel.getHeight - 10)
+    crossedSwordsPicture.setPosition(resultLabel.getX,resultLabel.getY - crossedSwordsPicture.getHeight - 10)
+    applyButton.setPosition(crossedSwordsPicture.getX,crossedSwordsPicture.getY - applyButton.getHeight - 10)
 
     stage.addActor(controlGroup)
 
-    controlGroup.setPosition(stage.getWidth /2, stage.getHeight/2)
+    controlGroup.setPosition(stage.getWidth /2 - titleLabel.getWidth / 2, stage.getHeight/2 + 200)
 
   }
 
