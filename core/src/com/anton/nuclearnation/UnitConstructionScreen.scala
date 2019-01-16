@@ -24,7 +24,7 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
   val constructionScreenInputProcessor = new InputProcessor() {
 
     override def keyUp(keycode: Int): Boolean = {
-      if (keycode == Input.Keys.ESCAPE || keycode == Input.Keys.T) {
+      if (keycode == Input.Keys.ESCAPE || keycode == Input.Keys.U) {
         game.setScreen(mapScreen)
         return true
       }

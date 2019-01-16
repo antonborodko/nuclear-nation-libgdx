@@ -89,7 +89,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     override def keyDown(keycode: Int): Boolean = {true}
 
     override def keyUp(keycode: Int): Boolean = {
-      if (keycode == Input.Keys.T){
+      if (keycode == Input.Keys.U){
         game.setScreen(new UnitConstructionScreen(game,MapScreen.this))
         return true
       }
