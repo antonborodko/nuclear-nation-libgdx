@@ -1,9 +1,9 @@
 package com.anton.nuclearnation
 
 import com.badlogic.gdx._
-import com.badlogic.gdx.graphics.{GL20, OrthographicCamera}
-import com.badlogic.gdx.scenes.scene2d.Stage
-import com.badlogic.gdx.scenes.scene2d.ui.Skin
+import com.badlogic.gdx.graphics.{GL20, OrthographicCamera, Texture}
+import com.badlogic.gdx.scenes.scene2d.{Group, Stage}
+import com.badlogic.gdx.scenes.scene2d.ui.{Image, Label, Skin, TextButton}
 import com.badlogic.gdx.utils.viewport.StretchViewport
 
 class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
@@ -14,6 +14,8 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
   val assetManager = game.assetManager
 
   val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
+
+  val subjectPicture = new Image(assetManager.get("raider_camp.png",classOf[Texture]))
 
   val actionMixScreen = new InputProcessor() {
 
@@ -48,6 +50,33 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
 
 
   override def show(): Unit = {
+    val titleLabel = new Label("Create action mix",skin)
+    val subjectLabel = new Label("Subject",skin)
+    val meansLabel = new Label("Means",skin)
+    val resultLabel = new Label("Result", skin)
+
+    val applyButton = new TextButton("Apply mix",skin)
+
+    val controlGroup = new Group()
+
+    controlGroup.addActor(titleLabel)
+    controlGroup.addActor(subjectLabel)
+    controlGroup.addActor(subjectPicture)
+    controlGroup.addActor(meansLabel)
+    controlGroup.addActor(resultLabel)
+    controlGroup.addActor(applyButton)
+
+
+    titleLabel.setPosition(controlGroup.getWidth/2,controlGroup.getHeight- titleLabel.getHeight)
+    subjectLabel.setPosition(controlGroup.getWidth/2,controlGroup.getHeight- titleLabel.getHeight - subjectLabel.getHeight-10)
+    subjectPicture.setPosition(subjectLabel.getX,subjectLabel.getY-subjectPicture.getHeight-10)
+    meansLabel.setPosition(subjectPicture.getX(),subjectPicture.getY() - meansLabel.getHeight - 10)
+    resultLabel.setPosition(meansLabel.getX(),meansLabel.getY - resultLabel.getHeight - 10)
+    applyButton.setPosition(resultLabel.getX,resultLabel.getY - applyButton.getHeight - 10)
+
+    stage.addActor(controlGroup)
+
+    controlGroup.setPosition(stage.getWidth /2, stage.getHeight/2)
 
   }
 
