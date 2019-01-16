@@ -26,6 +26,7 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
     override def keyUp(keycode: Int): Boolean = {
       if (keycode == Input.Keys.ESCAPE || keycode == Input.Keys.U) {
         game.setScreen(mapScreen)
+        dispose()
         return true
       }
       false
