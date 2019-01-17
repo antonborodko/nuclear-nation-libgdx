@@ -1,5 +1,7 @@
 package com.anton.nuclearnation
 
+import com.anton.nuclearnation.MapScreen.MapLocation
+
 import scala.collection.mutable.ListBuffer
 
 class MapData(mapWidth: Int,mapHeight:Int) {
@@ -9,7 +11,7 @@ class MapData(mapWidth: Int,mapHeight:Int) {
     x <- 0 until mapWidth;
     y <- 0 until mapHeight
   ) yield  {
-    cellsBuffer += new MapCellData(x,y)
+    cellsBuffer += new MapCellData(x,y,None)
   }
 
   val cells = cellsBuffer.toList
