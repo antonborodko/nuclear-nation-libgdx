@@ -3,6 +3,7 @@ package com.anton.nuclearnation
 import com.anton.nuclearnation.MapScreen.ExpeditionInfo
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx._
+import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.{Color, GL20, OrthographicCamera, Texture}
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.scenes.scene2d.{InputEvent, Stage}
@@ -23,6 +24,20 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
   val soldierPicture = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
   val commandoPicture = new Image(assetManager.get("unitConstruction/commandoUnit.png",classOf[Texture]))
   val spyPicture = new Image(assetManager.get("unitConstruction/spyUnit.png",classOf[Texture]))
+  val gameFont = assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf",classOf[BitmapFont])
+
+  val soldierDescriptionLabel = new Label("A basic soldier. Good for performing day to day tasks that don't require much intelligence",skin)
+  soldierDescriptionLabel.setWrap(true)
+  soldierDescriptionLabel.setWidth(400)
+
+  val commandoDescriptionLabel = new Label("Everything a soldier can do, commandos can do better",skin)
+  commandoDescriptionLabel.setWrap(true)
+  commandoDescriptionLabel.setWidth(400)
+
+  val spyDescriptionLabel = new Label("Spies can gather information and if lucky influence other cities",skin)
+  spyDescriptionLabel.setWrap(true)
+  spyDescriptionLabel.setWidth(400)
+
 
 
   val constructionScreenInputProcessor = new InputProcessor() {
@@ -93,15 +108,22 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
     stage.addActor(commandoPicture)
     stage.addActor(spyPicture)
 
+    stage.addActor(soldierDescriptionLabel)
+    stage.addActor(commandoDescriptionLabel)
+    stage.addActor(spyDescriptionLabel)
+
     titleLabel.setPosition(stage.getViewport.getScreenWidth/2,stage.getViewport.getScreenHeight-titleLabel.getPrefHeight)
 
     soldierPicture.setPosition(titleLabel.getX,titleLabel.getY - soldierPicture.getPrefHeight - 120)
+    soldierDescriptionLabel.setPosition(soldierPicture.getX + soldierPicture.getPrefWidth +30,soldierPicture.getY + soldierDescriptionLabel.getPrefHeight /2)
     soldierUnitButton.setPosition(soldierPicture.getX,soldierPicture.getY - soldierUnitButton.getPrefHeight - 10)
 
     commandoPicture.setPosition(soldierUnitButton.getX,soldierUnitButton.getY - commandoPicture.getPrefHeight - 50)
+    commandoDescriptionLabel.setPosition(commandoPicture.getX + commandoPicture.getPrefWidth +30,commandoPicture.getY + commandoDescriptionLabel.getPrefHeight /2)
     commandoUnitButton.setPosition(commandoPicture.getX,commandoPicture.getY - commandoUnitButton.getPrefHeight - 10)
 
     spyPicture.setPosition(commandoUnitButton.getX,commandoUnitButton.getY - spyPicture.getPrefHeight - 50)
+    spyDescriptionLabel.setPosition(spyPicture.getX + spyPicture.getPrefWidth +30,spyPicture.getY + spyDescriptionLabel.getPrefHeight /2)
     spyUnitButton.setPosition(spyPicture.getX,spyPicture.getY - spyUnitButton.getPrefHeight - 10)
 
   }
