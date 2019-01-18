@@ -20,6 +20,10 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
 
   val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
 
+  val soldierPicture = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
+  val commandoPicture = new Image(assetManager.get("unitConstruction/commandoUnit.png",classOf[Texture]))
+  val spyPicture = new Image(assetManager.get("unitConstruction/spyUnit.png",classOf[Texture]))
+
 
   val constructionScreenInputProcessor = new InputProcessor() {
 
@@ -54,7 +58,7 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
 
   override def show(): Unit = {
     val titleLabel = new Label("Unit construction",skin)
-    val soldierUnit = new TextButton("Soldier",skin)
+    val soldierUnitButton = new TextButton("Soldier",skin)
     val commandoUnitButton = new TextButton("Commando",skin)
     val spyUnitButton= new TextButton("Spy",skin)
 
@@ -81,14 +85,24 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
     })
 
     stage.addActor(titleLabel)
-    stage.addActor(soldierUnit)
+    stage.addActor(soldierUnitButton)
     stage.addActor(commandoUnitButton)
     stage.addActor(spyUnitButton)
 
-    titleLabel.setPosition(stage.getViewport.getScreenWidth/2,stage.getViewport.getScreenHeight-titleLabel.getHeight)
-    soldierUnit.setPosition(titleLabel.getX,titleLabel.getY - soldierUnit.getHeight - 120)
-    commandoUnitButton.setPosition(titleLabel.getX,soldierUnit.getY - commandoUnitButton.getHeight - 10)
-    spyUnitButton.setPosition(titleLabel.getX,commandoUnitButton.getY - spyUnitButton.getHeight - 10)
+    stage.addActor(soldierPicture)
+    stage.addActor(commandoPicture)
+    stage.addActor(spyPicture)
+
+    titleLabel.setPosition(stage.getViewport.getScreenWidth/2,stage.getViewport.getScreenHeight-titleLabel.getPrefHeight)
+
+    soldierPicture.setPosition(titleLabel.getX,titleLabel.getY - soldierPicture.getPrefHeight - 120)
+    soldierUnitButton.setPosition(soldierPicture.getX,soldierPicture.getY - soldierUnitButton.getPrefHeight - 10)
+
+    commandoPicture.setPosition(soldierUnitButton.getX,soldierUnitButton.getY - commandoPicture.getPrefHeight - 50)
+    commandoUnitButton.setPosition(commandoPicture.getX,commandoPicture.getY - commandoUnitButton.getPrefHeight - 10)
+
+    spyPicture.setPosition(commandoUnitButton.getX,commandoUnitButton.getY - spyPicture.getPrefHeight - 50)
+    spyUnitButton.setPosition(spyPicture.getX,spyPicture.getY - spyUnitButton.getPrefHeight - 10)
 
   }
 
