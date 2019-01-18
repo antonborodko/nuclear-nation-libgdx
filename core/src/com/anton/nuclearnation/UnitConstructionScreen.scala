@@ -26,18 +26,30 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
   val spyPicture = new Image(assetManager.get("unitConstruction/spyUnit.png",classOf[Texture]))
   val gameFont = assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf",classOf[BitmapFont])
 
+
+
+  var soldierCounter = 0
+  var commandoCounter = 0
+  var spyCounter = 0
+
   val soldierDescriptionLabel = new Label("A basic soldier. Good for performing day to day tasks that don't require much intelligence",skin)
+  val soldierCountLabel = new Label(soldierCounter.toString,skin)
   soldierDescriptionLabel.setWrap(true)
   soldierDescriptionLabel.setWidth(400)
 
   val commandoDescriptionLabel = new Label("Everything a soldier can do, commandos can do better",skin)
+  val commandoCountLabel = new Label(commandoCounter.toString,skin)
   commandoDescriptionLabel.setWrap(true)
   commandoDescriptionLabel.setWidth(400)
 
   val spyDescriptionLabel = new Label("Spies can gather information and if lucky influence other cities",skin)
+  val spyCountLabel = new Label(spyCounter.toString,skin)
   spyDescriptionLabel.setWrap(true)
   spyDescriptionLabel.setWidth(400)
 
+  updateCountLabel(soldierCounter,soldierCountLabel)
+  updateCountLabel(commandoCounter,commandoCountLabel)
+  updateCountLabel(spyCounter,spyCountLabel)
 
 
   val constructionScreenInputProcessor = new InputProcessor() {
@@ -79,23 +91,24 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
 
 
 
+    soldierUnitButton.addCaptureListener(new ClickListener(){
+      override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
+        soldierCounter +=1
+        updateCountLabel(soldierCounter,soldierCountLabel)
+      }
+    })
 
     commandoUnitButton.addCaptureListener(new ClickListener(){
       override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
+        commandoCounter +=1
+        updateCountLabel(commandoCounter,commandoCountLabel)
+      }
+    })
 
-        val text = "Unit constructed"
-
-        val dialog = new Dialog(text, skin) {
-          override def result(result: Object) {
-          }
-        }
-
-        dialog.button("OK", true)
-        dialog.text(text)
-        dialog.key(Keys.ENTER, true)
-        dialog.pack()
-        stage.addActor(dialog)
-        dialog.setPosition(stage.getViewport.getScreenWidth/2 - dialog.getPrefWidth/2,stage.getViewport.getScreenHeight /2 - dialog.getPrefHeight/2)
+    spyUnitButton.addCaptureListener(new ClickListener(){
+      override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
+        spyCounter +=1
+        updateCountLabel(spyCounter,spyCountLabel)
       }
     })
 
@@ -112,20 +125,31 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
     stage.addActor(commandoDescriptionLabel)
     stage.addActor(spyDescriptionLabel)
 
+    stage.addActor(soldierCountLabel)
+    stage.addActor(commandoCountLabel)
+    stage.addActor(spyCountLabel)
+
     titleLabel.setPosition(stage.getViewport.getScreenWidth/2,stage.getViewport.getScreenHeight-titleLabel.getPrefHeight)
 
     soldierPicture.setPosition(titleLabel.getX,titleLabel.getY - soldierPicture.getPrefHeight - 120)
     soldierDescriptionLabel.setPosition(soldierPicture.getX + soldierPicture.getPrefWidth +30,soldierPicture.getY + soldierDescriptionLabel.getPrefHeight /2)
     soldierUnitButton.setPosition(soldierPicture.getX,soldierPicture.getY - soldierUnitButton.getPrefHeight - 10)
+    soldierCountLabel.setPosition(soldierUnitButton.getX() + soldierUnitButton.getPrefWidth + 10, soldierUnitButton.getY)
 
     commandoPicture.setPosition(soldierUnitButton.getX,soldierUnitButton.getY - commandoPicture.getPrefHeight - 50)
     commandoDescriptionLabel.setPosition(commandoPicture.getX + commandoPicture.getPrefWidth +30,commandoPicture.getY + commandoDescriptionLabel.getPrefHeight /2)
     commandoUnitButton.setPosition(commandoPicture.getX,commandoPicture.getY - commandoUnitButton.getPrefHeight - 10)
+    commandoCountLabel.setPosition(commandoUnitButton.getX() + commandoUnitButton.getPrefWidth + 10, commandoUnitButton.getY)
 
     spyPicture.setPosition(commandoUnitButton.getX,commandoUnitButton.getY - spyPicture.getPrefHeight - 50)
     spyDescriptionLabel.setPosition(spyPicture.getX + spyPicture.getPrefWidth +30,spyPicture.getY + spyDescriptionLabel.getPrefHeight /2)
     spyUnitButton.setPosition(spyPicture.getX,spyPicture.getY - spyUnitButton.getPrefHeight - 10)
+    spyCountLabel.setPosition(spyUnitButton.getX() + spyUnitButton.getPrefWidth + 10, spyUnitButton.getY)
 
+  }
+
+  def updateCountLabel(count:Int,label:Label): Unit ={
+    label.setText(s"(${count.toString})")
   }
 
   override def render(delta: Float): Unit = {
