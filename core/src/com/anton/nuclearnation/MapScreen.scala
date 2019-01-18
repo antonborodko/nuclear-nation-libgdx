@@ -75,6 +75,17 @@ class MapScreen(game: NuclearNation) extends Screen{
   val stage = new Stage(new StretchViewport(1600,960,new OrthographicCamera()))
   val camera = stage.getCamera.asInstanceOf[OrthographicCamera]
 
+  val unitConstructionButton = new TextButton("Units",skin)
+
+  unitConstructionButton.addCaptureListener(new ClickListener(){
+    override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
+      game.setScreen(new UnitConstructionScreen(game,MapScreen.this))
+    }
+  })
+
+  stage.addActor(unitConstructionButton)
+
+
 
   val mapInputProcessor = new InputProcessor() {
 
@@ -239,6 +250,8 @@ class MapScreen(game: NuclearNation) extends Screen{
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT)
     stage.getBatch.setColor(Color.WHITE)
 
+
+
     if (Gdx.input.isKeyPressed(Keys.UP)){
       cameraCenterY += 25
     }
@@ -343,6 +356,9 @@ class MapScreen(game: NuclearNation) extends Screen{
 
     gameFont.draw(stage.getBatch,s"Camera position: ($cameraCenterX,$cameraCenterY), camera viewport size: ${camera.viewportWidth}/${camera.viewportHeight} ,player position: ($cameraCenterX,$cameraCenterY)",camera.unproject(new Vector3(0,0,0)).x,camera.unproject(new Vector3(0,0,0)).y)
     stage.getBatch.end()
+
+    val coords = camera.unproject(new Vector3(stage.getViewport.getScreenWidth - unitConstructionButton.getPrefWidth,stage.getViewport.getScreenHeight,0))
+    unitConstructionButton.setPosition(coords.x,coords.y)
 
   }
 
