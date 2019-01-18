@@ -63,11 +63,7 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
     commandoUnitButton.addCaptureListener(new ClickListener(){
       override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
 
-        val text = if (mapScreen.technologies.count(t=> !t.enabled) >0){
-          "Tech requirements not met"
-        } else {
-          "Unit constructed"
-        }
+        val text = "Unit constructed"
 
         val dialog = new Dialog(text, skin) {
           override def result(result: Object) {
