@@ -54,10 +54,11 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
 
   override def show(): Unit = {
     val titleLabel = new Label("Unit construction",skin)
+    val soldierUnit = new TextButton("Soldier",skin)
     val commandoUnitButton = new TextButton("Commando",skin)
+    val spyUnitButton= new TextButton("Spy",skin)
 
-    titleLabel.setPosition(stage.getViewport.getScreenWidth/2,stage.getViewport.getScreenHeight-titleLabel.getPrefHeight)
-    commandoUnitButton.setPosition(stage.getViewport.getScreenWidth/2,stage.getViewport.getScreenHeight - 120)
+
 
 
     commandoUnitButton.addCaptureListener(new ClickListener(){
@@ -80,7 +81,14 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
     })
 
     stage.addActor(titleLabel)
+    stage.addActor(soldierUnit)
     stage.addActor(commandoUnitButton)
+    stage.addActor(spyUnitButton)
+
+    titleLabel.setPosition(stage.getViewport.getScreenWidth/2,stage.getViewport.getScreenHeight-titleLabel.getHeight)
+    soldierUnit.setPosition(titleLabel.getX,titleLabel.getY - soldierUnit.getHeight - 120)
+    commandoUnitButton.setPosition(titleLabel.getX,soldierUnit.getY - commandoUnitButton.getHeight - 10)
+    spyUnitButton.setPosition(titleLabel.getX,commandoUnitButton.getY - spyUnitButton.getHeight - 10)
 
   }
 
