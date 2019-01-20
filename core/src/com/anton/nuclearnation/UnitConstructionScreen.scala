@@ -5,7 +5,7 @@ import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx._
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.{Color, GL20, OrthographicCamera, Texture}
-import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.math.{Vector2, Vector3}
 import com.badlogic.gdx.scenes.scene2d.{InputEvent, Stage}
 import com.badlogic.gdx.scenes.scene2d.ui._
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
@@ -129,7 +129,7 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
     stage.addActor(commandoCountLabel)
     stage.addActor(spyCountLabel)
 
-    titleLabel.setPosition(stage.getViewport.getScreenWidth/2,stage.getViewport.getScreenHeight-titleLabel.getPrefHeight)
+    titleLabel.setPosition(stage.getViewport.getScreenWidth/2,camera.unproject(new Vector3(0,0,0)).y-titleLabel.getPrefHeight)
 
     soldierPicture.setPosition(titleLabel.getX,titleLabel.getY - soldierPicture.getPrefHeight - 120)
     soldierDescriptionLabel.setPosition(soldierPicture.getX + soldierPicture.getPrefWidth +30,soldierPicture.getY + soldierDescriptionLabel.getPrefHeight /2)
