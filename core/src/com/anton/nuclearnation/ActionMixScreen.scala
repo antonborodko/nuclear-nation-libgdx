@@ -3,6 +3,7 @@ package com.anton.nuclearnation
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx._
 import com.badlogic.gdx.graphics.{GL20, OrthographicCamera, Texture}
+import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.scenes.scene2d.{Group, InputEvent, Stage}
 import com.badlogic.gdx.scenes.scene2d.ui._
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
@@ -81,7 +82,7 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
 
 
     titleLabel.setPosition(controlGroup.getWidth/2,controlGroup.getHeight- titleLabel.getHeight)
-    subjectLabel.setPosition(controlGroup.getWidth/2,controlGroup.getHeight- titleLabel.getHeight - subjectLabel.getHeight-10)
+    subjectLabel.setPosition(controlGroup.getWidth/2,controlGroup.getHeight- titleLabel.getHeight - subjectLabel.getHeight-30)
     subjectPicture.setPosition(subjectLabel.getX,subjectLabel.getY-subjectPicture.getHeight-10)
     meansLabel.setPosition(subjectPicture.getX(),subjectPicture.getY() - meansLabel.getHeight - 10)
     meansPicture.setPosition(meansLabel.getX,meansLabel.getY - meansPicture.getHeight - 10)
@@ -91,7 +92,7 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
 
     stage.addActor(controlGroup)
 
-    controlGroup.setPosition(stage.getWidth /2 - titleLabel.getWidth / 2, stage.getHeight/2 + 200)
+    controlGroup.setPosition(stage.getWidth /2 - titleLabel.getWidth / 2, camera.unproject(new Vector3(0,0,0)).y)
 
   }
 
