@@ -22,6 +22,14 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
   val meansPicture = new Image(assetManager.get("raider-facing-left.png",classOf[Texture]))
   val crossedSwordsPicture = new Image(assetManager.get("crossed-swords.png",classOf[Texture]))
 
+  val soldierPicture = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
+  val commandoPicture = new Image(assetManager.get("unitConstruction/commandoUnit.png",classOf[Texture]))
+  val spyPicture = new Image(assetManager.get("unitConstruction/spyUnit.png",classOf[Texture]))
+
+  val soldierLabel = new Label("Soldier",skin)
+  val commandoLabel = new Label("Commando",skin)
+  val spyLabel = new Label("Spy",skin)
+
   val actionMixScreen = new InputProcessor() {
 
     override def keyUp(keycode: Int): Boolean = {
@@ -55,10 +63,12 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
 
 
   override def show(): Unit = {
-    val titleLabel = new Label("Create action mix",skin)
+    val titleLabel = new Label("CREATE ACTION MIX",skin)
     val subjectLabel = new Label("Subject",skin)
     val meansLabel = new Label("Means",skin)
     val resultLabel = new Label("Result", skin)
+
+    val assetsLabel = new Label("AVAILABLE ASSETS:",skin)
 
     val applyButton = new TextButton("Apply mix",skin)
 
@@ -80,6 +90,16 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
     controlGroup.addActor(crossedSwordsPicture)
     controlGroup.addActor(applyButton)
 
+    controlGroup.addActor(assetsLabel)
+    controlGroup.addActor(soldierPicture)
+    controlGroup.addActor(soldierLabel)
+    controlGroup.addActor(commandoPicture)
+    controlGroup.addActor(commandoLabel)
+    controlGroup.addActor(spyPicture)
+    controlGroup.addActor(spyLabel)
+
+    controlGroup.setWidth(camera.viewportWidth)
+
 
     titleLabel.setPosition(controlGroup.getWidth/2,controlGroup.getHeight- titleLabel.getHeight)
     subjectLabel.setPosition(controlGroup.getWidth/2,controlGroup.getHeight- titleLabel.getHeight - subjectLabel.getHeight-30)
@@ -90,9 +110,21 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
     crossedSwordsPicture.setPosition(resultLabel.getX,resultLabel.getY - crossedSwordsPicture.getHeight - 10)
     applyButton.setPosition(crossedSwordsPicture.getX,crossedSwordsPicture.getY - applyButton.getHeight - 10)
 
+    assetsLabel.setPosition(100,subjectLabel.getY)
+
+    soldierPicture.setPosition(assetsLabel.getX,assetsLabel.getY - soldierPicture.getPrefHeight-10)
+    soldierLabel.setPosition(soldierPicture.getX,soldierPicture.getY - soldierLabel.getPrefHeight - 10)
+
+    commandoPicture.setPosition(soldierLabel.getX,soldierLabel.getY - commandoPicture.getPrefHeight-10)
+    commandoLabel.setPosition(commandoPicture.getX,commandoPicture.getY - commandoLabel.getPrefHeight - 10)
+
+    spyPicture.setPosition(commandoLabel.getX,commandoLabel.getY - spyPicture.getPrefHeight-10)
+    spyLabel.setPosition(spyPicture.getX,spyPicture.getY - spyLabel.getPrefHeight - 10)
+
+
     stage.addActor(controlGroup)
 
-    controlGroup.setPosition(stage.getWidth /2 - titleLabel.getWidth / 2, camera.unproject(new Vector3(0,0,0)).y)
+    controlGroup.setPosition(0, camera.unproject(new Vector3(0,0,0)).y)
 
   }
 
