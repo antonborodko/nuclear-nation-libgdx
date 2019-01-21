@@ -48,6 +48,9 @@ class NuclearNation extends Game {
     assetManager.load("unitConstruction/soldierUnit.png",classOf[Texture])
     assetManager.load("unitConstruction/commandoUnit.png",classOf[Texture])
     assetManager.load("unitConstruction/spyUnit.png",classOf[Texture])
+
+    assetManager.load("question-mark.png",classOf[Texture])
+
     assetManager.finishLoading()
 
     this.setScreen(mapScreen)

@@ -7,8 +7,10 @@ import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.scenes.scene2d.{Actor, Group, InputEvent, Stage}
 import com.badlogic.gdx.scenes.scene2d.ui._
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.{Payload, Source, Target}
-import com.badlogic.gdx.scenes.scene2d.utils.{ClickListener, DragAndDrop}
+import com.badlogic.gdx.scenes.scene2d.utils.{ClickListener, DragAndDrop, SpriteDrawable, TextureRegionDrawable}
 import com.badlogic.gdx.utils.viewport.StretchViewport
+
+import scala.collection.JavaConverters
 
 class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
 
@@ -20,7 +22,13 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
   val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
 
   val subjectPicture = new Image(assetManager.get("raider_camp.png",classOf[Texture]))
-  val meansPicture = new Image(assetManager.get("raider-facing-left.png",classOf[Texture]))
+
+  val meansPicture = new Image(assetManager.get("question-mark.png",classOf[Texture]))
+  meansPicture.setName("means")
+
+  val resultPicture = new Image(assetManager.get("question-mark.png",classOf[Texture]))
+
+
   val crossedSwordsPicture = new Image(assetManager.get("crossed-swords.png",classOf[Texture]))
 
   val soldierPicture = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
@@ -81,14 +89,16 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
     })
 
     val controlGroup = new Group()
+    val assetsGroup = new Group()
+    assetsGroup.addActor(meansPicture)
 
     controlGroup.addActor(titleLabel)
     controlGroup.addActor(subjectLabel)
     controlGroup.addActor(subjectPicture)
     controlGroup.addActor(meansLabel)
-    controlGroup.addActor(meansPicture)
+    controlGroup.addActor(assetsGroup)
     controlGroup.addActor(resultLabel)
-    controlGroup.addActor(crossedSwordsPicture)
+    controlGroup.addActor(resultPicture)
     controlGroup.addActor(applyButton)
 
     controlGroup.addActor(assetsLabel)
@@ -108,8 +118,8 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
     meansLabel.setPosition(subjectPicture.getX(),subjectPicture.getY() - meansLabel.getHeight - 10)
     meansPicture.setPosition(meansLabel.getX,meansLabel.getY - meansPicture.getHeight - 10)
     resultLabel.setPosition(meansPicture.getX(),meansPicture.getY - resultLabel.getHeight - 10)
-    crossedSwordsPicture.setPosition(resultLabel.getX,resultLabel.getY - crossedSwordsPicture.getHeight - 10)
-    applyButton.setPosition(crossedSwordsPicture.getX,crossedSwordsPicture.getY - applyButton.getHeight - 10)
+    resultPicture.setPosition(resultLabel.getX,resultLabel.getY - resultPicture.getHeight - 10)
+    applyButton.setPosition(resultPicture.getX,resultPicture.getY - applyButton.getHeight - 10)
 
     assetsLabel.setPosition(100,subjectLabel.getY)
 
@@ -135,7 +145,12 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
     setAssetDragDrop(commandoPicture,assetManager.get("unitConstruction/commandoUnit.png",classOf[Texture]),dragAndDrop,meansPicture)
     setAssetDragDrop(spyPicture,assetManager.get("unitConstruction/spyUnit.png",classOf[Texture]),dragAndDrop,meansPicture)
 
-    dragAndDrop.addTarget(new Target(meansPicture) {
+    setTargetDragDrop(meansPicture,controlGroup,dragAndDrop)
+
+  }
+
+  private def setTargetDragDrop(target:Actor,assetGroup:Group,dragAndDrop: DragAndDrop): Unit ={
+    dragAndDrop.addTarget(new Target(target) {
       def drag (source:Source, payload:Payload, x:Float, y:Float, pointer:Int):Boolean = {
         getActor.setColor(Color.GREEN)
         true
@@ -145,11 +160,22 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
         getActor.setColor(Color.WHITE)
       }
 
-      def drop (source:Source, payload:Payload, x:Float, y:Float, pointer:Int) {
-        println("Accepted: " + payload.getObject + " " + x + ", " + y);
+      def drop (source:Source, payload:Payload, x:Float, y:Float, pointer:Int): Unit = {
+        val means = assetGroup.findActor[Image]("means")
+        val existingActor = if (means == null) getActor else means
+        val actor = new Image(payload.getDragActor.asInstanceOf[Image].getDrawable.asInstanceOf[TextureRegionDrawable].getRegion.getTexture)
+        actor.setPosition(existingActor.getX + actor.getPrefWidth + 5,existingActor.getY)
+        assetGroup.addActor(actor)
+
+        setTargetDragDrop(actor,assetGroup,dragAndDrop)
+
+        if (means != null){
+          actor.setX(means.getX)
+          means.remove()
+
+        }
       }
     })
-
   }
 
   private def setAssetDragDrop(source:Actor,assetTexture:Texture,dragAndDrop: DragAndDrop,targetActor:Actor): Unit ={
