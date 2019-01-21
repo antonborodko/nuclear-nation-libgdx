@@ -28,16 +28,26 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
 
   val resultPicture = new Image(assetManager.get("question-mark.png",classOf[Texture]))
 
+  val crossedSwordsPicture = new Image(assetManager.get("unitConstruction/crossed-swords.png",classOf[Texture]))
 
-  val crossedSwordsPicture = new Image(assetManager.get("crossed-swords.png",classOf[Texture]))
 
-  val soldierPicture = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
-  val commandoPicture = new Image(assetManager.get("unitConstruction/commandoUnit.png",classOf[Texture]))
-  val spyPicture = new Image(assetManager.get("unitConstruction/spyUnit.png",classOf[Texture]))
 
   val soldierLabel = new Label("Soldier",skin)
   val commandoLabel = new Label("Commando",skin)
   val spyLabel = new Label("Spy",skin)
+
+  object UnitType extends Enumeration {
+    type UnitType = Value
+    val SOLDIER, COMMANDO, SPY = Value
+  }
+
+  val soldierUnit = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
+  val commandoUnit = new Image(assetManager.get("unitConstruction/commandoUnit.png",classOf[Texture]))
+  val spyUnit = new Image(assetManager.get("unitConstruction/spyUnit.png",classOf[Texture]))
+
+  soldierUnit.setUserObject(UnitType.SOLDIER)
+  commandoUnit.setUserObject(UnitType.COMMANDO)
+  spyUnit.setUserObject(UnitType.SPY)
 
   val actionMixScreen = new InputProcessor() {
 
@@ -102,11 +112,11 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
     controlGroup.addActor(applyButton)
 
     controlGroup.addActor(assetsLabel)
-    controlGroup.addActor(soldierPicture)
+    controlGroup.addActor(soldierUnit)
     controlGroup.addActor(soldierLabel)
-    controlGroup.addActor(commandoPicture)
+    controlGroup.addActor(commandoUnit)
     controlGroup.addActor(commandoLabel)
-    controlGroup.addActor(spyPicture)
+    controlGroup.addActor(spyUnit)
     controlGroup.addActor(spyLabel)
 
     controlGroup.setWidth(camera.viewportWidth)
@@ -123,14 +133,14 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
 
     assetsLabel.setPosition(subjectLabel.getX-assetsLabel.getPrefWidth-20,subjectLabel.getY)
 
-    soldierPicture.setPosition(assetsLabel.getX,assetsLabel.getY - soldierPicture.getPrefHeight-10)
-    soldierLabel.setPosition(soldierPicture.getX,soldierPicture.getY - soldierLabel.getPrefHeight - 10)
+    soldierUnit.setPosition(assetsLabel.getX,assetsLabel.getY - soldierUnit.getPrefHeight-10)
+    soldierLabel.setPosition(soldierUnit.getX,soldierUnit.getY - soldierLabel.getPrefHeight - 10)
 
-    commandoPicture.setPosition(soldierLabel.getX,soldierLabel.getY - commandoPicture.getPrefHeight-10)
-    commandoLabel.setPosition(commandoPicture.getX,commandoPicture.getY - commandoLabel.getPrefHeight - 10)
+    commandoUnit.setPosition(soldierLabel.getX,soldierLabel.getY - commandoUnit.getPrefHeight-10)
+    commandoLabel.setPosition(commandoUnit.getX,commandoUnit.getY - commandoLabel.getPrefHeight - 10)
 
-    spyPicture.setPosition(commandoLabel.getX,commandoLabel.getY - spyPicture.getPrefHeight-10)
-    spyLabel.setPosition(spyPicture.getX,spyPicture.getY - spyLabel.getPrefHeight - 10)
+    spyUnit.setPosition(commandoLabel.getX,commandoLabel.getY - spyUnit.getPrefHeight-10)
+    spyLabel.setPosition(spyUnit.getX,spyUnit.getY - spyLabel.getPrefHeight - 10)
 
 
     stage.addActor(controlGroup)
@@ -141,9 +151,9 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
     //adding drag and drop functionality
     val dragAndDrop = new DragAndDrop()
 
-    setAssetDragDrop(soldierPicture,assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]),dragAndDrop,meansPicture)
-    setAssetDragDrop(commandoPicture,assetManager.get("unitConstruction/commandoUnit.png",classOf[Texture]),dragAndDrop,meansPicture)
-    setAssetDragDrop(spyPicture,assetManager.get("unitConstruction/spyUnit.png",classOf[Texture]),dragAndDrop,meansPicture)
+    setAssetDragDrop(soldierUnit,assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]),dragAndDrop,meansPicture)
+    setAssetDragDrop(commandoUnit,assetManager.get("unitConstruction/commandoUnit.png",classOf[Texture]),dragAndDrop,meansPicture)
+    setAssetDragDrop(spyUnit,assetManager.get("unitConstruction/spyUnit.png",classOf[Texture]),dragAndDrop,meansPicture)
 
     setTargetDragDrop(meansPicture,assetsGroup,dragAndDrop)
 
@@ -171,13 +181,16 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
         val size = assetGroup.getChildren.size
         val furthestRightActor = if (means == null) assetGroup.getChildren.get(size-1) else means
         val actor = new Image(payload.getDragActor.asInstanceOf[Image].getDrawable.asInstanceOf[TextureRegionDrawable].getRegion.getTexture)
+        actor.setUserObject(payload.getDragActor.getUserObject)
         actor.setPosition(furthestRightActor.getX + actor.getPrefWidth + 5,furthestRightActor.getY)
         assetGroup.addActor(actor)
+        analyzeOutcome(assetGroup)
 
         actor.addListener(new ClickListener(){
           override def touchDown(event: InputEvent, x: Float, y: Float, pointer: Int, button: Int) :Boolean= {
             if (button == Buttons.RIGHT){
               assetGroup.removeActor(actor)
+              analyzeOutcome(assetGroup)
               val size = assetGroup.getChildren.size
 
               for (i<-0 until size){
@@ -211,20 +224,24 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
     })
   }
 
+  private def analyzeOutcome(group: Group): Unit ={
+    val size = group.getChildren.size
+    for (i<-0 until size){
+      println(group.getChildren.get(i).getUserObject.asInstanceOf[UnitType.UnitType])
+    }
+
+
+  }
+
   private def setAssetDragDrop(source:Actor,assetTexture:Texture,dragAndDrop: DragAndDrop,targetActor:Actor): Unit ={
-    val dragAndDropImage = new Image(assetTexture)
+    val dragAndDropActor = new Image(assetTexture)
+    dragAndDropActor.setUserObject(source.getUserObject)
+
     dragAndDrop.addSource(new Source(source) {
       def dragStart (event:InputEvent, x:Float, y:Float, pointer:Int) = {
         val payload = new Payload()
-        payload.setObject("Some payload!")
-
-        payload.setDragActor(dragAndDropImage)
-
-        payload.setValidDragActor(dragAndDropImage)
-
-        payload.setInvalidDragActor(dragAndDropImage)
-        dragAndDrop.setDragActorPosition(x, y - dragAndDropImage.getPrefHeight)
-
+        payload.setDragActor(dragAndDropActor)
+        dragAndDrop.setDragActorPosition(x, y - dragAndDropActor.getPrefHeight)
         payload
       }
     })

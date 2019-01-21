@@ -44,7 +44,7 @@ class NuclearNation extends Game {
     assetManager.load("soldier-facing-left.png",classOf[Texture])
     assetManager.load("ruined-building.png",classOf[Texture])
     assetManager.load("data/commodore64/skin/uiskin.json",classOf[Skin])
-    assetManager.load("crossed-swords.png",classOf[Texture])
+    assetManager.load("unitConstruction/crossed-swords.png",classOf[Texture])
     assetManager.load("unitConstruction/soldierUnit.png",classOf[Texture])
     assetManager.load("unitConstruction/commandoUnit.png",classOf[Texture])
     assetManager.load("unitConstruction/spyUnit.png",classOf[Texture])
