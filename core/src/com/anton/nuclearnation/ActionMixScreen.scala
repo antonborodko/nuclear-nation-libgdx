@@ -145,34 +145,40 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
     setAssetDragDrop(commandoPicture,assetManager.get("unitConstruction/commandoUnit.png",classOf[Texture]),dragAndDrop,meansPicture)
     setAssetDragDrop(spyPicture,assetManager.get("unitConstruction/spyUnit.png",classOf[Texture]),dragAndDrop,meansPicture)
 
-    setTargetDragDrop(meansPicture,controlGroup,dragAndDrop)
+    setTargetDragDrop(meansPicture,assetsGroup,dragAndDrop)
 
   }
 
   private def setTargetDragDrop(target:Actor,assetGroup:Group,dragAndDrop: DragAndDrop): Unit ={
     dragAndDrop.addTarget(new Target(target) {
       def drag (source:Source, payload:Payload, x:Float, y:Float, pointer:Int):Boolean = {
-        getActor.setColor(Color.GREEN)
+        val size = assetGroup.getChildren.size
+        for (i<-0 until size){
+          assetGroup.getChildren.get(i).setColor(Color.GREEN)
+        }
         true
       }
 
       override def reset (source:Source, payload:Payload) {
-        getActor.setColor(Color.WHITE)
+        val size = assetGroup.getChildren.size
+        for (i<-0 until size){
+          assetGroup.getChildren.get(i).setColor(Color.WHITE)
+        }
       }
 
       def drop (source:Source, payload:Payload, x:Float, y:Float, pointer:Int): Unit = {
         val means = assetGroup.findActor[Image]("means")
-        val existingActor = if (means == null) getActor else means
+        val size = assetGroup.getChildren.size
+        val furthestRightActor = if (means == null) assetGroup.getChildren.get(size-1) else means
         val actor = new Image(payload.getDragActor.asInstanceOf[Image].getDrawable.asInstanceOf[TextureRegionDrawable].getRegion.getTexture)
-        actor.setPosition(existingActor.getX + actor.getPrefWidth + 5,existingActor.getY)
+        actor.setPosition(furthestRightActor.getX + actor.getPrefWidth + 5,furthestRightActor.getY)
         assetGroup.addActor(actor)
 
         setTargetDragDrop(actor,assetGroup,dragAndDrop)
 
         if (means != null){
           actor.setX(means.getX)
-          means.remove()
-
+          assetGroup.removeActor(means)
         }
       }
     })
