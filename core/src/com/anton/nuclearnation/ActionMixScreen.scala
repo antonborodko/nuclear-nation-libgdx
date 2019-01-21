@@ -1,6 +1,6 @@
 package com.anton.nuclearnation
 
-import com.badlogic.gdx.Input.Keys
+import com.badlogic.gdx.Input.{Buttons, Keys}
 import com.badlogic.gdx._
 import com.badlogic.gdx.graphics.{Color, GL20, OrthographicCamera, Texture}
 import com.badlogic.gdx.math.Vector3
@@ -116,12 +116,12 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
     subjectLabel.setPosition(controlGroup.getWidth/2,controlGroup.getHeight- titleLabel.getHeight - subjectLabel.getHeight-30)
     subjectPicture.setPosition(subjectLabel.getX,subjectLabel.getY-subjectPicture.getHeight-10)
     meansLabel.setPosition(subjectPicture.getX(),subjectPicture.getY() - meansLabel.getHeight - 10)
-    meansPicture.setPosition(meansLabel.getX,meansLabel.getY - meansPicture.getHeight - 10)
-    resultLabel.setPosition(meansPicture.getX(),meansPicture.getY - resultLabel.getHeight - 10)
+    assetsGroup.setPosition(meansLabel.getX,meansLabel.getY - meansPicture.getHeight - 10)
+    resultLabel.setPosition(assetsGroup.getX(),assetsGroup.getY - resultLabel.getHeight - 10)
     resultPicture.setPosition(resultLabel.getX,resultLabel.getY - resultPicture.getHeight - 10)
     applyButton.setPosition(resultPicture.getX,resultPicture.getY - applyButton.getHeight - 10)
 
-    assetsLabel.setPosition(100,subjectLabel.getY)
+    assetsLabel.setPosition(subjectLabel.getX-assetsLabel.getPrefWidth-20,subjectLabel.getY)
 
     soldierPicture.setPosition(assetsLabel.getX,assetsLabel.getY - soldierPicture.getPrefHeight-10)
     soldierLabel.setPosition(soldierPicture.getX,soldierPicture.getY - soldierLabel.getPrefHeight - 10)
@@ -173,6 +173,33 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
         val actor = new Image(payload.getDragActor.asInstanceOf[Image].getDrawable.asInstanceOf[TextureRegionDrawable].getRegion.getTexture)
         actor.setPosition(furthestRightActor.getX + actor.getPrefWidth + 5,furthestRightActor.getY)
         assetGroup.addActor(actor)
+
+        actor.addListener(new ClickListener(){
+          override def touchDown(event: InputEvent, x: Float, y: Float, pointer: Int, button: Int) :Boolean= {
+            if (button == Buttons.RIGHT){
+              assetGroup.removeActor(actor)
+              val size = assetGroup.getChildren.size
+
+              for (i<-0 until size){
+                val groupActor = assetGroup.getChildren.get(i)
+                if (i ==0 ) {
+                  groupActor.setPosition(0, 0)
+                } else {
+                  val previousActor = assetGroup.getChildren.get(i - 1)
+                  groupActor.setPosition(previousActor.getX + previousActor.getWidth + 5, previousActor.getY())
+                }
+              }
+
+              if (assetGroup.getChildren.size == 0){
+                assetGroup.addActor(meansPicture)
+                meansPicture.setPosition(0,0)
+                meansPicture.setColor(Color.WHITE)
+              }
+              return true
+            }
+            false
+          }
+        })
 
         setTargetDragDrop(actor,assetGroup,dragAndDrop)
 
