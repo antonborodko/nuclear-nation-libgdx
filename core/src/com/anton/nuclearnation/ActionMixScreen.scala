@@ -2,11 +2,12 @@ package com.anton.nuclearnation
 
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx._
-import com.badlogic.gdx.graphics.{GL20, OrthographicCamera, Texture}
+import com.badlogic.gdx.graphics.{Color, GL20, OrthographicCamera, Texture}
 import com.badlogic.gdx.math.Vector3
-import com.badlogic.gdx.scenes.scene2d.{Group, InputEvent, Stage}
+import com.badlogic.gdx.scenes.scene2d.{Actor, Group, InputEvent, Stage}
 import com.badlogic.gdx.scenes.scene2d.ui._
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
+import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.{Payload, Source, Target}
+import com.badlogic.gdx.scenes.scene2d.utils.{ClickListener, DragAndDrop}
 import com.badlogic.gdx.utils.viewport.StretchViewport
 
 class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
@@ -125,6 +126,49 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
     stage.addActor(controlGroup)
 
     controlGroup.setPosition(0, camera.unproject(new Vector3(0,0,0)).y)
+
+
+    //adding drag and drop functionality
+    val dragAndDrop = new DragAndDrop()
+
+    setAssetDragDrop(soldierPicture,assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]),dragAndDrop,meansPicture)
+    setAssetDragDrop(commandoPicture,assetManager.get("unitConstruction/commandoUnit.png",classOf[Texture]),dragAndDrop,meansPicture)
+    setAssetDragDrop(spyPicture,assetManager.get("unitConstruction/spyUnit.png",classOf[Texture]),dragAndDrop,meansPicture)
+
+    dragAndDrop.addTarget(new Target(meansPicture) {
+      def drag (source:Source, payload:Payload, x:Float, y:Float, pointer:Int):Boolean = {
+        getActor.setColor(Color.GREEN)
+        true
+      }
+
+      override def reset (source:Source, payload:Payload) {
+        getActor.setColor(Color.WHITE)
+      }
+
+      def drop (source:Source, payload:Payload, x:Float, y:Float, pointer:Int) {
+        println("Accepted: " + payload.getObject + " " + x + ", " + y);
+      }
+    })
+
+  }
+
+  private def setAssetDragDrop(source:Actor,assetTexture:Texture,dragAndDrop: DragAndDrop,targetActor:Actor): Unit ={
+    val dragAndDropImage = new Image(assetTexture)
+    dragAndDrop.addSource(new Source(source) {
+      def dragStart (event:InputEvent, x:Float, y:Float, pointer:Int) = {
+        val payload = new Payload()
+        payload.setObject("Some payload!")
+
+        payload.setDragActor(dragAndDropImage)
+
+        payload.setValidDragActor(dragAndDropImage)
+
+        payload.setInvalidDragActor(dragAndDropImage)
+        dragAndDrop.setDragActorPosition(x, y - dragAndDropImage.getPrefHeight)
+
+        payload
+      }
+    })
 
   }
 
