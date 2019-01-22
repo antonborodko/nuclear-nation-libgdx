@@ -52,6 +52,7 @@ class MapScreen(game: NuclearNation) extends Screen{
   val desertTileCell:Cell = new Cell
   val fogOfWarCell = new Cell
 
+
   val region = new TextureRegion(desertTileTexture)
 
   val raiderCampImage = assetManager.get("raider_camp.png",classOf[Texture])
@@ -76,6 +77,7 @@ class MapScreen(game: NuclearNation) extends Screen{
   val camera = stage.getCamera.asInstanceOf[OrthographicCamera]
 
   val unitConstructionButton = new TextButton("Units",skin)
+  val centerOnCapitalButton = new TextButton("Re-center",skin)
 
   unitConstructionButton.addCaptureListener(new ClickListener(){
     override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
@@ -83,7 +85,15 @@ class MapScreen(game: NuclearNation) extends Screen{
     }
   })
 
+  centerOnCapitalButton.addCaptureListener(new ClickListener(){
+    override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
+      cameraCenterX = capitalCell.x * mainLayer.getTileWidth - mainLayer.getTileWidth/2
+      cameraCenterY = capitalCell.y * mainLayer.getTileHeight - mainLayer.getTileHeight /2
+    }
+  })
+
   stage.addActor(unitConstructionButton)
+  stage.addActor(centerOnCapitalButton)
 
 
 
@@ -360,9 +370,9 @@ class MapScreen(game: NuclearNation) extends Screen{
     gameFont.draw(stage.getBatch,s"Camera position: ($cameraCenterX,$cameraCenterY), camera viewport size: ${camera.viewportWidth}/${camera.viewportHeight} ,player position: ($cameraCenterX,$cameraCenterY)",camera.unproject(new Vector3(0,0,0)).x,camera.unproject(new Vector3(0,0,0)).y)
     stage.getBatch.end()
 
-    val coords = camera.unproject(new Vector3(stage.getViewport.getScreenWidth - unitConstructionButton.getPrefWidth,stage.getViewport.getScreenHeight,0))
-    unitConstructionButton.setPosition(coords.x,coords.y)
-
+    val unitConstructionButtonCoords = camera.unproject(new Vector3(stage.getViewport.getScreenWidth - unitConstructionButton.getPrefWidth,stage.getViewport.getScreenHeight,0))
+    unitConstructionButton.setPosition(unitConstructionButtonCoords.x,unitConstructionButtonCoords.y)
+    centerOnCapitalButton.setPosition(unitConstructionButton.getX - centerOnCapitalButton.getPrefWidth-5,unitConstructionButton.getY)
   }
 
   override def resize(width: Int, height: Int): Unit = {}
