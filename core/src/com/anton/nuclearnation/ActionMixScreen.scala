@@ -63,7 +63,6 @@ class ActionMixScreen(currentLocation: MapLocation, game:NuclearNation,mapScreen
     override def keyUp(keycode: Int): Boolean = {
       if (keycode == Input.Keys.ESCAPE) {
         game.setScreen(mapScreen)
-        dispose()
         return true
       }
       false
@@ -152,6 +151,8 @@ class ActionMixScreen(currentLocation: MapLocation, game:NuclearNation,mapScreen
     addLeftClickListener(commandoUnit,assetsGroup,dragAndDrop)
     addLeftClickListener(spyUnit,assetsGroup,dragAndDrop)
 
+    stage.getBatch.setProjectionMatrix(camera.combined)
+
     applyButton.addCaptureListener(new ClickListener() {
       override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
 
@@ -165,11 +166,27 @@ class ActionMixScreen(currentLocation: MapLocation, game:NuclearNation,mapScreen
             }
             game.setScreen(new SituationScreen(currentLocation,defendersType,game,mapScreen))
           }
-          case ActionMixOutcome.SURVEILLANCE=>game.setScreen(mapScreen)
-          case ActionMixOutcome.UNKNOWN => game.setScreen(mapScreen)
+          case ActionMixOutcome.SURVEILLANCE=>
+            val dialog = new Dialog("Intelligence gathered", skin) {
+              override def result(result:Object) {
+                game.setScreen(mapScreen)
+              }
+            }
+
+            dialog.text(s"Intelligence gathered")
+            dialog.button("OK", true)
+            dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
+            dialog.pack()
+            stage.addActor(dialog)
+            val dialogPos = camera.unproject(new Vector3(camera.position.x,camera.position.y,0))
+            dialog.setPosition(dialogPos.x - dialog.getPrefWidth/2,dialogPos.y - dialog.getPrefHeight/2)
+
+          case ActionMixOutcome.UNKNOWN => {
+            game.setScreen(mapScreen)
+          }
         }
 
-        dispose()
+
       }
     })
 
@@ -333,7 +350,10 @@ class ActionMixScreen(currentLocation: MapLocation, game:NuclearNation,mapScreen
 
   override def resume(): Unit = {}
 
-  override def hide(): Unit = {}
+  override def hide(): Unit = {
+    dispose()
+  }
 
-  override def dispose(): Unit = {}
+  override def dispose(): Unit = {
+  }
 }
