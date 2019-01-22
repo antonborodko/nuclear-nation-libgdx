@@ -393,8 +393,12 @@ class MapScreen(game: NuclearNation) extends Screen{
 
     val mapCell = mapData.getCell(clickInfo.tileX,clickInfo.tileY)
     mapCell.get.location match {
-      case Some(_:RaiderCampInfo) =>{
-        game.setScreen(new ActionMixScreen(game,this))
+      case Some(ri:RaiderCampInfo) =>{
+        game.setScreen(new ActionMixScreen(ri,game,this))
+        return
+      }
+      case Some(ci:CityInfo) =>{
+        game.setScreen(new ActionMixScreen(ci,game,this))
         return
       }
       case _=>

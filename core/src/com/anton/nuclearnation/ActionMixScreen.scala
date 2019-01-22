@@ -1,5 +1,6 @@
 package com.anton.nuclearnation
 
+import com.anton.nuclearnation.MapScreen.{CityInfo, MapLocation, RaiderCampInfo}
 import com.badlogic.gdx.Input.{Buttons, Keys}
 import com.badlogic.gdx._
 import com.badlogic.gdx.graphics.g2d.Sprite
@@ -13,7 +14,7 @@ import com.badlogic.gdx.utils.viewport.StretchViewport
 
 import scala.collection.JavaConverters
 
-class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
+class ActionMixScreen(currentLocation: MapLocation, game:NuclearNation,mapScreen: MapScreen) extends Screen{
 
   val stage = new Stage(new StretchViewport(1600,960,new OrthographicCamera()))
   val camera = stage.getCamera.asInstanceOf[OrthographicCamera]
@@ -23,8 +24,6 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
   val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
 
   val subjectPicture = new Image(assetManager.get("raider_camp.png",classOf[Texture]))
-
-
 
   val crossedSwordsTexture = assetManager.get("unitConstruction/crossedSwords.png",classOf[Texture])
   val keyHoleTexture = assetManager.get("unitConstruction/spyKeyhole.png",classOf[Texture])
@@ -101,12 +100,7 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
 
     val applyButton = new TextButton("Apply mix",skin)
 
-    applyButton.addCaptureListener(new ClickListener() {
-      override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
-        game.setScreen(mapScreen)
-        dispose()
-      }
-    })
+
 
     val controlGroup = new Group()
     val assetsGroup = new Group()
@@ -157,6 +151,27 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
     addLeftClickListener(soldierUnit,assetsGroup,dragAndDrop)
     addLeftClickListener(commandoUnit,assetsGroup,dragAndDrop)
     addLeftClickListener(spyUnit,assetsGroup,dragAndDrop)
+
+    applyButton.addCaptureListener(new ClickListener() {
+      override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
+
+        val outcome = analyzeOutcome(assetsGroup)
+        outcome match {
+          case ActionMixOutcome.COMBAT=>{
+            val defendersType = currentLocation match {
+              case ri:RaiderCampInfo => DefendersType.RAIDERS
+              case ci:CityInfo => DefendersType.SOLDIERS
+              case _=> throw new RuntimeException("Unknown current location type " + currentLocation)
+            }
+            game.setScreen(new SituationScreen(currentLocation,defendersType,game,mapScreen))
+          }
+          case ActionMixOutcome.SURVEILLANCE=>game.setScreen(mapScreen)
+          case ActionMixOutcome.UNKNOWN => game.setScreen(mapScreen)
+        }
+
+        dispose()
+      }
+    })
 
 
     stage.addActor(controlGroup)
