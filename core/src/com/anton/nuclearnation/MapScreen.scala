@@ -349,9 +349,12 @@ class MapScreen(game: NuclearNation) extends Screen{
 
     //drawing names where applicable
     locationsList.foreach(location=>{
-      val pixelX : Int = (location.mapCell.x * mainLayer.getTileWidth).asInstanceOf[Int]
-      val pixelY : Int = (location.mapCell.y * mainLayer.getTileHeight).asInstanceOf[Int]
-      gameFont.draw(stage.getBatch,location.name,pixelX,pixelY)
+      val mapCell = location.mapCell
+      if (mapCell.state == MapCellState.DISCOVERED){
+        val pixelX : Int = (location.mapCell.x * mainLayer.getTileWidth).asInstanceOf[Int]
+        val pixelY : Int = (location.mapCell.y * mainLayer.getTileHeight).asInstanceOf[Int]
+        gameFont.draw(stage.getBatch,location.name,pixelX,pixelY)
+      }
     })
 
     gameFont.draw(stage.getBatch,s"Camera position: ($cameraCenterX,$cameraCenterY), camera viewport size: ${camera.viewportWidth}/${camera.viewportHeight} ,player position: ($cameraCenterX,$cameraCenterY)",camera.unproject(new Vector3(0,0,0)).x,camera.unproject(new Vector3(0,0,0)).y)
