@@ -44,6 +44,12 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
     val SOLDIER, COMMANDO, SPY = Value
   }
 
+  object ActionMixOutcome extends Enumeration {
+    type MixOutcome = Value
+    val SURVEILLANCE, COMBAT, UNKNOWN = Value
+  }
+
+
 
   val soldierUnit = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
   val commandoUnit = new Image(assetManager.get("unitConstruction/commandoUnit.png",classOf[Texture]))
@@ -246,13 +252,13 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
     }
   }
 
-  private def updateResultPicture(group: Group): Unit={
+  private def analyzeOutcome(assetGroup:Group): ActionMixOutcome.MixOutcome ={
     var soldiersCommandoCounter = 0
     var spyCounter = 0
 
-    val size = group.getChildren.size
+    val size = assetGroup.getChildren.size
     for (i<-0 until size){
-      val unitType = group.getChildren.get(i).getUserObject.asInstanceOf[UnitType.UnitType]
+      val unitType = assetGroup.getChildren.get(i).getUserObject.asInstanceOf[UnitType.UnitType]
       unitType match{
         case UnitType.SOLDIER | UnitType.COMMANDO => soldiersCommandoCounter +=1
         case UnitType.SPY => spyCounter +=1
@@ -260,15 +266,24 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
       }
     }
 
-    val texture:Texture = {
-      if (soldiersCommandoCounter > 0 && spyCounter == 0) {
-        crossedSwordsTexture
-      } else if (spyCounter > 0 && soldiersCommandoCounter == 0) {
-        keyHoleTexture
-      } else {
-        questionMarkTexture
-      }
+    if (soldiersCommandoCounter > 0 && spyCounter == 0) {
+      ActionMixOutcome.COMBAT
+    } else if (spyCounter > 0 && soldiersCommandoCounter == 0) {
+      ActionMixOutcome.SURVEILLANCE
+    } else {
+      ActionMixOutcome.UNKNOWN
     }
+  }
+
+
+  private def updateResultPicture(assetGroup: Group): Unit={
+
+    val texture:Texture =
+      analyzeOutcome(assetGroup) match {
+        case ActionMixOutcome.COMBAT=>crossedSwordsTexture
+        case ActionMixOutcome.SURVEILLANCE=>keyHoleTexture
+        case _=> questionMarkTexture
+      }
 
     resultPicture.setDrawable(new SpriteDrawable(new Sprite(texture)))
 
