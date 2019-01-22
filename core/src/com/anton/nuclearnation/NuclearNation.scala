@@ -49,7 +49,6 @@ class NuclearNation extends Game {
     assetManager.load("unitConstruction/commandoUnit.png",classOf[Texture])
     assetManager.load("unitConstruction/spyUnit.png",classOf[Texture])
     assetManager.load("unitConstruction/spyKeyhole.png",classOf[Texture])
-
     assetManager.load("unitConstruction/questionMark.png",classOf[Texture])
 
     assetManager.finishLoading()

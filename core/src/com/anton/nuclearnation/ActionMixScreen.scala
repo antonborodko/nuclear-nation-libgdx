@@ -2,6 +2,7 @@ package com.anton.nuclearnation
 
 import com.badlogic.gdx.Input.{Buttons, Keys}
 import com.badlogic.gdx._
+import com.badlogic.gdx.graphics.g2d.Sprite
 import com.badlogic.gdx.graphics.{Color, GL20, OrthographicCamera, Texture}
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.scenes.scene2d.{Actor, Group, InputEvent, Stage}
@@ -23,14 +24,16 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
 
   val subjectPicture = new Image(assetManager.get("raider_camp.png",classOf[Texture]))
 
-  val meansPicture = new Image(assetManager.get("unitConstruction/questionMark.png",classOf[Texture]))
+
+
+  val crossedSwordsTexture = assetManager.get("unitConstruction/crossedSwords.png",classOf[Texture])
+  val keyHoleTexture = assetManager.get("unitConstruction/spyKeyhole.png",classOf[Texture])
+  val questionMarkTexture = assetManager.get("unitConstruction/questionMark.png",classOf[Texture])
+
+  val meansPicture = new Image(questionMarkTexture)
   meansPicture.setName("means")
 
-  val resultPicture = new Image(assetManager.get("unitConstruction/questionMark.png",classOf[Texture]))
-
-  val crossedSwordsPicture = new Image(assetManager.get("unitConstruction/crossedSwords.png",classOf[Texture]))
-
-
+  val resultPicture = new Image(questionMarkTexture)
 
   val soldierLabel = new Label("Soldier",skin)
   val commandoLabel = new Label("Commando",skin)
@@ -40,6 +43,7 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
     type UnitType = Value
     val SOLDIER, COMMANDO, SPY = Value
   }
+
 
   val soldierUnit = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
   val commandoUnit = new Image(assetManager.get("unitConstruction/commandoUnit.png",classOf[Texture]))
@@ -184,15 +188,14 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
         actor.setUserObject(payload.getDragActor.getUserObject)
         actor.setPosition(furthestRightActor.getX + actor.getPrefWidth + 5,furthestRightActor.getY)
         assetGroup.addActor(actor)
-        analyzeOutcome(assetGroup)
+        updateResultPicture(assetGroup)
 
         actor.addListener(new ClickListener(){
           override def touchDown(event: InputEvent, x: Float, y: Float, pointer: Int, button: Int) :Boolean= {
             if (button == Buttons.RIGHT){
               assetGroup.removeActor(actor)
-              analyzeOutcome(assetGroup)
-              val size = assetGroup.getChildren.size
 
+              val size = assetGroup.getChildren.size
               for (i<-0 until size){
                 val groupActor = assetGroup.getChildren.get(i)
                 if (i ==0 ) {
@@ -208,6 +211,7 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
                 meansPicture.setPosition(0,0)
                 meansPicture.setColor(Color.WHITE)
               }
+              updateResultPicture(assetGroup)
               return true
             }
             false
@@ -224,12 +228,31 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
     })
   }
 
-  private def analyzeOutcome(group: Group): Unit ={
+  private def updateResultPicture(group: Group): Unit={
+    var soldiersCommandoCounter = 0
+    var spyCounter = 0
+
     val size = group.getChildren.size
     for (i<-0 until size){
-      println(group.getChildren.get(i).getUserObject.asInstanceOf[UnitType.UnitType])
+      val unitType = group.getChildren.get(i).getUserObject.asInstanceOf[UnitType.UnitType]
+      unitType match{
+        case UnitType.SOLDIER | UnitType.COMMANDO => soldiersCommandoCounter +=1
+        case UnitType.SPY => spyCounter +=1
+        case _=>
+      }
     }
 
+    val texture:Texture = {
+      if (soldiersCommandoCounter > 0 && spyCounter == 0) {
+        crossedSwordsTexture
+      } else if (spyCounter > 0 && soldiersCommandoCounter == 0) {
+        keyHoleTexture
+      } else {
+        questionMarkTexture
+      }
+    }
+
+    resultPicture.setDrawable(new SpriteDrawable(new Sprite(texture)))
 
   }
 
