@@ -23,12 +23,12 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
 
   val subjectPicture = new Image(assetManager.get("raider_camp.png",classOf[Texture]))
 
-  val meansPicture = new Image(assetManager.get("question-mark.png",classOf[Texture]))
+  val meansPicture = new Image(assetManager.get("unitConstruction/questionMark.png",classOf[Texture]))
   meansPicture.setName("means")
 
-  val resultPicture = new Image(assetManager.get("question-mark.png",classOf[Texture]))
+  val resultPicture = new Image(assetManager.get("unitConstruction/questionMark.png",classOf[Texture]))
 
-  val crossedSwordsPicture = new Image(assetManager.get("unitConstruction/crossed-swords.png",classOf[Texture]))
+  val crossedSwordsPicture = new Image(assetManager.get("unitConstruction/crossedSwords.png",classOf[Texture]))
 
 
 
