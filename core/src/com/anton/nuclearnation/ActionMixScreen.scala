@@ -137,6 +137,8 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
 
     assetsLabel.setPosition(subjectLabel.getX-assetsLabel.getPrefWidth-20,subjectLabel.getY)
 
+    val dragAndDrop = new DragAndDrop()
+
     soldierUnit.setPosition(assetsLabel.getX,assetsLabel.getY - soldierUnit.getPrefHeight-10)
     soldierLabel.setPosition(soldierUnit.getX,soldierUnit.getY - soldierLabel.getPrefHeight - 10)
 
@@ -146,22 +148,32 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
     spyUnit.setPosition(commandoLabel.getX,commandoLabel.getY - spyUnit.getPrefHeight-10)
     spyLabel.setPosition(spyUnit.getX,spyUnit.getY - spyLabel.getPrefHeight - 10)
 
+    addLeftClickListener(soldierUnit,assetsGroup,dragAndDrop)
+    addLeftClickListener(commandoUnit,assetsGroup,dragAndDrop)
+    addLeftClickListener(spyUnit,assetsGroup,dragAndDrop)
+
 
     stage.addActor(controlGroup)
 
     controlGroup.setPosition(0, camera.unproject(new Vector3(0,0,0)).y)
 
 
-    //adding drag and drop functionality
-    val dragAndDrop = new DragAndDrop()
-
     setAssetDragDrop(soldierUnit,assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]),dragAndDrop,meansPicture)
     setAssetDragDrop(commandoUnit,assetManager.get("unitConstruction/commandoUnit.png",classOf[Texture]),dragAndDrop,meansPicture)
     setAssetDragDrop(spyUnit,assetManager.get("unitConstruction/spyUnit.png",classOf[Texture]),dragAndDrop,meansPicture)
 
     setTargetDragDrop(meansPicture,assetsGroup,dragAndDrop)
-
   }
+
+  private def addLeftClickListener(actor:Actor,assetsGroup:Group,dragAndDrop: DragAndDrop): Unit ={
+    actor.addCaptureListener(new ClickListener(Buttons.LEFT){
+
+      override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
+        addActorToAssetGroup(actor, assetsGroup, dragAndDrop)
+      }
+    })
+  }
+
 
   private def setTargetDragDrop(target:Actor,assetGroup:Group,dragAndDrop: DragAndDrop): Unit ={
     dragAndDrop.addTarget(new Target(target) {
@@ -180,52 +192,58 @@ class ActionMixScreen(game:NuclearNation,mapScreen: MapScreen) extends Screen{
         }
       }
 
+
+
       def drop (source:Source, payload:Payload, x:Float, y:Float, pointer:Int): Unit = {
-        val means = assetGroup.findActor[Image]("means")
-        val size = assetGroup.getChildren.size
-        val furthestRightActor = if (means == null) assetGroup.getChildren.get(size-1) else means
-        val actor = new Image(payload.getDragActor.asInstanceOf[Image].getDrawable.asInstanceOf[TextureRegionDrawable].getRegion.getTexture)
-        actor.setUserObject(payload.getDragActor.getUserObject)
-        actor.setPosition(furthestRightActor.getX + actor.getPrefWidth + 5,furthestRightActor.getY)
-        assetGroup.addActor(actor)
-        updateResultPicture(assetGroup)
-
-        actor.addListener(new ClickListener(){
-          override def touchDown(event: InputEvent, x: Float, y: Float, pointer: Int, button: Int) :Boolean= {
-            if (button == Buttons.RIGHT){
-              assetGroup.removeActor(actor)
-
-              val size = assetGroup.getChildren.size
-              for (i<-0 until size){
-                val groupActor = assetGroup.getChildren.get(i)
-                if (i ==0 ) {
-                  groupActor.setPosition(0, 0)
-                } else {
-                  val previousActor = assetGroup.getChildren.get(i - 1)
-                  groupActor.setPosition(previousActor.getX + previousActor.getWidth + 5, previousActor.getY())
-                }
-              }
-
-              if (assetGroup.getChildren.size == 0){
-                assetGroup.addActor(meansPicture)
-                meansPicture.setPosition(0,0)
-                meansPicture.setColor(Color.WHITE)
-              }
-              updateResultPicture(assetGroup)
-              return true
-            }
-            false
-          }
-        })
-
-        setTargetDragDrop(actor,assetGroup,dragAndDrop)
-
-        if (means != null){
-          actor.setX(means.getX)
-          assetGroup.removeActor(means)
-        }
+        addActorToAssetGroup(payload.getDragActor,assetGroup,dragAndDrop)
       }
     })
+  }
+
+  private def addActorToAssetGroup(sourceActor:Actor,assetGroup:Group,dragAndDrop: DragAndDrop): Unit ={
+    val means = assetGroup.findActor[Image]("means")
+    val size = assetGroup.getChildren.size
+    val furthestRightActor = if (means == null) assetGroup.getChildren.get(size-1) else means
+    val actor = new Image(sourceActor.asInstanceOf[Image].getDrawable.asInstanceOf[TextureRegionDrawable].getRegion.getTexture)
+    actor.setUserObject(sourceActor.getUserObject)
+    actor.setPosition(furthestRightActor.getX + actor.getPrefWidth + 5,furthestRightActor.getY)
+    assetGroup.addActor(actor)
+    updateResultPicture(assetGroup)
+
+    actor.addListener(new ClickListener(){
+      override def touchDown(event: InputEvent, x: Float, y: Float, pointer: Int, button: Int) :Boolean= {
+        if (button == Buttons.RIGHT){
+          assetGroup.removeActor(actor)
+
+          val size = assetGroup.getChildren.size
+          for (i<-0 until size){
+            val groupActor = assetGroup.getChildren.get(i)
+            if (i ==0 ) {
+              groupActor.setPosition(0, 0)
+            } else {
+              val previousActor = assetGroup.getChildren.get(i - 1)
+              groupActor.setPosition(previousActor.getX + previousActor.getWidth + 5, previousActor.getY())
+            }
+          }
+
+          if (assetGroup.getChildren.size == 0){
+            assetGroup.addActor(meansPicture)
+            meansPicture.setPosition(0,0)
+            meansPicture.setColor(Color.WHITE)
+          }
+          updateResultPicture(assetGroup)
+          return true
+        }
+        false
+      }
+    })
+
+    setTargetDragDrop(actor,assetGroup,dragAndDrop)
+
+    if (means != null){
+      actor.setX(means.getX)
+      assetGroup.removeActor(means)
+    }
   }
 
   private def updateResultPicture(group: Group): Unit={
