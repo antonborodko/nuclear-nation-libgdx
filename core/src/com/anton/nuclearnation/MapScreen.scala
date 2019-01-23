@@ -139,7 +139,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   val capitalCell = mapData.cells.find(cell=>cell.x == capitalCoords._1 && cell.y == capitalCoords._2).get
   val capital = CityInfo("Hope",capitalCell,isOwnedByPlayer = true)
-  capitalCell.state = MapCellState.DISCOVERED
+  capitalCell.state = MapCellState.VISITED
   capitalCell.location = Some(capital)
   locationsList += capital
 
@@ -209,7 +209,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
     }
 
-    if (mapData.cells.find(cell=>cell.x == x && cell.y == y).get.state == MapCellState.UNDISCOVERED){
+    if (mapData.cells.find(cell=>cell.x == x && cell.y == y).get.state == MapCellState.HIDDEN){
       fogOfWarLayer.setCell(x,y,fogOfWarCell)
     }
 
@@ -287,9 +287,22 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   }
 
-  def discoverTile(tileX: Int, tileY: Int) = {
+  def discoverTile(tileX: Int, tileY: Int, radiusTiles:Int=1) = {
     val tile = mapData.getCell(tileX,tileY).get
-    tile.state = MapCellState.DISCOVERED
+    tile.state = MapCellState.VISITED
+    //getting covered tiles within radius
+    val tilesAround = for (
+      x<-tileX - radiusTiles to tileX + radiusTiles;
+      y<-tileY - radiusTiles to tileY + radiusTiles
+    ) yield {
+      mapData.getCell(x,y)
+    }
+    tilesAround.foreach(t=>{
+      if (t.isDefined) {
+        t.get.state = MapCellState.VISITED
+        fogOfWarLayer.setCell(t.get.x, t.get.y, null)
+      }
+    })
     fogOfWarLayer.setCell(tileX,tileY,null)
   }
 
@@ -362,7 +375,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     //drawing names where applicable
     locationsList.foreach(location=>{
       val mapCell = location.mapCell
-      if (mapCell.state == MapCellState.DISCOVERED){
+      if (mapCell.state == MapCellState.VISITED){
         val pixelX : Int = (location.mapCell.x * mainLayer.getTileWidth).asInstanceOf[Int]
         val pixelY : Int = (location.mapCell.y * mainLayer.getTileHeight).asInstanceOf[Int]
         gameFont.draw(stage.getBatch,location.name,pixelX,pixelY)
@@ -407,7 +420,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     val clickInfo = getClickInfo(screenX,screenY)
 
     val mapCell = mapData.getCell(clickInfo.tileX,clickInfo.tileY)
-    if (mapCell.get.state == MapCellState.DISCOVERED) {
+    if (mapCell.get.state == MapCellState.VISITED) {
       mapCell.get.location match {
         case Some(ri: RaiderCampInfo) => {
           game.setScreen(new ActionMixScreen(ri, game, this))
