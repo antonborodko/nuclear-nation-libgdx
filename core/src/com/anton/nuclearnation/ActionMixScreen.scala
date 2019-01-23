@@ -326,11 +326,12 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     var soldiersCommandoCounter = 0
     var spyCounter = 0
 
-    val size = assetGroup.getChildren.size
+    val filteredAssetGroup = assetGroup.getChildren.toArray.filter(a=>a != meansPicture)
+    val size = filteredAssetGroup.length
     for (i<-0 until size){
-      val actor = assetGroup.getChildren.get(i)
+      val actor = filteredAssetGroup(i)
       if (actor.getUserObject != null) {
-        val unitType = assetGroup.getChildren.get(i).getUserObject.asInstanceOf[ActorUserObject].unitType
+        val unitType = filteredAssetGroup(i).getUserObject.asInstanceOf[ActorUserObject].unitType
         unitType match {
           case UnitType.SOLDIER | UnitType.COMMANDO => soldiersCommandoCounter += 1
           case UnitType.SPY => spyCounter += 1
@@ -339,7 +340,7 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
       }
     }
 
-    if (targetLocation.isInstanceOf[CoveredAreaInfo]){
+    if (targetLocation.isInstanceOf[CoveredAreaInfo] && size >0){
       ActionMixOutcome.EXPEDITION
     } else{ //target is discovered
         if (soldiersCommandoCounter > 0 && spyCounter == 0) {
