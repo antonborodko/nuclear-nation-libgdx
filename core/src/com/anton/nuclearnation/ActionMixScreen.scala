@@ -60,9 +60,21 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
   val commandoUnit = new Image(assetManager.get("unitConstruction/commandoUnit.png",classOf[Texture]))
   val spyUnit = new Image(assetManager.get("unitConstruction/spyUnit.png",classOf[Texture]))
 
-  soldierUnit.setUserObject(UnitType.SOLDIER)
-  commandoUnit.setUserObject(UnitType.COMMANDO)
-  spyUnit.setUserObject(UnitType.SPY)
+
+  case class ActorUserObject(unitType: UnitType.UnitType,onRemovedFromStack:()=>Unit)
+
+  soldierUnit.setUserObject(ActorUserObject(UnitType.SOLDIER,()=>{
+    game.soldierCounter +=1
+    updateUnitCountLabel("Soldier",soldierLabel,game.soldierCounter)
+  }))
+  commandoUnit.setUserObject(ActorUserObject(UnitType.COMMANDO,()=>{
+    game.commandoCounter +=1
+    updateUnitCountLabel("Commando",commandoLabel,game.commandoCounter)
+  }))
+  spyUnit.setUserObject(ActorUserObject(UnitType.SPY,()=>{
+    game.spyCounter +=1
+    updateUnitCountLabel("Spy",spyLabel,game.spyCounter)
+  }))
 
   val actionMixScreen = new InputProcessor() {
 
@@ -95,6 +107,10 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
   Gdx.input.setInputProcessor(multiplexer)
 
 
+  private def updateUnitCountLabel(baseText:String,label:Label,count:Int): Unit ={
+    label.setText(s"$baseText ($count)")
+  }
+
   override def show(): Unit = {
     val titleLabel = new Label("CREATE ACTION MIX",skin)
     val subjectLabel = new Label("Subject",skin)
@@ -104,8 +120,6 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     val assetsLabel = new Label("AVAILABLE ASSETS:",skin)
 
     val applyButton = new TextButton("Apply mix",skin)
-
-
 
     val controlGroup = new Group()
     val assetsGroup = new Group()
@@ -153,9 +167,22 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     spyUnit.setPosition(commandoLabel.getX,commandoLabel.getY - spyUnit.getPrefHeight-10)
     spyLabel.setPosition(spyUnit.getX,spyUnit.getY - spyLabel.getPrefHeight - 10)
 
-    addLeftClickListener(soldierUnit,assetsGroup,dragAndDrop)
-    addLeftClickListener(commandoUnit,assetsGroup,dragAndDrop)
-    addLeftClickListener(spyUnit,assetsGroup,dragAndDrop)
+    addUnitLeftClickListener(soldierUnit,assetsGroup,dragAndDrop,()=>{
+      game.soldierCounter -=1
+      updateUnitCountLabel("Soldier",soldierLabel,game.soldierCounter)
+    })
+    addUnitLeftClickListener(commandoUnit,assetsGroup,dragAndDrop,()=>{
+      game.commandoCounter -=1
+      updateUnitCountLabel("Commando",commandoLabel,game.commandoCounter)
+    })
+    addUnitLeftClickListener(spyUnit,assetsGroup,dragAndDrop,()=>{
+      game.spyCounter -=1
+      updateUnitCountLabel("Spy",spyLabel,game.spyCounter)
+    })
+
+    updateUnitCountLabel("Soldier",soldierLabel,game.soldierCounter)
+    updateUnitCountLabel("Commando",commandoLabel,game.commandoCounter)
+    updateUnitCountLabel("Spy",spyLabel,game.spyCounter)
 
     stage.getBatch.setProjectionMatrix(camera.combined)
 
@@ -212,11 +239,12 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     setTargetDragDrop(meansPicture,assetsGroup,dragAndDrop)
   }
 
-  private def addLeftClickListener(actor:Actor,assetsGroup:Group,dragAndDrop: DragAndDrop): Unit ={
+  private def addUnitLeftClickListener(actor:Actor,assetsGroup:Group,dragAndDrop: DragAndDrop,callback:() => Unit): Unit ={
     actor.addCaptureListener(new ClickListener(Buttons.LEFT){
 
       override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
         addActorToAssetGroup(actor, assetsGroup, dragAndDrop)
+        callback()
       }
     })
   }
@@ -261,7 +289,8 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
       override def touchDown(event: InputEvent, x: Float, y: Float, pointer: Int, button: Int) :Boolean= {
         if (button == Buttons.RIGHT){
           assetGroup.removeActor(actor)
-
+          val userObject = actor.getUserObject.asInstanceOf[ActorUserObject]
+          userObject.onRemovedFromStack()
           val size = assetGroup.getChildren.size
           for (i<-0 until size){
             val groupActor = assetGroup.getChildren.get(i)
@@ -299,11 +328,14 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
 
     val size = assetGroup.getChildren.size
     for (i<-0 until size){
-      val unitType = assetGroup.getChildren.get(i).getUserObject.asInstanceOf[UnitType.UnitType]
-      unitType match{
-        case UnitType.SOLDIER | UnitType.COMMANDO => soldiersCommandoCounter +=1
-        case UnitType.SPY => spyCounter +=1
-        case _=>
+      val actor = assetGroup.getChildren.get(i)
+      if (actor.getUserObject != null) {
+        val unitType = assetGroup.getChildren.get(i).getUserObject.asInstanceOf[ActorUserObject].unitType
+        unitType match {
+          case UnitType.SOLDIER | UnitType.COMMANDO => soldiersCommandoCounter += 1
+          case UnitType.SPY => spyCounter += 1
+          case _ =>
+        }
       }
     }
 
