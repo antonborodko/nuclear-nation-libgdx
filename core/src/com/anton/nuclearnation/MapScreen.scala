@@ -52,6 +52,8 @@ class MapScreen(game: NuclearNation) extends Screen{
   val desertTileCell:Cell = new Cell
   val fogOfWarCell = new Cell
 
+  val expeditionTexture =   assetManager.get("expedition.png",classOf[Texture])
+
 
   val region = new TextureRegion(desertTileTexture)
 
@@ -458,8 +460,7 @@ class MapScreen(game: NuclearNation) extends Screen{
           if (expeditions.size<1) {
             val clickInfo = getClickInfo(screenX,screenY)
             val texture = assetManager.get("expedition.png",classOf[Texture])
-            val coords = new Vector3(capital.mapCell.x * mainLayer.getTileWidth + texture.getWidth/2,capital.mapCell.y * mainLayer.getTileHeight +texture.getHeight/2,0)
-            expeditions += ExpeditionInfo(coords.x,coords.y,coords.x,coords.y,clickInfo.pixelX, clickInfo.pixelY,texture,None)
+            sendExpedition(new Vector2(capital.mapCell.x,capital.mapCell.y),new Vector2(clickInfo.tileX,clickInfo.tileY),texture)
           } else {
             Gdx.app.log("INFO","Expedition already sent")
           }
@@ -478,6 +479,19 @@ class MapScreen(game: NuclearNation) extends Screen{
     dialog.pack()
     stage.addActor(dialog)
     dialog.setPosition(cameraCenterX - dialog.getPrefWidth/2,cameraCenterY - dialog.getPrefHeight/2)
+  }
+
+  def sendExpedition(sourceTile:Vector2 = new Vector2(capital.mapCell.x,capital.mapCell.y), destTile:Vector2,texture:Texture = expeditionTexture ): Unit ={
+    expeditions += ExpeditionInfo(
+      sourceTile.x * mainLayer.getTileWidth  + texture.getWidth/2,
+      sourceTile.y * mainLayer.getTileHeight +texture.getHeight/2,
+      sourceTile.x * mainLayer.getTileWidth  + texture.getWidth/2,
+      sourceTile.y * mainLayer.getTileHeight +texture.getHeight/2,
+      destTile.x * mainLayer.getTileWidth +texture.getWidth/2,
+      destTile.y * mainLayer.getTileHeight +texture.getHeight/2,
+      texture,
+      None
+    )
   }
 
   private def checkExpeditionTile(tileX:Int,tileY:Int,expedition:ExpeditionInfo): Unit ={

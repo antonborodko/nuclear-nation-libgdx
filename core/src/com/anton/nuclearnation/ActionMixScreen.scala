@@ -5,7 +5,7 @@ import com.badlogic.gdx.Input.{Buttons, Keys}
 import com.badlogic.gdx._
 import com.badlogic.gdx.graphics.g2d.Sprite
 import com.badlogic.gdx.graphics.{Color, GL20, OrthographicCamera, Texture}
-import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.math.{Vector2, Vector3}
 import com.badlogic.gdx.scenes.scene2d.{Actor, Group, InputEvent, Stage}
 import com.badlogic.gdx.scenes.scene2d.ui._
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.{Payload, Source, Target}
@@ -23,10 +23,9 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
 
   val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
 
-
-
   val crossedSwordsTexture = assetManager.get("unitConstruction/crossedSwords.png",classOf[Texture])
   val keyHoleTexture = assetManager.get("unitConstruction/spyKeyhole.png",classOf[Texture])
+  val expeditionTexture = assetManager.get("expedition.png",classOf[Texture])
   val questionMarkTexture = assetManager.get("unitConstruction/questionMark.png",classOf[Texture])
 
   val meansPicture = new Image(questionMarkTexture)
@@ -45,7 +44,7 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
 
   object ActionMixOutcome extends Enumeration {
     type MixOutcome = Value
-    val SURVEILLANCE, COMBAT, UNKNOWN = Value
+    val SURVEILLANCE, COMBAT, EXPEDITION, UNKNOWN = Value
   }
 
   val subjectPicture = targetLocation match {
@@ -165,14 +164,17 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
 
         val outcome = analyzeOutcome(assetsGroup)
         outcome match {
-          case ActionMixOutcome.COMBAT=>{
+          case ActionMixOutcome.EXPEDITION =>
+            mapScreen.sendExpedition(destTile = new Vector2(targetLocation.mapCell.x,targetLocation.mapCell.y))
+            game.setScreen(mapScreen)
+          case ActionMixOutcome.COMBAT=>
             val defendersType = targetLocation match {
               case ri:RaiderCampInfo => DefendersType.RAIDERS
               case ci:CityInfo => DefendersType.SOLDIERS
               case _=> throw new RuntimeException("Unknown current location type " + targetLocation)
             }
             game.setScreen(new SituationScreen(targetLocation,defendersType,game,mapScreen))
-          }
+
           case ActionMixOutcome.SURVEILLANCE=>
             val dialog = new Dialog("Intelligence gathered", skin) {
               override def result(result:Object) {
@@ -305,13 +307,19 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
       }
     }
 
-    if (soldiersCommandoCounter > 0 && spyCounter == 0) {
-      ActionMixOutcome.COMBAT
-    } else if (spyCounter > 0 && soldiersCommandoCounter == 0) {
-      ActionMixOutcome.SURVEILLANCE
-    } else {
-      ActionMixOutcome.UNKNOWN
+    if (targetLocation.isInstanceOf[CoveredAreaInfo]){
+      ActionMixOutcome.EXPEDITION
+    } else{ //target is discovered
+        if (soldiersCommandoCounter > 0 && spyCounter == 0) {
+          ActionMixOutcome.COMBAT
+        } else if (spyCounter > 0 && soldiersCommandoCounter == 0) {
+          ActionMixOutcome.SURVEILLANCE
+        } else {
+          ActionMixOutcome.UNKNOWN
+        }
     }
+
+
   }
 
 
@@ -321,6 +329,7 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
       analyzeOutcome(assetGroup) match {
         case ActionMixOutcome.COMBAT=>crossedSwordsTexture
         case ActionMixOutcome.SURVEILLANCE=>keyHoleTexture
+        case ActionMixOutcome.EXPEDITION => expeditionTexture
         case _=> questionMarkTexture
       }
 
