@@ -27,6 +27,11 @@ class NuclearNation extends Game {
 
   lazy val mapScreen = new MapScreen(this)
 
+  //unit counts
+  var soldierCounter = 0
+  var commandoCounter = 0
+  var spyCounter = 0
+
   override def create(): Unit = {
     batch = new SpriteBatch
 

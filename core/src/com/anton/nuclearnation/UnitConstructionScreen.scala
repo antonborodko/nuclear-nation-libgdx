@@ -26,30 +26,24 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
   val spyPicture = new Image(assetManager.get("unitConstruction/spyUnit.png",classOf[Texture]))
   val gameFont = assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf",classOf[BitmapFont])
 
-
-
-  var soldierCounter = 0
-  var commandoCounter = 0
-  var spyCounter = 0
-
   val soldierDescriptionLabel = new Label("A basic soldier. Good for performing day to day tasks that don't require much intelligence",skin)
-  val soldierCountLabel = new Label(soldierCounter.toString,skin)
+  val soldierCountLabel = new Label(game.soldierCounter.toString,skin)
   soldierDescriptionLabel.setWrap(true)
   soldierDescriptionLabel.setWidth(400)
 
   val commandoDescriptionLabel = new Label("Everything a soldier can do, commandos can do better",skin)
-  val commandoCountLabel = new Label(commandoCounter.toString,skin)
+  val commandoCountLabel = new Label(game.commandoCounter.toString,skin)
   commandoDescriptionLabel.setWrap(true)
   commandoDescriptionLabel.setWidth(400)
 
   val spyDescriptionLabel = new Label("Spies can gather information and if lucky influence other cities",skin)
-  val spyCountLabel = new Label(spyCounter.toString,skin)
+  val spyCountLabel = new Label(game.spyCounter.toString,skin)
   spyDescriptionLabel.setWrap(true)
   spyDescriptionLabel.setWidth(400)
 
-  updateCountLabel(soldierCounter,soldierCountLabel)
-  updateCountLabel(commandoCounter,commandoCountLabel)
-  updateCountLabel(spyCounter,spyCountLabel)
+  updateCountLabel(game.soldierCounter,soldierCountLabel)
+  updateCountLabel(game.commandoCounter,commandoCountLabel)
+  updateCountLabel(game.spyCounter,spyCountLabel)
 
 
   val constructionScreenInputProcessor = new InputProcessor() {
@@ -93,22 +87,22 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
 
     soldierUnitButton.addCaptureListener(new ClickListener(){
       override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
-        soldierCounter +=1
-        updateCountLabel(soldierCounter,soldierCountLabel)
+        game.soldierCounter +=1
+        updateCountLabel(game.soldierCounter,soldierCountLabel)
       }
     })
 
     commandoUnitButton.addCaptureListener(new ClickListener(){
       override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
-        commandoCounter +=1
-        updateCountLabel(commandoCounter,commandoCountLabel)
+        game.commandoCounter +=1
+        updateCountLabel(game.commandoCounter,commandoCountLabel)
       }
     })
 
     spyUnitButton.addCaptureListener(new ClickListener(){
       override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
-        spyCounter +=1
-        updateCountLabel(spyCounter,spyCountLabel)
+        game.spyCounter +=1
+        updateCountLabel(game.spyCounter,spyCountLabel)
       }
     })
 

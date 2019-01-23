@@ -169,8 +169,8 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
             game.setScreen(mapScreen)
           case ActionMixOutcome.COMBAT=>
             val defendersType = targetLocation match {
-              case ri:RaiderCampInfo => DefendersType.RAIDERS
-              case ci:CityInfo => DefendersType.SOLDIERS
+              case _:RaiderCampInfo => DefendersType.RAIDERS
+              case _:CityInfo => DefendersType.SOLDIERS
               case _=> throw new RuntimeException("Unknown current location type " + targetLocation)
             }
             game.setScreen(new SituationScreen(targetLocation,defendersType,game,mapScreen))
