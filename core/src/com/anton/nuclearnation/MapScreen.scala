@@ -9,7 +9,7 @@ import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver
 import com.badlogic.gdx._
 import com.badlogic.gdx.graphics.Pixmap.Format
 import com.badlogic.gdx.graphics._
-import com.badlogic.gdx.graphics.g2d.{BitmapFont, TextureRegion}
+import com.badlogic.gdx.graphics.g2d.{BitmapFont, Sprite, TextureRegion}
 import com.badlogic.gdx.graphics.g2d.freetype.{FreeTypeFontGenerator, FreeTypeFontGeneratorLoader, FreetypeFontLoader}
 import com.badlogic.gdx.maps.MapLayers
 import com.badlogic.gdx.maps.tiled.TiledMap
@@ -26,7 +26,7 @@ import com.badlogic.gdx.scenes.scene2d.{InputEvent, InputListener, Stage}
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle
 import com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle
-import com.badlogic.gdx.scenes.scene2d.ui.{Button, Dialog, Label, Skin, Table, TextButton}
+import com.badlogic.gdx.scenes.scene2d.ui.{Button, Dialog, Image, Label, Skin, Table, TextButton}
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.viewport.StretchViewport
 
@@ -295,12 +295,23 @@ class MapScreen(game: NuclearNation) extends Screen{
       x<-tileX - radiusTiles to tileX + radiusTiles;
       y<-tileY - radiusTiles to tileY + radiusTiles
     ) yield {
-      mapData.getCell(x,y)
+      if (!(x == tileX && y == tileY)){
+        mapData.getCell(x,y)
+      } else {
+        None
+      }
     }
     tilesAround.foreach(t=>{
-      if (t.isDefined) {
-        t.get.state = MapCellState.VISITED
+      if (t.isDefined && t.get.state == MapCellState.HIDDEN) {
+        t.get.state = MapCellState.DISCOVERED
         fogOfWarLayer.setCell(t.get.x, t.get.y, null)
+        if (t.get.location.isEmpty){
+          val image = new Image(desertTileTexture)
+          image.setColor(Color.GRAY)
+          stage.addActor(image)
+          val coords = new Vector3(t.get.x * mainLayer.getTileWidth,t.get.y * mainLayer.getTileHeight,0)
+          image.setPosition(coords.x,coords.y)
+        }
       }
     })
     fogOfWarLayer.setCell(tileX,tileY,null)
