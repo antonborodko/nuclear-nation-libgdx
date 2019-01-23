@@ -1,6 +1,6 @@
 package com.anton.nuclearnation
 
-import com.anton.nuclearnation.MapScreen.{CityInfo, MapLocation, RaiderCampInfo, RuinsInfo}
+import com.anton.nuclearnation.MapScreen._
 import com.badlogic.gdx.Input.{Buttons, Keys}
 import com.badlogic.gdx._
 import com.badlogic.gdx.graphics.g2d.Sprite
@@ -52,6 +52,7 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     case _:RaiderCampInfo => new Image(assetManager.get("raider_camp.png",classOf[Texture]))
     case _:CityInfo => new Image(assetManager.get("town.png",classOf[Texture]))
     case _:RuinsInfo => new Image(assetManager.get("ruined-building.png",classOf[Texture]))
+    case _:CoveredAreaInfo => new Image(assetManager.get("unitConstruction/questionMark.png",classOf[Texture]))
     case _=> throw new RuntimeException(s"Unknown target location type for: ${targetLocation.name}")
   }
 

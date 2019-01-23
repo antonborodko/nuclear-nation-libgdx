@@ -405,16 +405,21 @@ class MapScreen(game: NuclearNation) extends Screen{
     val clickInfo = getClickInfo(screenX,screenY)
 
     val mapCell = mapData.getCell(clickInfo.tileX,clickInfo.tileY)
-    mapCell.get.location match {
-      case Some(ri:RaiderCampInfo) =>{
-        game.setScreen(new ActionMixScreen(ri,game,this))
-        return
+    if (mapCell.get.state == MapCellState.DISCOVERED) {
+      mapCell.get.location match {
+        case Some(ri: RaiderCampInfo) => {
+          game.setScreen(new ActionMixScreen(ri, game, this))
+          return
+        }
+        case Some(ci: CityInfo) => {
+          game.setScreen(new ActionMixScreen(ci, game, this))
+          return
+        }
+        case _ =>
       }
-      case Some(ci:CityInfo) =>{
-        game.setScreen(new ActionMixScreen(ci,game,this))
+    } else { //map cell is not discovered
+        game.setScreen(new ActionMixScreen(CoveredAreaInfo(mapCell.get), game, this))
         return
-      }
-      case _=>
     }
 
 
@@ -554,6 +559,7 @@ object MapScreen{
   case class RaiderCampInfo( name:String,mapCell: MapCellData) extends MapLocation()
   case class CityInfo(name:String,mapCell: MapCellData,var isOwnedByPlayer:Boolean = false) extends MapLocation()
   case class RuinsInfo(mapCell: MapCellData,name:String = "Pre-war ruins") extends MapLocation()
+  case class CoveredAreaInfo(mapCell: MapCellData,name:String="") extends MapLocation
 
   case class Technology(name:String, var enabled:Boolean = false)
 
