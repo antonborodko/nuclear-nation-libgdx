@@ -1,6 +1,6 @@
 package com.anton.nuclearnation
 
-import com.anton.nuclearnation.MapScreen.{CityInfo, MapLocation, RaiderCampInfo}
+import com.anton.nuclearnation.MapScreen.{CityInfo, MapLocation, RaiderCampInfo, RuinsInfo}
 import com.badlogic.gdx.Input.{Buttons, Keys}
 import com.badlogic.gdx._
 import com.badlogic.gdx.graphics.g2d.Sprite
@@ -14,7 +14,7 @@ import com.badlogic.gdx.utils.viewport.StretchViewport
 
 import scala.collection.JavaConverters
 
-class ActionMixScreen(currentLocation: MapLocation, game:NuclearNation,mapScreen: MapScreen) extends Screen{
+class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen: MapScreen) extends Screen{
 
   val stage = new Stage(new StretchViewport(1600,960,new OrthographicCamera()))
   val camera = stage.getCamera.asInstanceOf[OrthographicCamera]
@@ -23,7 +23,7 @@ class ActionMixScreen(currentLocation: MapLocation, game:NuclearNation,mapScreen
 
   val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
 
-  val subjectPicture = new Image(assetManager.get("raider_camp.png",classOf[Texture]))
+
 
   val crossedSwordsTexture = assetManager.get("unitConstruction/crossedSwords.png",classOf[Texture])
   val keyHoleTexture = assetManager.get("unitConstruction/spyKeyhole.png",classOf[Texture])
@@ -48,6 +48,12 @@ class ActionMixScreen(currentLocation: MapLocation, game:NuclearNation,mapScreen
     val SURVEILLANCE, COMBAT, UNKNOWN = Value
   }
 
+  val subjectPicture = targetLocation match {
+    case _:RaiderCampInfo => new Image(assetManager.get("raider_camp.png",classOf[Texture]))
+    case _:CityInfo => new Image(assetManager.get("town.png",classOf[Texture]))
+    case _:RuinsInfo => new Image(assetManager.get("ruined-building.png",classOf[Texture]))
+    case _=> throw new RuntimeException(s"Unknown target location type for: ${targetLocation.name}")
+  }
 
 
   val soldierUnit = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
@@ -159,12 +165,12 @@ class ActionMixScreen(currentLocation: MapLocation, game:NuclearNation,mapScreen
         val outcome = analyzeOutcome(assetsGroup)
         outcome match {
           case ActionMixOutcome.COMBAT=>{
-            val defendersType = currentLocation match {
+            val defendersType = targetLocation match {
               case ri:RaiderCampInfo => DefendersType.RAIDERS
               case ci:CityInfo => DefendersType.SOLDIERS
-              case _=> throw new RuntimeException("Unknown current location type " + currentLocation)
+              case _=> throw new RuntimeException("Unknown current location type " + targetLocation)
             }
-            game.setScreen(new SituationScreen(currentLocation,defendersType,game,mapScreen))
+            game.setScreen(new SituationScreen(targetLocation,defendersType,game,mapScreen))
           }
           case ActionMixOutcome.SURVEILLANCE=>
             val dialog = new Dialog("Intelligence gathered", skin) {
