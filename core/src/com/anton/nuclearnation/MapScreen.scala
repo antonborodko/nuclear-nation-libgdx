@@ -57,7 +57,9 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   val region = new TextureRegion(desertTileTexture)
 
-  val raiderCampImage = assetManager.get("raider_camp.png",classOf[Texture])
+  val raiderCampImage = new Sprite(assetManager.get("raider_camp.png",classOf[Texture]))
+
+
   val fogOfWarTexture = assetManager.get("fog_of_war_tile.png",classOf[Texture])
   val townImage = assetManager.get("town.png",classOf[Texture])
 
@@ -298,7 +300,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   case class ActorMapCoords(tileX:Int,tileY:Int)
 
-  def visitTile(tileX: Int, tileY: Int, radiusTiles:Int=1)  {
+  def visitTile(tileX: Int, tileY: Int, radiusTiles:Int=5)  {
     val tile = mapData.getCell(tileX,tileY).get
     tile.state = MapCellState.VISITED
 
