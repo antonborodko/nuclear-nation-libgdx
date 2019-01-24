@@ -197,7 +197,8 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
               case _:CityInfo => DefendersType.SOLDIERS
               case _=> throw new RuntimeException("Unknown current location type " + targetLocation)
             }
-            game.setScreen(new SituationScreen(targetLocation,defendersType,game,mapScreen,List[UnitType]()))
+            val playerUnits:scala.List[UnitType] = scala.List[UnitType]()
+            game.setScreen(new SituationScreen(targetLocation,defendersType,game,mapScreen,playerUnits))
 
           case ActionMixOutcome.SURVEILLANCE=>
             val dialog = new Dialog("Intelligence gathered", skin) {

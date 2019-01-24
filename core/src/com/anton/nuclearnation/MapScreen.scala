@@ -3,6 +3,7 @@ package com.anton.nuclearnation
 import java.lang.Math
 
 import com.anton.nuclearnation.MapScreen._
+import com.anton.nuclearnation.UnitType.UnitType
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver
@@ -577,10 +578,10 @@ class MapScreen(game: NuclearNation) extends Screen{
     val cell = mapData.getCell(tileX,tileY).get
     cell.location match {
       case Some(rci:RaiderCampInfo)=>{
-        game.setScreen(new SituationScreen(rci,DefendersType.RAIDERS,game,this))
+        game.setScreen(new SituationScreen(rci,DefendersType.RAIDERS,game,this,List[UnitType]()))
       }
       case Some(ci:CityInfo)=>{
-        game.setScreen(new SituationScreen(ci,DefendersType.SOLDIERS,game,this))
+        game.setScreen(new SituationScreen(ci,DefendersType.SOLDIERS,game,this,List[UnitType]()))
       }
       case Some(ri:RuinsInfo)=>{
         locations -= ri
