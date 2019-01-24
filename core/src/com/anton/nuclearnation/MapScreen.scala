@@ -130,7 +130,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     override def scrolled(amount: Int): Boolean = {true}
   }
 
-  val locationsList = ListBuffer[MapLocation]()
+  val locations = ListBuffer[MapLocation]()
 
   val cityNames = List[String]("New Reno","Modoc","Arroyo")
   val raiderCampsNames = List[String]("Mad Dogs","Knives","Jokers")
@@ -141,7 +141,7 @@ class MapScreen(game: NuclearNation) extends Screen{
   val capital = CityInfo("Hope",capitalCell,isOwnedByPlayer = true)
   capitalCell.state = MapCellState.VISITED
   capitalCell.location = Some(capital)
-  locationsList += capital
+  locations += capital
 
 
   for (_<-0 until 10) yield {
@@ -149,7 +149,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     val cell = mapData.getCell(coords._1,coords._2).get
     val ruin = RuinsInfo(cell)
     cell.location = Some(ruin)
-    locationsList += ruin
+    locations += ruin
   }
 
 
@@ -158,7 +158,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     val cityCell = mapData.getCell(coords._1,coords._2).get
     val city = CityInfo(cityName, cityCell)
     cityCell.location = Some(city)
-    locationsList += city
+    locations += city
     Gdx.app.log("INFO",s"Generated city $cityName at coords $coords")
   })
 
@@ -167,7 +167,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     val raiderCell = mapData.getCell(coords._1,coords._2).get
     val raiderCamp = RaiderCampInfo(raiderCampName, raiderCell)
     raiderCell.location = Some(raiderCamp)
-    locationsList += raiderCamp
+    locations += raiderCamp
     Gdx.app.log("INFO",s"Generated raider camp $raiderCampName at coords $coords")
   })
 
@@ -216,6 +216,16 @@ class MapScreen(game: NuclearNation) extends Screen{
   }
   map.getLayers.add(townLayer)
   map.getLayers.add(desertLayer)
+
+  //uncovering random locations
+  val randomUncoveredLocations = Random.shuffle(locations).take(3)
+
+  randomUncoveredLocations.foreach(location => {
+    discoverTile(location.mapCell.x,location.mapCell.y)
+  })
+
+
+
 
 
   println("Map generated")
@@ -288,7 +298,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   case class ActorMapCoords(tileX:Int,tileY:Int)
 
-  def discoverTile(tileX: Int, tileY: Int, radiusTiles:Int=1)  {
+  def visitTile(tileX: Int, tileY: Int, radiusTiles:Int=1)  {
     val tile = mapData.getCell(tileX,tileY).get
     tile.state = MapCellState.VISITED
 
@@ -304,7 +314,6 @@ class MapScreen(game: NuclearNation) extends Screen{
     }) match {
       case Some(a)=>
         a.remove()
-        println(s"Removing actor over tile $tileX,$tileY")
       case None=>
     }
 
@@ -319,24 +328,12 @@ class MapScreen(game: NuclearNation) extends Screen{
         None
       }
     }
-    tilesAround.foreach(t=>{
+    tilesAround.filter(t=>t.isDefined).foreach(t=>{
       if (t.isDefined && t.get.state == MapCellState.HIDDEN) {
-        t.get.state = MapCellState.DISCOVERED
-        fogOfWarLayer.setCell(t.get.x, t.get.y, null)
-        val image = Option(townLayer.getCell(t.get.x,t.get.y)) match {
-          case Some(_)=>
-            new Image(townLayer.getCell(t.get.x,t.get.y).getTile.getTextureRegion)
-          case None=>new Image(desertLayer.getCell(t.get.x,t.get.y).getTile.getTextureRegion)
-        }
-
-        image.setColor(Color.GRAY)
-        image.setUserObject(ActorMapCoords(t.get.x,t.get.y))
-        stage.addActor(image)
-        val coords = new Vector3(t.get.x * desertLayer.getTileWidth, t.get.y * desertLayer.getTileHeight, 0)
-        image.setPosition(coords.x, coords.y)
+        discoverTile(t.get.x,t.get.y)
       }
+
     })
-    fogOfWarLayer.setCell(tileX,tileY,null)
   }
 
   private def setCameraPosition(camera: OrthographicCamera, delta: Float): Unit ={
@@ -387,10 +384,10 @@ class MapScreen(game: NuclearNation) extends Screen{
 
         val tileX = (expedition.positionGlobalPixelX / desertLayer.getTileWidth).toInt
         val tileY = (expedition.positionGlobalPixelY / desertLayer.getTileHeight).toInt
-        discoverTile(tileX,tileY)
+        visitTile(tileX,tileY)
         if (expedition.originalDirection.isDefined && !direction.hasSameDirection(expedition.originalDirection.get)){
           checkExpeditionTile(tileX,tileY,expeditions.head)
-          discoverTile(tileX,tileY)
+          visitTile(tileX,tileY)
           expeditions.remove(0)
         } else {
           val newOriginX = expedition.positionGlobalPixelX + direction.x * expedition.speed * delta
@@ -406,7 +403,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     })
 
     //drawing names where applicable
-    locationsList.foreach(location=>{
+    locations.foreach(location=>{
       val mapCell = location.mapCell
       if (mapCell.state == MapCellState.VISITED){
         val pixelX : Int = (location.mapCell.x * desertLayer.getTileWidth).asInstanceOf[Int]
@@ -540,6 +537,28 @@ class MapScreen(game: NuclearNation) extends Screen{
     )
   }
 
+  private def discoverTile(x:Int,y:Int): Unit ={
+    val t = mapData.getCell(x,y)
+    if (t.isDefined && t.get.state == MapCellState.HIDDEN){
+      fogOfWarLayer.setCell(x, y, null)
+      t.get.state = MapCellState.DISCOVERED
+      val image = Option(townLayer.getCell(x,y)) match {
+        case Some(_)=>
+          new Image(townLayer.getCell(x,y).getTile.getTextureRegion)
+        case None=>new Image(desertLayer.getCell(x,y).getTile.getTextureRegion)
+      }
+
+      image.setColor(Color.GRAY)
+      image.setUserObject(ActorMapCoords(x,y))
+      stage.addActor(image)
+      val coords = new Vector3(x * desertLayer.getTileWidth, y * desertLayer.getTileHeight, 0)
+      image.setPosition(coords.x, coords.y)
+    }
+  }
+
+
+
+
   private def checkExpeditionTile(tileX:Int,tileY:Int,expedition:ExpeditionInfo): Unit ={
     val cell = mapData.getCell(tileX,tileY).get
     cell.location match {
@@ -550,7 +569,7 @@ class MapScreen(game: NuclearNation) extends Screen{
         game.setScreen(new SituationScreen(ci,DefendersType.SOLDIERS,game,this))
       }
       case Some(ri:RuinsInfo)=>{
-        locationsList -= ri
+        locations -= ri
         townLayer.setCell(ri.mapCell.x,ri.mapCell.y,null)
         townLayer.setCell(tileX,tileY,null)
         val tech = technologies.find(t => !t.enabled)
@@ -584,8 +603,8 @@ class MapScreen(game: NuclearNation) extends Screen{
   }
 
   def deleteCamp(camp: RaiderCampInfo) = {
-    if (locationsList.contains(camp)){
-      locationsList -= camp
+    if (locations.contains(camp)){
+      locations -= camp
       val desertTile = new StaticTiledMapTile(new TextureRegion(desertTileTexture))
       val desertCell = new Cell
       desertCell.setTile(desertTile)
