@@ -89,8 +89,8 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   centerOnCapitalButton.addCaptureListener(new ClickListener(){
     override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
-      cameraCenterX = capitalCell.x * mainLayer.getTileWidth - mainLayer.getTileWidth/2
-      cameraCenterY = capitalCell.y * mainLayer.getTileHeight - mainLayer.getTileHeight /2
+      cameraCenterX = capitalCell.x * desertLayer.getTileWidth - desertLayer.getTileWidth/2
+      cameraCenterY = capitalCell.y * desertLayer.getTileHeight - desertLayer.getTileHeight /2
     }
   })
 
@@ -222,12 +222,11 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   val renderer = new OrthogonalTiledMapRenderer(map, 1f)
 
-  val mainLayer = map.getLayers.get(0).asInstanceOf[TiledMapTileLayer]
-  val mapWidthPixels = (mainLayer.getWidth * mainLayer.getTileWidth).asInstanceOf[Int]
-  val mapHeightPixels = (mainLayer.getHeight * mainLayer.getTileHeight).asInstanceOf[Int]
+  val mapWidthPixels = (desertLayer.getWidth * desertLayer.getTileWidth).asInstanceOf[Int]
+  val mapHeightPixels = (desertLayer.getHeight * desertLayer.getTileHeight).asInstanceOf[Int]
 
-  var cameraCenterX = capitalCell.x * mainLayer.getTileWidth - mainLayer.getTileWidth/2
-  var cameraCenterY = capitalCell.y * mainLayer.getTileHeight - mainLayer.getTileHeight /2
+  var cameraCenterX = capitalCell.x * desertLayer.getTileWidth - desertLayer.getTileWidth/2
+  var cameraCenterY = capitalCell.y * desertLayer.getTileHeight - desertLayer.getTileHeight /2
 
   val roadRenderer = new ShapeRenderer()
 
@@ -287,9 +286,28 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   }
 
-  def discoverTile(tileX: Int, tileY: Int, radiusTiles:Int=1) = {
+  case class ActorMapCoords(tileX:Int,tileY:Int)
+
+  def discoverTile(tileX: Int, tileY: Int, radiusTiles:Int=1)  {
     val tile = mapData.getCell(tileX,tileY).get
     tile.state = MapCellState.VISITED
+
+    //removing actor over current tile if exists
+    stage.getActors.items.filter(a=>a!=null).find(a=>{
+      val userObject = Option(a.getUserObject)
+      userObject match {
+        case Some(coords: ActorMapCoords) =>
+          coords.tileX == tileX && coords.tileY == tileY
+        case _ =>
+          false
+      }
+    }) match {
+      case Some(a)=>
+        a.remove()
+        println(s"Removing actor over tile $tileX,$tileY")
+      case None=>
+    }
+
     //getting covered tiles within radius
     val tilesAround = for (
       x<-tileX - radiusTiles to tileX + radiusTiles;
@@ -305,13 +323,17 @@ class MapScreen(game: NuclearNation) extends Screen{
       if (t.isDefined && t.get.state == MapCellState.HIDDEN) {
         t.get.state = MapCellState.DISCOVERED
         fogOfWarLayer.setCell(t.get.x, t.get.y, null)
-        if (t.get.location.isEmpty){
-          val image = new Image(desertTileTexture)
-          image.setColor(Color.GRAY)
-          stage.addActor(image)
-          val coords = new Vector3(t.get.x * mainLayer.getTileWidth,t.get.y * mainLayer.getTileHeight,0)
-          image.setPosition(coords.x,coords.y)
+        val image = Option(townLayer.getCell(t.get.x,t.get.y)) match {
+          case Some(_)=>
+            new Image(townLayer.getCell(t.get.x,t.get.y).getTile.getTextureRegion)
+          case None=>new Image(desertLayer.getCell(t.get.x,t.get.y).getTile.getTextureRegion)
         }
+
+        image.setColor(Color.GRAY)
+        image.setUserObject(ActorMapCoords(t.get.x,t.get.y))
+        stage.addActor(image)
+        val coords = new Vector3(t.get.x * desertLayer.getTileWidth, t.get.y * desertLayer.getTileHeight, 0)
+        image.setPosition(coords.x, coords.y)
       }
     })
     fogOfWarLayer.setCell(tileX,tileY,null)
@@ -363,8 +385,8 @@ class MapScreen(game: NuclearNation) extends Screen{
 
         val direction = destination.sub(currentPos).nor()
 
-        val tileX = (expedition.positionGlobalPixelX / mainLayer.getTileWidth).toInt
-        val tileY = (expedition.positionGlobalPixelY / mainLayer.getTileHeight).toInt
+        val tileX = (expedition.positionGlobalPixelX / desertLayer.getTileWidth).toInt
+        val tileY = (expedition.positionGlobalPixelY / desertLayer.getTileHeight).toInt
         discoverTile(tileX,tileY)
         if (expedition.originalDirection.isDefined && !direction.hasSameDirection(expedition.originalDirection.get)){
           checkExpeditionTile(tileX,tileY,expeditions.head)
@@ -387,8 +409,8 @@ class MapScreen(game: NuclearNation) extends Screen{
     locationsList.foreach(location=>{
       val mapCell = location.mapCell
       if (mapCell.state == MapCellState.VISITED){
-        val pixelX : Int = (location.mapCell.x * mainLayer.getTileWidth).asInstanceOf[Int]
-        val pixelY : Int = (location.mapCell.y * mainLayer.getTileHeight).asInstanceOf[Int]
+        val pixelX : Int = (location.mapCell.x * desertLayer.getTileWidth).asInstanceOf[Int]
+        val pixelY : Int = (location.mapCell.y * desertLayer.getTileHeight).asInstanceOf[Int]
         gameFont.draw(stage.getBatch,location.name,pixelX,pixelY)
       }
     })
@@ -420,8 +442,8 @@ class MapScreen(game: NuclearNation) extends Screen{
   private def getClickInfo(cameraXPixel:Float,cameraYPixel:Float):MapClickInfo = {
     val coordX = camera.unproject(new Vector3(cameraXPixel,0,0)).x
     val coordY = camera.unproject(new Vector3(0,cameraYPixel,0)).y
-    val clickedTileX = (coordX / mainLayer.getTileWidth).toInt
-    val clickedTileY = (coordY / mainLayer.getTileHeight).toInt
+    val clickedTileX = (coordX / desertLayer.getTileWidth).toInt
+    val clickedTileY = (coordY / desertLayer.getTileHeight).toInt
     MapClickInfo(coordX,coordY,clickedTileX,clickedTileY)
   }
 
@@ -507,12 +529,12 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   def sendExpedition(sourceTile:Vector2 = new Vector2(capital.mapCell.x,capital.mapCell.y), destTile:Vector2,texture:Texture = expeditionTexture ): Unit ={
     expeditions += ExpeditionInfo(
-      sourceTile.x * mainLayer.getTileWidth  + texture.getWidth/2,
-      sourceTile.y * mainLayer.getTileHeight +texture.getHeight/2,
-      sourceTile.x * mainLayer.getTileWidth  + texture.getWidth/2,
-      sourceTile.y * mainLayer.getTileHeight +texture.getHeight/2,
-      destTile.x * mainLayer.getTileWidth +texture.getWidth/2,
-      destTile.y * mainLayer.getTileHeight +texture.getHeight/2,
+      sourceTile.x * desertLayer.getTileWidth  + texture.getWidth/2,
+      sourceTile.y * desertLayer.getTileHeight +texture.getHeight/2,
+      sourceTile.x * desertLayer.getTileWidth  + texture.getWidth/2,
+      sourceTile.y * desertLayer.getTileHeight +texture.getHeight/2,
+      destTile.x * desertLayer.getTileWidth +texture.getWidth/2,
+      destTile.y * desertLayer.getTileHeight +texture.getHeight/2,
       texture,
       None
     )
