@@ -296,6 +296,18 @@ class MapScreen(game: NuclearNation) extends Screen{
     stage.act(delta)
     stage.draw()
 
+    //drawing roads between cities
+    locations
+        .filter(location=>location.isInstanceOf[CityInfo])
+        .filter(location=>location!=capital)
+        .foreach(location => {
+          val city = location.asInstanceOf[CityInfo]
+          if (city.isOwnedByPlayer) {
+            drawRoadLine(new Vector2(capital.mapCell.x * desertLayer.getTileWidth + townImage.getWidth /2, capital.mapCell.y * desertLayer.getTileHeight + townImage.getHeight/2),
+              new Vector2(city.mapCell.x * desertLayer.getTileWidth + townImage.getWidth/2, city.mapCell.y * desertLayer.getTileHeight + townImage.getHeight/2), 3)
+          }
+        })
+
   }
 
   case class ActorMapCoords(tileX:Int,tileY:Int)
@@ -603,6 +615,9 @@ class MapScreen(game: NuclearNation) extends Screen{
     }
 
   }
+
+
+
 
   def deleteCamp(camp: RaiderCampInfo) = {
     if (locations.contains(camp)){
