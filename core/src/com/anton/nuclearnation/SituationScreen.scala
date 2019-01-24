@@ -2,6 +2,7 @@ package com.anton.nuclearnation
 
 import com.anton.nuclearnation.DefendersType.DefendersType
 import com.anton.nuclearnation.MapScreen.{CityInfo, MapLocation, RaiderCampInfo}
+import com.anton.nuclearnation.UnitType.UnitType
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.graphics.{Color, GL20, OrthographicCamera, Texture}
 import com.badlogic.gdx.graphics.g2d.{Batch, BitmapFont, Sprite, TextureRegion}
@@ -25,7 +26,7 @@ object DefendersType extends Enumeration {
 }
 
 
-class SituationScreen(currentLocation:MapLocation, defendersType:DefendersType, game:NuclearNation, mapScreen:MapScreen) extends Screen{
+class SituationScreen(currentLocation:MapLocation, defendersType:DefendersType, game:NuclearNation, mapScreen:MapScreen, playerMix:List[UnitType]) extends Screen{
 
   val assetManager = game.assetManager
   val map = new TiledMap

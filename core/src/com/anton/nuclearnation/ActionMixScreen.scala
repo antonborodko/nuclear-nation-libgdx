@@ -1,6 +1,7 @@
 package com.anton.nuclearnation
 
 import com.anton.nuclearnation.MapScreen._
+import com.anton.nuclearnation.UnitType.UnitType
 import com.badlogic.gdx.Input.{Buttons, Keys}
 import com.badlogic.gdx._
 import com.badlogic.gdx.graphics.g2d.Sprite
@@ -37,10 +38,6 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
   val commandoLabel = new Label("Commando",skin)
   val spyLabel = new Label("Spy",skin)
 
-  object UnitType extends Enumeration {
-    type UnitType = Value
-    val SOLDIER, COMMANDO, SPY = Value
-  }
 
   object ActionMixOutcome extends Enumeration {
     type MixOutcome = Value
@@ -200,7 +197,7 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
               case _:CityInfo => DefendersType.SOLDIERS
               case _=> throw new RuntimeException("Unknown current location type " + targetLocation)
             }
-            game.setScreen(new SituationScreen(targetLocation,defendersType,game,mapScreen))
+            game.setScreen(new SituationScreen(targetLocation,defendersType,game,mapScreen,List[UnitType]()))
 
           case ActionMixOutcome.SURVEILLANCE=>
             val dialog = new Dialog("Intelligence gathered", skin) {
