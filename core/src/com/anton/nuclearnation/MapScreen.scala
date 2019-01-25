@@ -518,7 +518,7 @@ class MapScreen(game: NuclearNation) extends Screen{
           if (expeditions.size<1) {
             val clickInfo = getClickInfo(screenX,screenY)
             val texture = assetManager.get("expedition.png",classOf[Texture])
-            sendExpedition(new Vector2(capital.mapCell.x,capital.mapCell.y),new Vector2(clickInfo.tileX,clickInfo.tileY),texture)
+            sendExpedition(new Vector2(capital.mapCell.x,capital.mapCell.y),new Vector2(clickInfo.tileX,clickInfo.tileY),texture,scala.List[UnitType]())
           } else {
             Gdx.app.log("INFO","Expedition already sent")
           }
@@ -539,7 +539,10 @@ class MapScreen(game: NuclearNation) extends Screen{
     dialog.setPosition(cameraCenterX - dialog.getPrefWidth/2,cameraCenterY - dialog.getPrefHeight/2)
   }
 
-  def sendExpedition(sourceTile:Vector2 = new Vector2(capital.mapCell.x,capital.mapCell.y), destTile:Vector2,texture:Texture = expeditionTexture ): Unit ={
+  def sendExpedition(sourceTile:Vector2 = new Vector2(capital.mapCell.x,capital.mapCell.y),
+                     destTile:Vector2,texture:Texture = expeditionTexture,
+                     units:scala.List[UnitType]
+                    ): Unit ={
     expeditions += ExpeditionInfo(
       sourceTile.x * desertLayer.getTileWidth  + texture.getWidth/2,
       sourceTile.y * desertLayer.getTileHeight +texture.getHeight/2,
@@ -548,7 +551,8 @@ class MapScreen(game: NuclearNation) extends Screen{
       destTile.x * desertLayer.getTileWidth +texture.getWidth/2,
       destTile.y * desertLayer.getTileHeight +texture.getHeight/2,
       texture,
-      None
+      None,
+      units = units
     )
   }
 
@@ -646,7 +650,8 @@ object MapScreen{
                             destinationGlobalPixelY:Float,
                             marker:Texture,
                             originalDirection:Option[Vector2],
-                            speed:Int = 600
+                            speed:Int = 600,
+                            units:scala.List[UnitType]
                            )
 
   sealed abstract class MapLocation(){

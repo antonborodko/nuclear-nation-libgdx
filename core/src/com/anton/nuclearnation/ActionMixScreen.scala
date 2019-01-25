@@ -189,7 +189,7 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
         val outcome = analyzeOutcome(assetsGroup)
         outcome match {
           case ActionMixOutcome.EXPEDITION =>
-            mapScreen.sendExpedition(destTile = new Vector2(targetLocation.mapCell.x,targetLocation.mapCell.y))
+            mapScreen.sendExpedition(destTile = new Vector2(targetLocation.mapCell.x,targetLocation.mapCell.y),units = scala.List[UnitType]())
             game.setScreen(mapScreen)
           case ActionMixOutcome.COMBAT=>
             val defendersType = targetLocation match {
