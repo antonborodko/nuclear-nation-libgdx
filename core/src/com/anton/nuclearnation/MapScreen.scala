@@ -533,7 +533,7 @@ class MapScreen(game: NuclearNation) extends Screen{
       println(s"*** Unable to discover: tile is empty ** $x,$y")
     }
     if (t.isDefined && t.get.state == MapCellState.HIDDEN){
-      println(s"Discovering tile $x,$y")
+//      println(s"Discovering tile $x,$y")
       fogOfWarLayer.setCell(x, y, null)
       t.get.state = MapCellState.DISCOVERED
       val image = Option(townLayer.getCell(x,y)) match {
