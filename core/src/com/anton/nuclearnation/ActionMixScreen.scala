@@ -10,11 +10,9 @@ import com.badlogic.gdx.graphics.{Color, GL20, OrthographicCamera, Texture}
 import com.badlogic.gdx.math.{Vector2, Vector3}
 import com.badlogic.gdx.scenes.scene2d.{Actor, Group, InputEvent, Stage}
 import com.badlogic.gdx.scenes.scene2d.ui._
-import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.{Payload, Source, Target}
 import com.badlogic.gdx.scenes.scene2d.utils.{ClickListener, DragAndDrop, SpriteDrawable, TextureRegionDrawable}
 import com.badlogic.gdx.utils.viewport.StretchViewport
 
-import scala.collection.JavaConverters
 import scala.collection.mutable.ListBuffer
 
 class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen: MapScreen) extends Screen{
@@ -39,8 +37,6 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
   val soldierLabel = new Label("Soldier",skin)
   val commandoLabel = new Label("Commando",skin)
   val spyLabel = new Label("Spy",skin)
-
-
 
 
   val subjectPicture = targetLocation match {
@@ -163,15 +159,15 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     spyUnit.setPosition(commandoLabel.getX,commandoLabel.getY - spyUnit.getPrefHeight-10)
     spyLabel.setPosition(spyUnit.getX,spyUnit.getY - spyLabel.getPrefHeight - 10)
 
-    addUnitLeftClickListener(soldierUnit,assetsGroup,dragAndDrop,()=>{
+    addUnitLeftClickListener(soldierUnit,game.soldierCounter,assetsGroup,dragAndDrop,()=>{
       game.soldierCounter -=1
       updateUnitCountLabel("Soldier",soldierLabel,game.soldierCounter)
     })
-    addUnitLeftClickListener(commandoUnit,assetsGroup,dragAndDrop,()=>{
+    addUnitLeftClickListener(commandoUnit,game.commandoCounter,assetsGroup,dragAndDrop,()=>{
       game.commandoCounter -=1
       updateUnitCountLabel("Commando",commandoLabel,game.commandoCounter)
     })
-    addUnitLeftClickListener(spyUnit,assetsGroup,dragAndDrop,()=>{
+    addUnitLeftClickListener(spyUnit,game.spyCounter,assetsGroup,dragAndDrop,()=>{
       game.spyCounter -=1
       updateUnitCountLabel("Spy",spyLabel,game.spyCounter)
     })
@@ -196,51 +192,22 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
 
     controlGroup.setPosition(0, camera.unproject(new Vector3(0,0,0)).y)
 
-
-    setAssetDragDrop(soldierUnit,assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]),dragAndDrop,meansPicture)
-    setAssetDragDrop(commandoUnit,assetManager.get("unitConstruction/commandoUnit.png",classOf[Texture]),dragAndDrop,meansPicture)
-    setAssetDragDrop(spyUnit,assetManager.get("unitConstruction/spyUnit.png",classOf[Texture]),dragAndDrop,meansPicture)
-
-    setTargetDragDrop(meansPicture,assetsGroup,dragAndDrop)
   }
 
-  private def addUnitLeftClickListener(actor:Actor,assetsGroup:Group,dragAndDrop: DragAndDrop,callback:() => Unit): Unit ={
+  private def addUnitLeftClickListener(actor:Actor,counter:Int, assetsGroup:Group,dragAndDrop: DragAndDrop,callback:() => Unit): Unit ={
     actor.addCaptureListener(new ClickListener(Buttons.LEFT){
 
       override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
-        addActorToAssetGroup(actor, assetsGroup, dragAndDrop)
-        callback()
+        if (counter>0) {
+          addActorToAssetGroup(actor, assetsGroup)
+          callback()
+        }
       }
     })
   }
 
 
-  private def setTargetDragDrop(target:Actor,assetGroup:Group,dragAndDrop: DragAndDrop): Unit ={
-    dragAndDrop.addTarget(new Target(target) {
-      def drag (source:Source, payload:Payload, x:Float, y:Float, pointer:Int):Boolean = {
-        val size = assetGroup.getChildren.size
-        for (i<-0 until size){
-          assetGroup.getChildren.get(i).setColor(Color.GREEN)
-        }
-        true
-      }
-
-      override def reset (source:Source, payload:Payload) {
-        val size = assetGroup.getChildren.size
-        for (i<-0 until size){
-          assetGroup.getChildren.get(i).setColor(Color.WHITE)
-        }
-      }
-
-
-
-      def drop (source:Source, payload:Payload, x:Float, y:Float, pointer:Int): Unit = {
-        addActorToAssetGroup(payload.getDragActor,assetGroup,dragAndDrop)
-      }
-    })
-  }
-
-  private def addActorToAssetGroup(sourceActor:Actor,assetGroup:Group,dragAndDrop: DragAndDrop): Unit ={
+  private def addActorToAssetGroup(sourceActor:Actor,assetGroup:Group): Unit ={
     val means = assetGroup.findActor[Image]("means")
     val size = assetGroup.getChildren.size
     val furthestRightActor = if (means == null) assetGroup.getChildren.get(size-1) else means
@@ -278,8 +245,6 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
         false
       }
     })
-
-    setTargetDragDrop(actor,assetGroup,dragAndDrop)
 
     if (means != null){
       actor.setX(means.getX)
@@ -339,20 +304,6 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
 
   }
 
-  private def setAssetDragDrop(source:Actor,assetTexture:Texture,dragAndDrop: DragAndDrop,targetActor:Actor): Unit ={
-    val dragAndDropActor = new Image(assetTexture)
-    dragAndDropActor.setUserObject(source.getUserObject)
-
-    dragAndDrop.addSource(new Source(source) {
-      def dragStart (event:InputEvent, x:Float, y:Float, pointer:Int) = {
-        val payload = new Payload()
-        payload.setDragActor(dragAndDropActor)
-        dragAndDrop.setDragActorPosition(x, y - dragAndDropActor.getPrefHeight)
-        payload
-      }
-    })
-
-  }
 
   override def render(delta: Float): Unit = {
     Gdx.gl.glClearColor(0, 0, 0, 0)
