@@ -483,7 +483,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   def sendExpedition(sourceTile:Vector2 = new Vector2(capital.mapCell.x,capital.mapCell.y),
                      destTile:Vector2,texture:Texture = expeditionTexture,
-                     units:scala.List[UnitType]
+                     units:scala.List[UnitType],objective: ActionMixOutcome.MixObjective
                     ): Unit ={
     expeditions += ExpeditionInfo(
       sourceTile.x * desertLayer.getTileWidth  + texture.getWidth/2,
@@ -494,7 +494,8 @@ class MapScreen(game: NuclearNation) extends Screen{
       destTile.y * desertLayer.getTileHeight +texture.getHeight/2,
       texture,
       None,
-      units = units
+      units = units,
+      objective = objective
     )
   }
 
@@ -524,10 +525,10 @@ class MapScreen(game: NuclearNation) extends Screen{
     val cell = mapData.getCell(tileX,tileY).get
     cell.location match {
       case Some(rci:RaiderCampInfo)=>{
-        game.setScreen(new SituationScreen(rci,DefendersType.RAIDERS,game,this,List[UnitType]()))
+        game.setScreen(new SituationScreen(rci,DefendersType.RAIDERS,game,this,expedition.units))
       }
       case Some(ci:CityInfo)=>{
-        game.setScreen(new SituationScreen(ci,DefendersType.SOLDIERS,game,this,List[UnitType]()))
+        game.setScreen(new SituationScreen(ci,DefendersType.SOLDIERS,game,this,expedition.units))
       }
       case Some(ri:RuinsInfo)=>{
         locations -= ri
@@ -593,6 +594,7 @@ object MapScreen{
                             marker:Texture,
                             originalDirection:Option[Vector2],
                             speed:Int = 600,
+                            objective:ActionMixOutcome.MixObjective,
                             units:scala.List[UnitType]
                            )
 

@@ -14,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.{ClickListener, DragAndDrop, Sprite
 import com.badlogic.gdx.utils.viewport.StretchViewport
 
 import scala.collection.JavaConverters
+import scala.collection.mutable.ListBuffer
 
 class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen: MapScreen) extends Screen{
 
@@ -39,10 +40,7 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
   val spyLabel = new Label("Spy",skin)
 
 
-  object ActionMixOutcome extends Enumeration {
-    type MixOutcome = Value
-    val SURVEILLANCE, COMBAT, EXPEDITION, UNKNOWN = Value
-  }
+
 
   val subjectPicture = targetLocation match {
     case _:RaiderCampInfo => new Image(assetManager.get("raider_camp.png",classOf[Texture]))
@@ -186,41 +184,9 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     applyButton.addCaptureListener(new ClickListener() {
       override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
 
-        val outcome = analyzeOutcome(assetsGroup)
-        outcome match {
-          case ActionMixOutcome.EXPEDITION =>
-            mapScreen.sendExpedition(destTile = new Vector2(targetLocation.mapCell.x,targetLocation.mapCell.y),units = scala.List[UnitType]())
-            game.setScreen(mapScreen)
-          case ActionMixOutcome.COMBAT=>
-            val defendersType = targetLocation match {
-              case _:RaiderCampInfo => DefendersType.RAIDERS
-              case _:CityInfo => DefendersType.SOLDIERS
-              case _=> throw new RuntimeException("Unknown current location type " + targetLocation)
-            }
-            val playerUnits:scala.List[UnitType] = scala.List[UnitType]()
-            game.setScreen(new SituationScreen(targetLocation,defendersType,game,mapScreen,playerUnits))
-
-          case ActionMixOutcome.SURVEILLANCE=>
-            val dialog = new Dialog("Intelligence gathered", skin) {
-              override def result(result:Object) {
-                game.setScreen(mapScreen)
-              }
-            }
-
-            dialog.text(s"Intelligence gathered")
-            dialog.button("OK", true)
-            dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
-            dialog.pack()
-            stage.addActor(dialog)
-            val dialogPos = camera.unproject(new Vector3(camera.position.x,camera.position.y,0))
-            dialog.setPosition(dialogPos.x - dialog.getPrefWidth/2,dialogPos.y - dialog.getPrefHeight/2)
-
-          case ActionMixOutcome.UNKNOWN => {
-            game.setScreen(mapScreen)
-          }
-        }
-
-
+        val result = analyzeOutcome(assetsGroup)
+        mapScreen.sendExpedition(destTile = new Vector2(targetLocation.mapCell.x,targetLocation.mapCell.y),units =result._2, objective = result._1)
+        game.setScreen(mapScreen)
       }
     })
 
@@ -320,12 +286,13 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     }
   }
 
-  private def analyzeOutcome(assetGroup:Group): ActionMixOutcome.MixOutcome ={
+  private def analyzeOutcome(assetGroup:Group): (ActionMixOutcome.MixObjective,scala.List[UnitType]) ={
     var soldiersCommandoCounter = 0
     var spyCounter = 0
 
     val filteredAssetGroup = assetGroup.getChildren.toArray.filter(a=>a != meansPicture)
     val size = filteredAssetGroup.length
+    val units = ListBuffer[UnitType]()
     for (i<-0 until size){
       val actor = filteredAssetGroup(i)
       if (actor.getUserObject != null) {
@@ -335,10 +302,11 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
           case UnitType.SPY => spyCounter += 1
           case _ =>
         }
+        units += unitType
       }
     }
 
-    if (targetLocation.isInstanceOf[CoveredAreaInfo] && size >0){
+    val objective = if (targetLocation.isInstanceOf[CoveredAreaInfo] && size >0){
       ActionMixOutcome.EXPEDITION
     } else{ //target is discovered
         if (soldiersCommandoCounter > 0 && spyCounter == 0) {
@@ -350,6 +318,8 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
         }
     }
 
+    (objective,units.toList)
+
 
   }
 
@@ -357,7 +327,7 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
   private def updateResultPicture(assetGroup: Group): Unit={
 
     val texture:Texture =
-      analyzeOutcome(assetGroup) match {
+      analyzeOutcome(assetGroup)._1 match {
         case ActionMixOutcome.COMBAT=>crossedSwordsTexture
         case ActionMixOutcome.SURVEILLANCE=>keyHoleTexture
         case ActionMixOutcome.EXPEDITION => expeditionTexture
