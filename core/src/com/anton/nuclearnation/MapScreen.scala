@@ -469,74 +469,16 @@ class MapScreen(game: NuclearNation) extends Screen{
       mapCell.get.location match {
         case Some(ri: RaiderCampInfo) => {
           game.setScreen(new ActionMixScreen(ri, game, this))
-          return
         }
         case Some(ci: CityInfo) => {
           game.setScreen(new ActionMixScreen(ci, game, this))
-          return
         }
         case _ =>
       }
     } else { //map cell is not discovered
         game.setScreen(new ActionMixScreen(CoveredAreaInfo(mapCell.get), game, this))
-        return
     }
 
-
-    val table = new Table()
-
-    val soldiersLabel = new Label("Soldiers",skin)
-    var soldiersCount = 0
-    val soldiersCountLabel = new Label(soldiersCount.toString,skin)
-    val plusButton = new TextButton("+",skin)
-    val minusButton = new TextButton("-",skin)
-    table.add(soldiersLabel).space(20)
-    table.add(soldiersCountLabel).space(20)
-    table.add(plusButton).space(0)
-    table.add(minusButton).space(0)
-
-    plusButton.addCaptureListener(new ClickListener(){
-      override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
-        soldiersCount +=1
-        soldiersCountLabel.setText(soldiersCount.toString)
-      }
-    })
-
-    minusButton.addCaptureListener(new ClickListener(){
-      override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
-        if (soldiersCount>0){
-          soldiersCount -=1
-        }
-        soldiersCountLabel.setText(soldiersCount.toString)
-      }
-    })
-
-    val dialog = new Dialog("Choose expedition mix", skin) {
-      override def result(result:Object) {
-        Gdx.app.log("INFO",s"Soldiers count: ${soldiersCountLabel.getText}")
-        if (result.asInstanceOf[Boolean]){
-          if (expeditions.size<1) {
-            val clickInfo = getClickInfo(screenX,screenY)
-            val texture = assetManager.get("expedition.png",classOf[Texture])
-            sendExpedition(new Vector2(capital.mapCell.x,capital.mapCell.y),new Vector2(clickInfo.tileX,clickInfo.tileY),texture,scala.List[UnitType]())
-          } else {
-            Gdx.app.log("INFO","Expedition already sent")
-          }
-        } else {
-          Gdx.app.log("INFO","Button clicked " + result)
-        }
-      }
-    }
-
-    dialog.getContentTable.add(table)
-    dialog.button("Send", true)
-    dialog.button("Cancel", false)
-    dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
-    dialog.getContentTable.pad(20)
-    dialog.getTitleTable.pad(20)
-    dialog.pack()
-    stage.addActor(dialog)
-    dialog.setPosition(cameraCenterX - dialog.getPrefWidth/2,cameraCenterY - dialog.getPrefHeight/2)
   }
 
   def sendExpedition(sourceTile:Vector2 = new Vector2(capital.mapCell.x,capital.mapCell.y),
