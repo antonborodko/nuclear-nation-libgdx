@@ -35,6 +35,8 @@ import scala.collection.mutable.ListBuffer
 
 class MapScreen(game: NuclearNation) extends Screen{
 
+
+
   val technologies:List[Technology] = List(Technology("Advanced tactics"),Technology("Automatic weapons"))
 
   val assetManager = game.assetManager
@@ -83,6 +85,12 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   val unitConstructionButton = new TextButton("Units",skin)
   val centerOnCapitalButton = new TextButton("Re-center",skin)
+
+  val assetChain = new AssetChain(this)
+
+  var isCommandoEnabledDialogShown = false
+  var isSpyEnabledDialogShown = false
+
 
   unitConstructionButton.addCaptureListener(new ClickListener(){
     override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
@@ -562,6 +570,35 @@ class MapScreen(game: NuclearNation) extends Screen{
       case _=>
     }
 
+  }
+
+  def conquerCity(city: CityInfo) = {
+    city.isOwnedByPlayer = true
+    var caption=""
+    if (assetChain.isCommandoEnabled && !isCommandoEnabledDialogShown){
+      isCommandoEnabledDialogShown = false
+      caption = "Unit enabled: Commando"
+    }
+
+    if (assetChain.isSpyEnabled && !isSpyEnabledDialogShown){
+      isSpyEnabledDialogShown = false
+      caption = "Unit enabled: Spy"
+    }
+
+    val dialog = new Dialog(caption, skin) {
+      override def result(result:Object) {
+
+      }
+    }
+
+    dialog.text(caption)
+    dialog.button("OK", true)
+    dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
+    dialog.getContentTable.pad(20)
+    dialog.getTitleTable.pad(20)
+    dialog.pack()
+    stage.addActor(dialog)
+    dialog.setPosition(cameraCenterX - dialog.getPrefWidth/2,cameraCenterY - dialog.getPrefHeight/2)
   }
 
 

@@ -177,7 +177,7 @@ class SituationScreen(currentLocation:MapLocation, defendersType:DefendersType, 
             override def result(result:Object) {
               if (battleOutcome == BattleOutcome.VICTORY){
                 currentLocation match{
-                  case city:CityInfo=> city.isOwnedByPlayer = true
+                  case city:CityInfo=>mapScreen.conquerCity(city)
                   case camp:RaiderCampInfo=>
                     mapScreen.deleteCamp(camp)
                   case _ => throw new RuntimeException("Unknown location")
