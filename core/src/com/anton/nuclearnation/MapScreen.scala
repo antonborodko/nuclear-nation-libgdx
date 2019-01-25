@@ -236,7 +236,7 @@ class MapScreen(game: NuclearNation) extends Screen{
   })
 
 
-
+  visitArea(capital.mapCell.x,capital.mapCell.y)
 
 
   println("Map generated")
@@ -320,6 +320,17 @@ class MapScreen(game: NuclearNation) extends Screen{
   }
 
   case class ActorMapCoords(tileX:Int,tileY:Int)
+
+  def visitArea(centerTileX:Int,centerTileY:Int): Unit ={
+    for (
+      x<-centerTileX-1 to centerTileX+1;
+      y<-centerTileY-1 to centerTileY+1
+    ) yield {
+      visitTile(x,y,1)
+    }
+
+  }
+
 
   def visitTile(tileX: Int, tileY: Int, radiusTiles:Int=5)  {
     val tile = mapData.getCell(tileX,tileY).get
