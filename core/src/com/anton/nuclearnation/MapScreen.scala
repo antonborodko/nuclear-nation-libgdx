@@ -236,9 +236,6 @@ class MapScreen(game: NuclearNation) extends Screen{
   })
 
 
-  visitArea(capital.mapCell.x,capital.mapCell.y)
-
-
   println("Map generated")
 
   val renderer = new OrthogonalTiledMapRenderer(map, 1f)
@@ -273,6 +270,8 @@ class MapScreen(game: NuclearNation) extends Screen{
     multiplexer.addProcessor(stage)
     multiplexer.addProcessor(mapInputProcessor)
     Gdx.input.setInputProcessor(multiplexer)
+
+    visitArea(capital.mapCell.x,capital.mapCell.y)
 
   }
 
@@ -322,10 +321,12 @@ class MapScreen(game: NuclearNation) extends Screen{
   case class ActorMapCoords(tileX:Int,tileY:Int)
 
   def visitArea(centerTileX:Int,centerTileY:Int): Unit ={
+    //println(s"Called visitArea with coords $centerTileX,$centerTileY")
     for (
       x<-centerTileX-1 to centerTileX+1;
       y<-centerTileY-1 to centerTileY+1
     ) yield {
+      //println(s"Calling visitTile with coords $x,$y")
       visitTile(x,y,1)
     }
 
@@ -333,8 +334,15 @@ class MapScreen(game: NuclearNation) extends Screen{
 
 
   def visitTile(tileX: Int, tileY: Int, radiusTiles:Int=5)  {
-    val tile = mapData.getCell(tileX,tileY).get
+    val tile = mapData.getCell(tileX,tileY) match {
+      case Some(t)=>t
+      case None=>
+        //println(s"*** Tile not defined: $tileX,$tileY ****")
+        return
+    }
+
     tile.state = MapCellState.VISITED
+    fogOfWarLayer.setCell(tileX,tileY,null)
 
     //removing actor over current tile if exists
     stage.getActors.items.filter(a=>a!=null).find(a=>{
@@ -347,6 +355,7 @@ class MapScreen(game: NuclearNation) extends Screen{
       }
     }) match {
       case Some(a)=>
+        //println(s"Removing actor over $tileX,$tileY")
         a.remove()
       case None=>
     }
@@ -357,7 +366,8 @@ class MapScreen(game: NuclearNation) extends Screen{
       y<-tileY - radiusTiles to tileY + radiusTiles
     ) yield {
       if (!(x == tileX && y == tileY)){
-        mapData.getCell(x,y)
+        val cell = mapData.getCell(x,y)
+        cell
       } else {
         None
       }
@@ -366,7 +376,6 @@ class MapScreen(game: NuclearNation) extends Screen{
       if (t.isDefined && t.get.state == MapCellState.HIDDEN) {
         discoverTile(t.get.x,t.get.y)
       }
-
     })
   }
 
@@ -520,7 +529,11 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   private def discoverTile(x:Int,y:Int): Unit ={
     val t = mapData.getCell(x,y)
+    if (t.isEmpty){
+      println(s"*** Unable to discover: tile is empty ** $x,$y")
+    }
     if (t.isDefined && t.get.state == MapCellState.HIDDEN){
+      println(s"Discovering tile $x,$y")
       fogOfWarLayer.setCell(x, y, null)
       t.get.state = MapCellState.DISCOVERED
       val image = Option(townLayer.getCell(x,y)) match {
@@ -585,6 +598,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   def conquerCity(city: CityInfo) = {
     city.isOwnedByPlayer = true
+    visitArea(city.mapCell.x,city.mapCell.y)
     var caption=""
     if (assetChain.isCommandoEnabled && !isCommandoEnabledDialogShown){
       isCommandoEnabledDialogShown = false
