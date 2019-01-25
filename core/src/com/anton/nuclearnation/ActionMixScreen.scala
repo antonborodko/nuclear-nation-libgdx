@@ -1,5 +1,6 @@
 package com.anton.nuclearnation
 
+import com.anton.nuclearnation.ActionMixOutcome.Value
 import com.anton.nuclearnation.MapScreen._
 import com.anton.nuclearnation.UnitType.UnitType
 import com.badlogic.gdx.Input.{Buttons, Keys}
@@ -184,7 +185,7 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     applyButton.addCaptureListener(new ClickListener() {
       override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
 
-        val result = analyzeOutcome(assetsGroup)
+        val result = analyzeActionMix(assetsGroup)
         mapScreen.sendExpedition(destTile = new Vector2(targetLocation.mapCell.x,targetLocation.mapCell.y),units =result._2, objective = result._1)
         game.setScreen(mapScreen)
       }
@@ -286,7 +287,7 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     }
   }
 
-  private def analyzeOutcome(assetGroup:Group): (ActionMixOutcome.MixObjective,scala.List[UnitType]) ={
+  private def analyzeActionMix(assetGroup:Group): (ActionMixOutcome.MixObjective,scala.List[UnitType]) ={
     var soldiersCommandoCounter = 0
     var spyCounter = 0
 
@@ -327,7 +328,7 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
   private def updateResultPicture(assetGroup: Group): Unit={
 
     val texture:Texture =
-      analyzeOutcome(assetGroup)._1 match {
+      analyzeActionMix(assetGroup)._1 match {
         case ActionMixOutcome.COMBAT=>crossedSwordsTexture
         case ActionMixOutcome.SURVEILLANCE=>keyHoleTexture
         case ActionMixOutcome.EXPEDITION => expeditionTexture
@@ -371,6 +372,5 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     dispose()
   }
 
-  override def dispose(): Unit = {
-  }
+  override def dispose(): Unit = {}
 }

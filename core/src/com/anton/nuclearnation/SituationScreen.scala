@@ -26,7 +26,7 @@ object DefendersType extends Enumeration {
 }
 
 
-class SituationScreen(currentLocation:MapLocation, defendersType:DefendersType, game:NuclearNation, mapScreen:MapScreen, playerMix:List[UnitType]) extends Screen{
+class SituationScreen(currentLocation:MapLocation, defendersType:DefendersType, game:NuclearNation, mapScreen:MapScreen, playerUnits:List[UnitType]) extends Screen{
 
   val assetManager = game.assetManager
   val map = new TiledMap
@@ -72,6 +72,8 @@ class SituationScreen(currentLocation:MapLocation, defendersType:DefendersType, 
   val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
 
   val enemies = ListBuffer[EnemyInfo]()
+
+  val battleOutcome = if (playerUnits.count(u => u == UnitType.COMMANDO || u == UnitType.SOLDIER)>3) BattleOutcome.VICTORY else BattleOutcome.DEFEAT
 
   enemies += EnemyInfo(middleXTile+1,middleYTile)
   enemies += EnemyInfo(middleXTile+2,middleYTile-1)
@@ -170,23 +172,30 @@ class SituationScreen(currentLocation:MapLocation, defendersType:DefendersType, 
 
     addListener(new InputListener(){
         override def touchDown (event:InputEvent, x:Float, y:Float, pointer:Int, button:Int):Boolean= {
-          val dialog = new Dialog("You've defeated the enemy", skin) {
+          val title = if (battleOutcome == BattleOutcome.VICTORY) "You've defeated the enemy" else "You lost"
+          val dialog = new Dialog(title, skin) {
             override def result(result:Object) {
-              Gdx.app.log("INFO","Button clicked " + result)
-              currentLocation match{
-                case city:CityInfo=> city.isOwnedByPlayer = true
-                case camp:RaiderCampInfo=>
-                  mapScreen.deleteCamp(camp)
-                case _ => throw new RuntimeException("Unknown location")
+              if (battleOutcome == BattleOutcome.VICTORY){
+                currentLocation match{
+                  case city:CityInfo=> city.isOwnedByPlayer = true
+                  case camp:RaiderCampInfo=>
+                    mapScreen.deleteCamp(camp)
+                  case _ => throw new RuntimeException("Unknown location")
+                }
               }
               game.setScreen(mapScreen)
             }
           }
 
-          val notification = currentLocation match {
-            case city:CityInfo => s"You've conquered city ${city.name}"
-            case camp:RaiderCampInfo => s"You've destroyed raider camp ${camp.name}"
-            case _ => throw new RuntimeException("Unknown notification type")
+          val notification =
+            battleOutcome match{
+              case BattleOutcome.VICTORY=>
+                currentLocation match {
+                  case city:CityInfo => s"You've conquered city ${city.name}"
+                  case camp:RaiderCampInfo => s"You've destroyed raider camp ${camp.name}"
+                  case _ => throw new RuntimeException("Unknown notification type")
+              }
+              case _=> "You lost"
           }
 
           dialog.text(notification)
@@ -195,7 +204,8 @@ class SituationScreen(currentLocation:MapLocation, defendersType:DefendersType, 
           dialog.pack()
           stage.addActor(dialog)
 
-          dialog.setPosition(100,100)
+          val coords = camera.unproject(new Vector3(0,0,0))
+          dialog.setPosition(coords.x,coords.y)
 
           true
         }
@@ -206,5 +216,11 @@ class SituationScreen(currentLocation:MapLocation, defendersType:DefendersType, 
     }
 
 
+  }
+
+
+  object BattleOutcome extends Enumeration {
+    type BattleOutcome = Value
+    val VICTORY, DEFEAT = Value
   }
 }
