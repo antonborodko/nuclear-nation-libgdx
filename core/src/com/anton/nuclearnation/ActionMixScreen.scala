@@ -217,7 +217,7 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
 
     actor.addListener(new ClickListener(){
       override def touchDown(event: InputEvent, x: Float, y: Float, pointer: Int, button: Int) :Boolean= {
-        if (button == Buttons.RIGHT){
+        if (button == Buttons.RIGHT || button == Buttons.LEFT){
           assetGroup.removeActor(actor)
           val userObject = actor.getUserObject.asInstanceOf[ActorUserObject]
           userObject.onRemovedFromStack()

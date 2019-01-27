@@ -165,10 +165,6 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
       spyPicture.addCaptureListener(cantBuildSpyListener)
     }
 
-
-
-
-
     stage.addActor(titleLabel)
     stage.addActor(soldierUnitButton)
     stage.addActor(commandoUnitButton)
