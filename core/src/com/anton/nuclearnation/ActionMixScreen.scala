@@ -148,8 +148,6 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
 
     assetsLabel.setPosition(subjectLabel.getX-assetsLabel.getPrefWidth-20,subjectLabel.getY)
 
-    val dragAndDrop = new DragAndDrop()
-
     soldierUnit.setPosition(assetsLabel.getX,assetsLabel.getY - soldierUnit.getPrefHeight-10)
     soldierLabel.setPosition(soldierUnit.getX,soldierUnit.getY - soldierLabel.getPrefHeight - 10)
 
@@ -159,15 +157,15 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     spyUnit.setPosition(commandoLabel.getX,commandoLabel.getY - spyUnit.getPrefHeight-10)
     spyLabel.setPosition(spyUnit.getX,spyUnit.getY - spyLabel.getPrefHeight - 10)
 
-    addUnitLeftClickListener(soldierUnit,game.soldierCounter,assetsGroup,dragAndDrop,()=>{
+    addUnitLeftClickListener(soldierUnit,game.soldierCounter,assetsGroup,()=>{
       game.soldierCounter -=1
       updateUnitCountLabel("Soldier",soldierLabel,game.soldierCounter)
     })
-    addUnitLeftClickListener(commandoUnit,game.commandoCounter,assetsGroup,dragAndDrop,()=>{
+    addUnitLeftClickListener(commandoUnit,game.commandoCounter,assetsGroup,()=>{
       game.commandoCounter -=1
       updateUnitCountLabel("Commando",commandoLabel,game.commandoCounter)
     })
-    addUnitLeftClickListener(spyUnit,game.spyCounter,assetsGroup,dragAndDrop,()=>{
+    addUnitLeftClickListener(spyUnit,game.spyCounter,assetsGroup,()=>{
       game.spyCounter -=1
       updateUnitCountLabel("Spy",spyLabel,game.spyCounter)
     })
@@ -194,7 +192,7 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
 
   }
 
-  private def addUnitLeftClickListener(actor:Actor,counter:Int, assetsGroup:Group,dragAndDrop: DragAndDrop,callback:() => Unit): Unit ={
+  private def addUnitLeftClickListener(actor:Actor,counter:Int, assetsGroup:Group,callback:() => Unit): Unit ={
     actor.addCaptureListener(new ClickListener(Buttons.LEFT){
 
       override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
