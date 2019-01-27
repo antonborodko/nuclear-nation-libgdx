@@ -302,19 +302,19 @@ class MapScreen(game: NuclearNation) extends Screen{
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT)
     stage.getBatch.setColor(Color.WHITE)
 
-    if (Gdx.input.isKeyPressed(Keys.UP)){
+    if (Gdx.input.isKeyPressed(Keys.UP) || Gdx.input.isKeyPressed(Keys.W)){
       cameraCenterY += 25
     }
 
-    if (Gdx.input.isKeyPressed(Keys.DOWN)){
+    if (Gdx.input.isKeyPressed(Keys.DOWN) || Gdx.input.isKeyPressed(Keys.S)){
       cameraCenterY -= 25
     }
 
-    if (Gdx.input.isKeyPressed(Keys.LEFT)){
+    if (Gdx.input.isKeyPressed(Keys.LEFT) || Gdx.input.isKeyPressed(Keys.A)){
       cameraCenterX-=25
     }
 
-    if (Gdx.input.isKeyPressed(Keys.RIGHT)){
+    if (Gdx.input.isKeyPressed(Keys.RIGHT) || Gdx.input.isKeyPressed(Keys.D)){
       cameraCenterX += 25
     }
 
