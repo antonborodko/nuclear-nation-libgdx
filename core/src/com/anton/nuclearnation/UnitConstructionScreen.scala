@@ -110,43 +110,59 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
 
 
 
-    soldierUnitButton.addCaptureListener(new ClickListener(){
+    val buildSoldierListener = new ClickListener(){
       override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
         game.soldierCounter +=1
         updateCountLabel(game.soldierCounter,soldierCountLabel)
       }
-    })
+    }
+
+    val buildCommandoListener = new ClickListener(){
+      override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
+        game.commandoCounter +=1
+        updateCountLabel(game.commandoCounter,commandoCountLabel)
+      }
+    }
+
+    val cantBuildCommandoListener = new ClickListener(){
+      override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
+        showRequirementsDialog("2 or more conquered cities")
+      }
+    }
+
+    val buildSpyListener = new ClickListener(){
+      override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
+        game.spyCounter +=1
+        updateCountLabel(game.spyCounter,spyCountLabel)
+      }
+    }
+
+    val cantBuildSpyListener = new ClickListener(){
+      override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
+        showRequirementsDialog("3 or more conquered cities")
+      }
+    }
+
+
+    soldierUnitButton.addCaptureListener(buildSoldierListener)
+    soldierPicture.addCaptureListener(buildSoldierListener)
 
 
     if (assetChain.isCommandoEnabled){
-      commandoUnitButton.addCaptureListener(new ClickListener(){
-        override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
-          game.commandoCounter +=1
-          updateCountLabel(game.commandoCounter,commandoCountLabel)
-        }
-      })
+      commandoUnitButton.addCaptureListener(buildCommandoListener)
+      commandoPicture.addCaptureListener(buildCommandoListener)
     } else {
-      commandoUnitButton.addCaptureListener(new ClickListener(){
-        override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
-          showRequirementsDialog("2 or more conquered cities")
-        }
-      })
+      commandoUnitButton.addCaptureListener(cantBuildCommandoListener)
+      commandoPicture.addCaptureListener(cantBuildCommandoListener)
     }
 
 
     if (assetChain.isSpyEnabled){
-      spyUnitButton.addCaptureListener(new ClickListener(){
-        override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
-          game.spyCounter +=1
-          updateCountLabel(game.spyCounter,spyCountLabel)
-        }
-      })
+      spyUnitButton.addCaptureListener(buildSpyListener)
+      spyPicture.addCaptureListener(buildSpyListener)
     } else {
-      spyUnitButton.addCaptureListener(new ClickListener(){
-        override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
-          showRequirementsDialog("3 or more conquered cities")
-        }
-      })
+      spyUnitButton.addCaptureListener(cantBuildSpyListener)
+      spyPicture.addCaptureListener(cantBuildSpyListener)
     }
 
 
