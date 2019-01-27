@@ -442,7 +442,7 @@ class MapScreen(game: NuclearNation) extends Screen{
         val currentPos = new Vector2(expedition.positionGlobalPixelX,expedition.positionGlobalPixelY)
         val destination = new Vector2(expedition.destinationGlobalPixelX,expedition.destinationGlobalPixelY)
 
-        val oldDirection = destination.sub(currentPos).nor()
+        val oldDirection = new Vector2(destination).sub(currentPos).nor()
 
         val tileX = (expedition.positionGlobalPixelX / desertLayer.getTileWidth).toInt
         val tileY = (expedition.positionGlobalPixelY / desertLayer.getTileHeight).toInt
@@ -451,7 +451,7 @@ class MapScreen(game: NuclearNation) extends Screen{
         val newPositionY = expedition.positionGlobalPixelY + oldDirection.y * expedition.speed * delta
 
         val newPos = new Vector2(newPositionX,newPositionY)
-        val newDirection = destination.sub(newPos).nor()
+        val newDirection = new Vector2(destination).sub(newPos).nor()
 
         if (newDirection.hasSameDirection(oldDirection)){
           expeditions(0) = expedition.copy(positionGlobalPixelX = newPositionX, positionGlobalPixelY = newPositionY)
