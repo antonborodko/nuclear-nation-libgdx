@@ -100,8 +100,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   centerOnCapitalButton.addCaptureListener(new ClickListener(){
     override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
-      cameraCenterX = capitalCell.x * desertLayer.getTileWidth - desertLayer.getTileWidth/2
-      cameraCenterY = capitalCell.y * desertLayer.getTileHeight - desertLayer.getTileHeight /2
+      centerScreen()
     }
   })
 
@@ -243,8 +242,8 @@ class MapScreen(game: NuclearNation) extends Screen{
   val mapWidthPixels = (desertLayer.getWidth * desertLayer.getTileWidth).asInstanceOf[Int]
   val mapHeightPixels = (desertLayer.getHeight * desertLayer.getTileHeight).asInstanceOf[Int]
 
-  var cameraCenterX = capitalCell.x * desertLayer.getTileWidth - desertLayer.getTileWidth/2
-  var cameraCenterY = capitalCell.y * desertLayer.getTileHeight - desertLayer.getTileHeight /2
+  var cameraCenterX = 0f
+  var cameraCenterY = 0f
 
   val roadRenderer = new ShapeRenderer()
 
@@ -264,6 +263,12 @@ class MapScreen(game: NuclearNation) extends Screen{
     Gdx.gl.glLineWidth(1)
   }
 
+  def centerScreen(): Unit ={
+    cameraCenterX = capitalCell.x * desertLayer.getTileWidth - desertLayer.getTileWidth/2
+    cameraCenterY = capitalCell.y * desertLayer.getTileHeight - desertLayer.getTileHeight /2
+  }
+
+
 
   override def show(): Unit = {
     val multiplexer = new InputMultiplexer()
@@ -271,6 +276,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     multiplexer.addProcessor(mapInputProcessor)
     Gdx.input.setInputProcessor(multiplexer)
 
+    centerScreen()
     visitArea(capital.mapCell.x,capital.mapCell.y)
 
   }
