@@ -23,7 +23,7 @@ import scala.util.Random
 import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader.FreeTypeFontLoaderParameter
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.maps.tiled.renderers.{IsometricStaggeredTiledMapRenderer, IsometricTiledMapRenderer, OrthogonalTiledMapRenderer}
-import com.badlogic.gdx.scenes.scene2d.{InputEvent, InputListener, Stage}
+import com.badlogic.gdx.scenes.scene2d.{Group, InputEvent, InputListener, Stage}
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle
 import com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle
@@ -104,8 +104,12 @@ class MapScreen(game: NuclearNation) extends Screen{
     }
   })
 
-  stage.addActor(unitConstructionButton)
-  stage.addActor(centerOnCapitalButton)
+  val buttonsGroup = new Group()
+  val tileGroup = new Group()
+  buttonsGroup.addActor(unitConstructionButton)
+  buttonsGroup.addActor(centerOnCapitalButton)
+  stage.addActor(tileGroup)
+  stage.addActor(buttonsGroup)
 
 
 
@@ -357,7 +361,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     fogOfWarLayer.setCell(tileX,tileY,null)
 
     //removing actor over current tile if exists
-    stage.getActors.items.filter(a=>a!=null).find(a=>{
+    tileGroup.getChildren.items.filter(a=>a!=null).find(a=>{
       val userObject = Option(a.getUserObject)
       userObject match {
         case Some(coords: ActorMapCoords) =>
@@ -556,7 +560,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
       image.setColor(Color.GRAY)
       image.setUserObject(ActorMapCoords(x,y))
-      stage.addActor(image)
+      tileGroup.addActor(image)
       val coords = new Vector3(x * desertLayer.getTileWidth, y * desertLayer.getTileHeight, 0)
       image.setPosition(coords.x, coords.y)
     }
