@@ -91,6 +91,11 @@ class MapScreen(game: NuclearNation) extends Screen{
   var isCommandoEnabledDialogShown = false
   var isSpyEnabledDialogShown = false
 
+  val mapDebugOutputEnabled = sys.env.get("ENABLE_MAP_DEBUG_OUTPUT") match {
+    case Some(v)=>v.toLowerCase().toBoolean
+    case None=>false
+  }
+
 
   unitConstructionButton.addCaptureListener(new ClickListener(){
     override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
@@ -297,8 +302,6 @@ class MapScreen(game: NuclearNation) extends Screen{
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT)
     stage.getBatch.setColor(Color.WHITE)
 
-
-
     if (Gdx.input.isKeyPressed(Keys.UP)){
       cameraCenterY += 25
     }
@@ -471,7 +474,9 @@ class MapScreen(game: NuclearNation) extends Screen{
       }
     })
 
-    gameFont.draw(stage.getBatch,s"Camera position: ($cameraCenterX,$cameraCenterY), camera viewport size: ${camera.viewportWidth}/${camera.viewportHeight} ,player position: ($cameraCenterX,$cameraCenterY)",camera.unproject(new Vector3(0,0,0)).x,camera.unproject(new Vector3(0,0,0)).y)
+    if (mapDebugOutputEnabled){
+      gameFont.draw(stage.getBatch,s"Camera position: ($cameraCenterX,$cameraCenterY), camera viewport size: ${camera.viewportWidth}/${camera.viewportHeight} ,player position: ($cameraCenterX,$cameraCenterY)",camera.unproject(new Vector3(0,0,0)).x,camera.unproject(new Vector3(0,0,0)).y)
+    }
     stage.getBatch.end()
 
     val unitConstructionButtonCoords = camera.unproject(new Vector3(stage.getViewport.getScreenWidth - unitConstructionButton.getPrefWidth,stage.getViewport.getScreenHeight,0))
