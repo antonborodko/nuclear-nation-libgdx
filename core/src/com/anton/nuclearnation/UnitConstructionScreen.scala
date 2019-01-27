@@ -47,13 +47,19 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
 
   val assetChain = new AssetChain(mapScreen)
 
+  val OKButton = new TextButton("OK",skin)
+
+  OKButton.addCaptureListener(new ClickListener() {
+    override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
+      game.setScreen(mapScreen)
+    }
+  })
 
   val constructionScreenInputProcessor = new InputProcessor() {
 
     override def keyUp(keycode: Int): Boolean = {
       if (keycode == Input.Keys.ESCAPE || keycode == Input.Keys.U) {
         game.setScreen(mapScreen)
-        dispose()
         return true
       }
       false
@@ -164,6 +170,8 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
     stage.addActor(commandoCountLabel)
     stage.addActor(spyCountLabel)
 
+    stage.addActor(OKButton)
+
     titleLabel.setPosition(stage.getViewport.getScreenWidth/2,camera.unproject(new Vector3(0,0,0)).y-titleLabel.getPrefHeight)
 
     soldierPicture.setPosition(titleLabel.getX,titleLabel.getY - soldierPicture.getPrefHeight - 120)
@@ -180,6 +188,8 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
     spyDescriptionLabel.setPosition(spyPicture.getX + spyPicture.getPrefWidth +30,spyPicture.getY + spyDescriptionLabel.getPrefHeight /2)
     spyUnitButton.setPosition(spyPicture.getX,spyPicture.getY - spyUnitButton.getPrefHeight - 10)
     spyCountLabel.setPosition(spyUnitButton.getX() + spyUnitButton.getPrefWidth + 10, spyUnitButton.getY)
+
+    OKButton.setPosition(spyUnitButton.getX,0)
 
   }
 
@@ -208,7 +218,7 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
   }
 
   override def hide(): Unit = {
-
+    dispose()
   }
 
   override def dispose(): Unit = {
