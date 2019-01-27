@@ -134,6 +134,7 @@ class MapScreen(game: NuclearNation) extends Screen{
       }
     }
 
+
     override def keyTyped(character: Char): Boolean = {true}
 
     override def touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean = {true}
