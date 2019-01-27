@@ -442,22 +442,24 @@ class MapScreen(game: NuclearNation) extends Screen{
         val currentPos = new Vector2(expedition.positionGlobalPixelX,expedition.positionGlobalPixelY)
         val destination = new Vector2(expedition.destinationGlobalPixelX,expedition.destinationGlobalPixelY)
 
-        val direction = destination.sub(currentPos).nor()
+        val oldDirection = destination.sub(currentPos).nor()
 
         val tileX = (expedition.positionGlobalPixelX / desertLayer.getTileWidth).toInt
         val tileY = (expedition.positionGlobalPixelY / desertLayer.getTileHeight).toInt
         visitTile(tileX,tileY)
-        if (expedition.originalDirection.isDefined && !direction.hasSameDirection(expedition.originalDirection.get)){
+        val newPositionX = expedition.positionGlobalPixelX + oldDirection.x * expedition.speed * delta
+        val newPositionY = expedition.positionGlobalPixelY + oldDirection.y * expedition.speed * delta
+
+        val newPos = new Vector2(newPositionX,newPositionY)
+        val newDirection = destination.sub(newPos).nor()
+
+        if (newDirection.hasSameDirection(oldDirection)){
+          expeditions(0) = expedition.copy(positionGlobalPixelX = newPositionX, positionGlobalPixelY = newPositionY)
+          stage.getBatch.draw(expedition.marker, expeditions.head.positionGlobalPixelX - expedition.marker.getWidth/2, expeditions.head.positionGlobalPixelY - expedition.marker.getHeight/2)
+        } else {
           checkExpeditionTile(tileX,tileY,expeditions.head)
           visitTile(tileX,tileY)
           expeditions.remove(0)
-        } else {
-          val newOriginX = expedition.positionGlobalPixelX + direction.x * expedition.speed * delta
-          val newOriginY = expedition.positionGlobalPixelY + direction.y * expedition.speed * delta
-          expeditions(0) = expedition.copy(positionGlobalPixelX = newOriginX, positionGlobalPixelY = newOriginY,originalDirection = Some(direction))
-          stage.getBatch.draw(expedition.marker, expeditions.head.positionGlobalPixelX - expedition.marker.getWidth/2, expeditions.head.positionGlobalPixelY - expedition.marker.getHeight/2)
-
-
         }
 
 
@@ -537,12 +539,9 @@ class MapScreen(game: NuclearNation) extends Screen{
     expeditions += ExpeditionInfo(
       sourceTile.x * desertLayer.getTileWidth  + texture.getWidth/2,
       sourceTile.y * desertLayer.getTileHeight +texture.getHeight/2,
-      sourceTile.x * desertLayer.getTileWidth  + texture.getWidth/2,
-      sourceTile.y * desertLayer.getTileHeight +texture.getHeight/2,
       destTile.x * desertLayer.getTileWidth +texture.getWidth/2,
       destTile.y * desertLayer.getTileHeight +texture.getHeight/2,
       texture,
-      None,
       units = units,
       objective = objective
     )
@@ -668,14 +667,12 @@ object MapScreen{
 
 
   case class MapClickInfo(pixelX:Float, pixelY: Float, tileX:Int,tileY:Int)
-  case class ExpeditionInfo(originGlobalPixelX:Float,
-                            originGlobalPixelY:Float,
+  case class ExpeditionInfo(
                             positionGlobalPixelX:Float,
                             positionGlobalPixelY:Float,
                             destinationGlobalPixelX:Float,
                             destinationGlobalPixelY:Float,
                             marker:Texture,
-                            originalDirection:Option[Vector2],
                             speed:Int = 600,
                             objective:ActionMixOutcome.MixObjective,
                             units:scala.List[UnitType]
