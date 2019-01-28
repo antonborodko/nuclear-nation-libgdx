@@ -89,11 +89,15 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   val unitConstructionButton = new TextButton("Units",skin)
   val centerOnCapitalButton = new TextButton("Re-center",skin)
+  val pauseButton = new TextButton("Pause",skin)
+
 
   val assetChain = new AssetChain(this)
 
   var isCommandoEnabledDialogShown = false
   var isSpyEnabledDialogShown = false
+
+  var isPaused = false
 
   val randomCaravanSpawnChance =  sys.env.get("RANDOM_CARAVAN_SPAWN_CHANCE") match {
     case Some(v)=>v.toLowerCase().toInt
@@ -130,10 +134,17 @@ class MapScreen(game: NuclearNation) extends Screen{
     }
   })
 
+  pauseButton.addCaptureListener(new ClickListener(){
+    override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
+      pauseGame()
+    }
+  })
+
   val buttonsGroup = new Group()
   val tileGroup = new Group()
   buttonsGroup.addActor(unitConstructionButton)
   buttonsGroup.addActor(centerOnCapitalButton)
+  buttonsGroup.addActor(pauseButton)
   stage.addActor(tileGroup)
   stage.addActor(buttonsGroup)
 
@@ -174,6 +185,9 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   },0,1)
 
+  def pauseGame(): Unit ={
+    isPaused = !isPaused
+  }
 
 
   val mapInputProcessor = new InputProcessor() {
@@ -196,6 +210,9 @@ class MapScreen(game: NuclearNation) extends Screen{
           true
         case Input.Keys.SPACE=>
           centerScreen()
+          true
+        case Input.Keys.P=>
+          pauseGame()
           true
         case _=> false
       }
@@ -358,7 +375,9 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   }
 
-  override def render(delta: Float): Unit = {
+  override def render( d: Float): Unit = {
+
+    val _delta= if (isPaused) 0 else d
 
     Gdx.gl.glClearColor(1, 0, 0, 1)
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT)
@@ -381,8 +400,8 @@ class MapScreen(game: NuclearNation) extends Screen{
     }
 
 
-    setCameraPosition(camera,delta)
-    stage.act(delta)
+    setCameraPosition(camera,_delta)
+    stage.act(_delta)
     stage.draw()
 
     //drawing roads between cities
@@ -558,6 +577,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     val unitConstructionButtonCoords = camera.unproject(new Vector3(stage.getViewport.getScreenWidth - unitConstructionButton.getPrefWidth,stage.getViewport.getScreenHeight,0))
     unitConstructionButton.setPosition(unitConstructionButtonCoords.x,unitConstructionButtonCoords.y)
     centerOnCapitalButton.setPosition(unitConstructionButton.getX - centerOnCapitalButton.getPrefWidth-5,unitConstructionButton.getY)
+    pauseButton.setPosition(centerOnCapitalButton.getX - pauseButton.getPrefWidth - 5,centerOnCapitalButton.getY)
   }
 
   override def resize(width: Int, height: Int): Unit = {}
