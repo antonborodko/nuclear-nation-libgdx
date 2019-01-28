@@ -31,6 +31,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.{Button, Dialog, Image, Label, Skin, T
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.Timer.Task
 import com.badlogic.gdx.utils.viewport.StretchViewport
+import com.badlogic.gdx.utils.Timer
 
 import scala.collection.mutable.ListBuffer
 
@@ -117,7 +118,7 @@ class MapScreen(game: NuclearNation) extends Screen{
   stage.addActor(tileGroup)
   stage.addActor(buttonsGroup)
 
-  import com.badlogic.gdx.utils.Timer
+
 
 
   Timer.schedule(() => {
@@ -449,8 +450,6 @@ class MapScreen(game: NuclearNation) extends Screen{
 
     expeditions.foreach(expedition => {
 
-      val sourcePixelX = expedition.originCell.x * desertLayer.getTileWidth  + expedition.marker.getWidth/2
-      val sourcePixelY = expedition.originCell.y * desertLayer.getTileHeight + expedition.marker.getHeight/2
       val destinationPixelX = expedition.destinationCell.x * desertLayer.getTileWidth + expedition.marker.getWidth/2
       val destinationPixelY = expedition.destinationCell.y * desertLayer.getTileHeight + expedition.marker.getHeight/2
 
@@ -470,13 +469,14 @@ class MapScreen(game: NuclearNation) extends Screen{
         val newPos = new Vector2(newPositionX,newPositionY)
         val newDirection = new Vector2(destination).sub(newPos).nor()
 
+        val expeditionIndex = expeditions.indexOf(expedition)
         if (newDirection.hasSameDirection(oldDirection)){
-          expeditions(0) = expedition.copy(positionGlobalPixelX = newPositionX, positionGlobalPixelY = newPositionY)
-          stage.getBatch.draw(expedition.marker, expeditions.head.positionGlobalPixelX - expedition.marker.getWidth/2, expeditions.head.positionGlobalPixelY - expedition.marker.getHeight/2)
+          expeditions(expeditionIndex) = expedition.copy(positionGlobalPixelX = newPositionX, positionGlobalPixelY = newPositionY)
+          stage.getBatch.draw(expedition.marker, expedition.positionGlobalPixelX - expedition.marker.getWidth/2, expedition.positionGlobalPixelY - expedition.marker.getHeight/2)
         } else {
-          checkExpeditionTile(tileX,tileY,expeditions.head)
+          checkExpeditionTile(tileX,tileY,expedition)
           visitTile(tileX,tileY)
-          expeditions.remove(0)
+          expeditions.remove(expeditionIndex)
         }
 
 
