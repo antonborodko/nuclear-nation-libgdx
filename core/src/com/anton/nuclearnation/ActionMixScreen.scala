@@ -26,7 +26,7 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
 
   val crossedSwordsTexture = assetManager.get("unitConstruction/crossedSwords.png",classOf[Texture])
   val keyHoleTexture = assetManager.get("unitConstruction/spyKeyhole.png",classOf[Texture])
-  val expeditionTexture = assetManager.get("expedition.png",classOf[Texture])
+  val expeditionTexture = assetManager.get("actionMix/expeditionOutcome.png",classOf[Texture])
   val questionMarkTexture = assetManager.get("unitConstruction/questionMark.png",classOf[Texture])
 
   val meansPicture = new Image(questionMarkTexture)

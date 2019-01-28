@@ -42,6 +42,7 @@ class NuclearNation extends Game {
 
     assetManager.load("raider_camp.png",classOf[Texture])
     assetManager.load("expedition.png",classOf[Texture])
+    assetManager.load("tradeCaravan.png",classOf[Texture])
     assetManager.load("desert_tile.png",classOf[Texture])
     assetManager.load("fog_of_war_tile.png",classOf[Texture])
     assetManager.load("town.png",classOf[Texture])
@@ -56,6 +57,7 @@ class NuclearNation extends Game {
     assetManager.load("unitConstruction/spyUnit.png",classOf[Texture])
     assetManager.load("unitConstruction/spyKeyhole.png",classOf[Texture])
     assetManager.load("unitConstruction/questionMark.png",classOf[Texture])
+    assetManager.load("actionMix/expeditionOutcome.png",classOf[Texture])
 
     assetManager.finishLoading()
 
