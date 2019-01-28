@@ -57,7 +57,9 @@ class MapScreen(game: NuclearNation) extends Screen{
   val fogOfWarCell = new Cell
 
   val expeditionTexture = assetManager.get("expedition.png",classOf[Texture])
-  val caravanTexture = assetManager.get("tradeCaravan.png",classOf[Texture])
+
+  val tradeCaravanTexture = assetManager.get("tradeCaravan.png",classOf[Texture])
+  val militaryCaravanTexture = assetManager.get("militaryCaravan.png",classOf[Texture])
 
 
   val region = new TextureRegion(desertTileTexture)
@@ -136,8 +138,6 @@ class MapScreen(game: NuclearNation) extends Screen{
   stage.addActor(buttonsGroup)
 
 
-
-
   Timer.schedule(() => {
     val cities = locations.filter(l => l.isInstanceOf[CityInfo])
     //spawning random expeditions
@@ -145,7 +145,9 @@ class MapScreen(game: NuclearNation) extends Screen{
       val randomSourceCity = cities(Random.nextInt(cities.size)).asInstanceOf[CityInfo]
       val citiesExcludingSource = cities.filter(l=>l!=randomSourceCity)
       val randomDestCity = citiesExcludingSource(Random.nextInt(citiesExcludingSource.size)).asInstanceOf[CityInfo]
-      sendExpedition(randomSourceCity.mapCell,randomDestCity.mapCell,caravanTexture,owner = ExpeditionOwner.COMPUTER,units = scala.List[UnitType](),Objective.TRADE,speed = caravanSpeed)
+
+
+      sendExpedition(randomSourceCity.mapCell,randomDestCity.mapCell,tradeCaravanTexture,owner = ExpeditionOwner.COMPUTER,units = scala.List[UnitType](),Objective.TRADE,speed = caravanSpeed)
     }
 
     //spawning more frequent expeditions between cities and capital
@@ -159,7 +161,15 @@ class MapScreen(game: NuclearNation) extends Screen{
         case `capital` => playerOwnedCitiesExcludingCapital(Random.nextInt(playerOwnedCitiesExcludingCapital.size))
         case _=> capital
       }
-      sendExpedition(randomSourceCity.mapCell,randomDestCity.mapCell,caravanTexture,owner = ExpeditionOwner.COMPUTER,units = scala.List[UnitType](),Objective.TRADE,speed = caravanSpeed)
+
+      val objective = Random.shuffle(List(Objective.TRADE,Objective.COMBAT)).head
+
+      val texture = objective match{
+        case Objective.COMBAT => militaryCaravanTexture
+        case _ => tradeCaravanTexture
+      }
+
+      sendExpedition(randomSourceCity.mapCell,randomDestCity.mapCell,texture,owner = ExpeditionOwner.COMPUTER,units = scala.List[UnitType](),objective,speed = caravanSpeed)
     }
 
   },0,1)
