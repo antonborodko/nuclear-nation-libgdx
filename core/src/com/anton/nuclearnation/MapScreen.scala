@@ -93,9 +93,20 @@ class MapScreen(game: NuclearNation) extends Screen{
   var isCommandoEnabledDialogShown = false
   var isSpyEnabledDialogShown = false
 
-  val randomExpeditionSpawnChance =  sys.env.get("RANDOM_EXPEDITION_SPAWN_CHANCE") match {
+  val randomCaravanSpawnChance =  sys.env.get("RANDOM_CARAVAN_SPAWN_CHANCE") match {
     case Some(v)=>v.toLowerCase().toInt
     case None=>1
+  }
+
+  val ownedCaravanSpawnChance =  sys.env.get("OWNED_CARAVAN_SPAWN_CHANCE") match {
+    case Some(v)=>v.toLowerCase().toInt
+    case None=>30
+  }
+
+
+  val caravanSpeed =  sys.env.get("CARAVAN_SPEED") match {
+    case Some(v)=>v.toLowerCase().toInt
+    case None=>100
   }
 
 
@@ -130,25 +141,25 @@ class MapScreen(game: NuclearNation) extends Screen{
   Timer.schedule(() => {
     val cities = locations.filter(l => l.isInstanceOf[CityInfo])
     //spawning random expeditions
-    if (Random.nextInt(100)<randomExpeditionSpawnChance){
+    if (Random.nextInt(100)<randomCaravanSpawnChance){
       val randomSourceCity = cities(Random.nextInt(cities.size)).asInstanceOf[CityInfo]
       val citiesExcludingSource = cities.filter(l=>l!=randomSourceCity)
       val randomDestCity = citiesExcludingSource(Random.nextInt(citiesExcludingSource.size)).asInstanceOf[CityInfo]
-      sendExpedition(randomSourceCity.mapCell,randomDestCity.mapCell,caravanTexture,owner = ExpeditionOwner.COMPUTER,units = scala.List[UnitType](),Objective.TRADE,speed = 300)
+      sendExpedition(randomSourceCity.mapCell,randomDestCity.mapCell,caravanTexture,owner = ExpeditionOwner.COMPUTER,units = scala.List[UnitType](),Objective.TRADE,speed = caravanSpeed)
     }
 
     //spawning more frequent expeditions between cities and capital
     val playerOwnedCities = cities.filter(c=>c.asInstanceOf[CityInfo].isOwnedByPlayer).asInstanceOf[ListBuffer[CityInfo]]
     val playerOwnedCitiesExcludingCapital = playerOwnedCities.filter(c=>c != capital)
 
-    val roadExpeditionSpawnChance = 50
-    if (playerOwnedCities.size>1 && Random.nextInt(100)<roadExpeditionSpawnChance){
+
+    if (playerOwnedCities.size>1 && Random.nextInt(100)<ownedCaravanSpawnChance){
       val randomSourceCity = playerOwnedCities(Random.nextInt(playerOwnedCities.size))
       val randomDestCity = randomSourceCity match {
         case `capital` => playerOwnedCitiesExcludingCapital(Random.nextInt(playerOwnedCitiesExcludingCapital.size))
         case _=> capital
       }
-      sendExpedition(randomSourceCity.mapCell,randomDestCity.mapCell,caravanTexture,owner = ExpeditionOwner.COMPUTER,units = scala.List[UnitType](),Objective.TRADE,speed = 300)
+      sendExpedition(randomSourceCity.mapCell,randomDestCity.mapCell,caravanTexture,owner = ExpeditionOwner.COMPUTER,units = scala.List[UnitType](),Objective.TRADE,speed = caravanSpeed)
     }
 
   },0,1)
