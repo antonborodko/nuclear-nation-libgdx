@@ -1,6 +1,6 @@
 package com.anton.nuclearnation
 
-object ActionMixOutcome extends Enumeration {
-  type MixObjective = Value
+object Objective extends Enumeration {
+  type Objective = Value
   val SURVEILLANCE, COMBAT, EXPEDITION, UNKNOWN = Value
 }

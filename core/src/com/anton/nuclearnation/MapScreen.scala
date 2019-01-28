@@ -534,7 +534,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   def sendExpedition(sourceTile:Vector2 = new Vector2(capital.mapCell.x,capital.mapCell.y),
                      destTile:Vector2,texture:Texture = expeditionTexture,
-                     units:scala.List[UnitType],objective: ActionMixOutcome.MixObjective
+                     units:scala.List[UnitType],objective: Objective.Objective
                     ): Unit ={
     expeditions += ExpeditionInfo(
       sourceTile.x * desertLayer.getTileWidth  + texture.getWidth/2,
@@ -668,14 +668,14 @@ object MapScreen{
 
   case class MapClickInfo(pixelX:Float, pixelY: Float, tileX:Int,tileY:Int)
   case class ExpeditionInfo(
-                            positionGlobalPixelX:Float,
-                            positionGlobalPixelY:Float,
-                            destinationGlobalPixelX:Float,
-                            destinationGlobalPixelY:Float,
-                            marker:Texture,
-                            speed:Int = 600,
-                            objective:ActionMixOutcome.MixObjective,
-                            units:scala.List[UnitType]
+                             positionGlobalPixelX:Float,
+                             positionGlobalPixelY:Float,
+                             destinationGlobalPixelX:Float,
+                             destinationGlobalPixelY:Float,
+                             marker:Texture,
+                             speed:Int = 600,
+                             objective:Objective.Objective,
+                             units:scala.List[UnitType]
                            )
 
   sealed abstract class MapLocation(){
