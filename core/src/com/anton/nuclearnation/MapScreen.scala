@@ -2,6 +2,7 @@ package com.anton.nuclearnation
 
 import java.lang.Math
 
+import com.anton.nuclearnation.ExpeditionOwner.ExpeditionOwner
 import com.anton.nuclearnation.MapScreen._
 import com.anton.nuclearnation.UnitType.UnitType
 import com.badlogic.gdx.Input.Keys
@@ -37,8 +38,6 @@ import scala.collection.mutable.ListBuffer
 
 class MapScreen(game: NuclearNation) extends Screen{
 
-
-
   val technologies:List[Technology] = List(Technology("Advanced tactics"),Technology("Automatic weapons"))
 
   val assetManager = game.assetManager
@@ -57,7 +56,8 @@ class MapScreen(game: NuclearNation) extends Screen{
   val desertTileCell:Cell = new Cell
   val fogOfWarCell = new Cell
 
-  val expeditionTexture =   assetManager.get("expedition.png",classOf[Texture])
+  val expeditionTexture = assetManager.get("expedition.png",classOf[Texture])
+  val caravanTexture = assetManager.get("tradeCaravan.png",classOf[Texture])
 
 
   val region = new TextureRegion(desertTileTexture)
@@ -93,6 +93,12 @@ class MapScreen(game: NuclearNation) extends Screen{
   var isCommandoEnabledDialogShown = false
   var isSpyEnabledDialogShown = false
 
+  val randomExpeditionSpawnChance =  sys.env.get("RANDOM_EXPEDITION_SPAWN_CHANCE") match {
+    case Some(v)=>v.toLowerCase().toInt
+    case None=>1
+  }
+
+
   val mapDebugOutputEnabled = sys.env.get("ENABLE_MAP_DEBUG_OUTPUT") match {
     case Some(v)=>v.toLowerCase().toBoolean
     case None=>false
@@ -122,7 +128,13 @@ class MapScreen(game: NuclearNation) extends Screen{
 
 
   Timer.schedule(() => {
-    println("Timer tick")
+    if (Random.nextInt(100)<randomExpeditionSpawnChance){
+      val cities = locations.filter(l => l.isInstanceOf[CityInfo])
+      val randomSourceCity = cities(Random.nextInt(cities.size)).asInstanceOf[CityInfo]
+      val citiesExcludingSource = cities.filter(l=>l!=randomSourceCity)
+      val randomDestCity = citiesExcludingSource(Random.nextInt(citiesExcludingSource.size)).asInstanceOf[CityInfo]
+      sendExpedition(randomSourceCity.mapCell,randomDestCity.mapCell,caravanTexture,owner = ExpeditionOwner.COMPUTER,units = scala.List[UnitType](),Objective.TRADE,speed = 300)
+    }
   },0,1)
 
 
@@ -460,22 +472,30 @@ class MapScreen(game: NuclearNation) extends Screen{
 
         val oldDirection = new Vector2(destination).sub(currentPos).nor()
 
-        val tileX = (expedition.positionGlobalPixelX / desertLayer.getTileWidth).toInt
-        val tileY = (expedition.positionGlobalPixelY / desertLayer.getTileHeight).toInt
-        visitTile(tileX,tileY)
         val newPositionX = expedition.positionGlobalPixelX + oldDirection.x * expedition.speed * delta
         val newPositionY = expedition.positionGlobalPixelY + oldDirection.y * expedition.speed * delta
 
         val newPos = new Vector2(newPositionX,newPositionY)
+
+        val tileX = (newPositionX / desertLayer.getTileWidth).toInt
+        val tileY = (newPositionY / desertLayer.getTileHeight).toInt
+
         val newDirection = new Vector2(destination).sub(newPos).nor()
 
         val expeditionIndex = expeditions.indexOf(expedition)
+
+        if (expedition.owner == ExpeditionOwner.PLAYER) {
+          visitTile(tileX,tileY)
+        }
+
         if (newDirection.hasSameDirection(oldDirection)){
           expeditions(expeditionIndex) = expedition.copy(positionGlobalPixelX = newPositionX, positionGlobalPixelY = newPositionY)
-          stage.getBatch.draw(expedition.marker, expedition.positionGlobalPixelX - expedition.marker.getWidth/2, expedition.positionGlobalPixelY - expedition.marker.getHeight/2)
+          val cell = mapData.getCell(tileX,tileY).get
+          if ((expedition.owner == ExpeditionOwner.COMPUTER && cell.state == MapCellState.VISITED) || expedition.owner == ExpeditionOwner.PLAYER) {
+            stage.getBatch.draw(expedition.marker, expedition.positionGlobalPixelX - expedition.marker.getWidth / 2, expedition.positionGlobalPixelY - expedition.marker.getHeight / 2)
+          }
         } else {
           checkExpeditionTile(tileX,tileY,expedition)
-          visitTile(tileX,tileY)
           expeditions.remove(expeditionIndex)
         }
 
@@ -553,8 +573,10 @@ class MapScreen(game: NuclearNation) extends Screen{
   def sendExpedition(originCell:MapCellData = mapData.getCell(capital.mapCell.x,capital.mapCell.y).get,
                      destCell:MapCellData,
                      texture:Texture = expeditionTexture,
+                     owner:ExpeditionOwner.ExpeditionOwner = ExpeditionOwner.PLAYER,
                      units:scala.List[UnitType],
-                     objective: Objective.Objective
+                     objective: Objective.Objective,
+                     speed: Int = 600
                     ): Unit ={
     expeditions += ExpeditionInfo(
       originCell,
@@ -562,8 +584,10 @@ class MapScreen(game: NuclearNation) extends Screen{
       originCell.y * desertLayer.getTileHeight +texture.getHeight/2,
       destCell,
       texture,
+      owner = owner,
       units = units,
-      objective = objective
+      objective = objective,
+      speed = speed
     )
   }
 
@@ -594,6 +618,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
 
   private def checkExpeditionTile(tileX:Int,tileY:Int,expedition:ExpeditionInfo): Unit ={
+    if (expedition.owner == ExpeditionOwner.COMPUTER) return
     val cell = mapData.getCell(tileX,tileY).get
     cell.location match {
       case Some(rci:RaiderCampInfo)=>{
@@ -694,8 +719,9 @@ object MapScreen{
                              destinationCell:MapCellData,
                              marker:Texture,
                              speed:Int = 600,
+                             owner:ExpeditionOwner.ExpeditionOwner = ExpeditionOwner.PLAYER,
                              objective:Objective.Objective,
-                             units:scala.List[UnitType]
+                             units:scala.List[UnitType],
                            )
 
   sealed abstract class MapLocation(){
