@@ -29,6 +29,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle
 import com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle
 import com.badlogic.gdx.scenes.scene2d.ui.{Button, Dialog, Image, Label, Skin, Table, TextButton}
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
+import com.badlogic.gdx.utils.Timer.Task
 import com.badlogic.gdx.utils.viewport.StretchViewport
 
 import scala.collection.mutable.ListBuffer
@@ -115,6 +116,13 @@ class MapScreen(game: NuclearNation) extends Screen{
   buttonsGroup.addActor(centerOnCapitalButton)
   stage.addActor(tileGroup)
   stage.addActor(buttonsGroup)
+
+  import com.badlogic.gdx.utils.Timer
+
+
+  Timer.schedule(() => {
+    println("Timer tick")
+  },0,1)
 
 
 
@@ -286,6 +294,10 @@ class MapScreen(game: NuclearNation) extends Screen{
 
 
   override def show(): Unit = {
+
+   Timer.instance().start()
+
+
     val multiplexer = new InputMultiplexer()
     multiplexer.addProcessor(stage)
     multiplexer.addProcessor(mapInputProcessor)
@@ -500,6 +512,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
 
   override def hide(): Unit = {
+    Timer.instance().stop()
   }
 
   override def dispose(): Unit = {
