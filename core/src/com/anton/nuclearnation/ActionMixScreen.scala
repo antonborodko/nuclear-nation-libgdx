@@ -180,7 +180,7 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
       override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
 
         val result = analyzeActionMix(assetsGroup)
-        mapScreen.sendExpedition(destTile = new Vector2(targetLocation.mapCell.x,targetLocation.mapCell.y),units =result._2, objective = result._1)
+        mapScreen.sendExpedition(destCell = targetLocation.mapCell,units =result._2, objective = result._1)
         game.setScreen(mapScreen)
       }
     })

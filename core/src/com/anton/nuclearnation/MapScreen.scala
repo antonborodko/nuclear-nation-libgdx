@@ -437,10 +437,15 @@ class MapScreen(game: NuclearNation) extends Screen{
 
     expeditions.foreach(expedition => {
 
-      if(expedition.positionGlobalPixelX != expedition.destinationGlobalPixelX || expedition.positionGlobalPixelY !=expedition.destinationGlobalPixelY) {
+      val sourcePixelX = expedition.originCell.x * desertLayer.getTileWidth  + expedition.marker.getWidth/2
+      val sourcePixelY = expedition.originCell.y * desertLayer.getTileHeight + expedition.marker.getHeight/2
+      val destinationPixelX = expedition.destinationCell.x * desertLayer.getTileWidth + expedition.marker.getWidth/2
+      val destinationPixelY = expedition.destinationCell.y * desertLayer.getTileHeight + expedition.marker.getHeight/2
+
+      if(expedition.positionGlobalPixelX != destinationPixelX || expedition.positionGlobalPixelY != destinationPixelY) {
 
         val currentPos = new Vector2(expedition.positionGlobalPixelX,expedition.positionGlobalPixelY)
-        val destination = new Vector2(expedition.destinationGlobalPixelX,expedition.destinationGlobalPixelY)
+        val destination = new Vector2(destinationPixelX,destinationPixelY)
 
         val oldDirection = new Vector2(destination).sub(currentPos).nor()
 
@@ -532,15 +537,17 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   }
 
-  def sendExpedition(sourceTile:Vector2 = new Vector2(capital.mapCell.x,capital.mapCell.y),
-                     destTile:Vector2,texture:Texture = expeditionTexture,
-                     units:scala.List[UnitType],objective: Objective.Objective
+  def sendExpedition(originCell:MapCellData = mapData.getCell(capital.mapCell.x,capital.mapCell.y).get,
+                     destCell:MapCellData,
+                     texture:Texture = expeditionTexture,
+                     units:scala.List[UnitType],
+                     objective: Objective.Objective
                     ): Unit ={
     expeditions += ExpeditionInfo(
-      sourceTile.x * desertLayer.getTileWidth  + texture.getWidth/2,
-      sourceTile.y * desertLayer.getTileHeight +texture.getHeight/2,
-      destTile.x * desertLayer.getTileWidth +texture.getWidth/2,
-      destTile.y * desertLayer.getTileHeight +texture.getHeight/2,
+      originCell,
+      originCell.x * desertLayer.getTileWidth  + texture.getWidth/2,
+      originCell.y * desertLayer.getTileHeight +texture.getHeight/2,
+      destCell,
       texture,
       units = units,
       objective = objective
@@ -668,10 +675,10 @@ object MapScreen{
 
   case class MapClickInfo(pixelX:Float, pixelY: Float, tileX:Int,tileY:Int)
   case class ExpeditionInfo(
+                             originCell:MapCellData,
                              positionGlobalPixelX:Float,
                              positionGlobalPixelY:Float,
-                             destinationGlobalPixelX:Float,
-                             destinationGlobalPixelY:Float,
+                             destinationCell:MapCellData,
                              marker:Texture,
                              speed:Int = 600,
                              objective:Objective.Objective,
