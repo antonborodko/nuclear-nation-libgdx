@@ -23,6 +23,8 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
 
   val soldierPicture = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
   val scientistPicture = new Image(assetManager.get("unitConstruction/scientistUnit.png",classOf[Texture]))
+  val engineerPicture = new Image(assetManager.get("unitConstruction/engineerUnit.png",classOf[Texture]))
+
   val gameFont = assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf",classOf[BitmapFont])
 
   val soldierDescriptionLabel = new Label("A basic soldier. Good for performing day to day tasks that don't require much intelligence",skin)
@@ -35,8 +37,14 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
   scientistDescriptionLabel.setWrap(true)
   scientistDescriptionLabel.setWidth(400)
 
+  val engineerDescriptionLabel = new Label("Engineers are good in making and breaking things",skin)
+  val engineerCountLabel = new Label(game.engineerCounter.toString,skin)
+  engineerDescriptionLabel.setWrap(true)
+  engineerDescriptionLabel.setWidth(400)
+
   updateCountLabel(game.soldierCounter,soldierCountLabel)
   updateCountLabel(game.scientistCounter,scientistCountLabel)
+  updateCountLabel(game.engineerCounter,engineerCountLabel)
 
   val assetChain = new AssetChain(mapScreen)
 
@@ -97,9 +105,10 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
 
   override def show(): Unit = {
     val titleLabel = new Label("Unit construction",skin)
-    val soldierUnitButton = new TextButton("Soldier",skin)
 
+    val soldierUnitButton = new TextButton("Soldier",skin)
     val scientistUnitButton = new TextButton("Scientist",skin)
+    val engineerUnitButton = new TextButton("Engineer",skin)
 
     val buildSoldierListener = new ClickListener(){
       override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
@@ -115,6 +124,13 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
       }
     }
 
+    val buildEngineerListener = new ClickListener(){
+      override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
+        game.engineerCounter +=1
+        updateCountLabel(game.engineerCounter,engineerCountLabel)
+      }
+    }
+
 
 
     soldierUnitButton.addCaptureListener(buildSoldierListener)
@@ -123,16 +139,25 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
     scientistUnitButton.addCaptureListener(buildScientistListener)
     scientistPicture.addCaptureListener(buildScientistListener)
 
+    engineerUnitButton.addCaptureListener(buildEngineerListener)
+    engineerPicture.addCaptureListener(buildEngineerListener)
+
     stage.addActor(titleLabel)
     stage.addActor(soldierUnitButton)
     stage.addActor(soldierPicture)
+    stage.addActor(soldierDescriptionLabel)
+
     stage.addActor(scientistPicture)
     stage.addActor(scientistDescriptionLabel)
     stage.addActor(scientistUnitButton)
-    stage.addActor(soldierDescriptionLabel)
+
+    stage.addActor(engineerPicture)
+    stage.addActor(engineerDescriptionLabel)
+    stage.addActor(engineerUnitButton)
 
     stage.addActor(soldierCountLabel)
     stage.addActor(scientistCountLabel)
+    stage.addActor(engineerCountLabel)
 
     stage.addActor(OKButton)
 
@@ -148,7 +173,13 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
     scientistUnitButton.setPosition(scientistPicture.getX,scientistPicture.getY - scientistUnitButton.getPrefHeight - 10)
     scientistCountLabel.setPosition(scientistUnitButton.getX() + scientistUnitButton.getPrefWidth + 10, scientistUnitButton.getY)
 
-    OKButton.setPosition(scientistUnitButton.getX,scientistUnitButton.getY - OKButton.getPrefHeight - 30)
+    engineerPicture.setPosition(scientistPicture.getX,scientistCountLabel.getY - engineerPicture.getPrefHeight - 50)
+    engineerDescriptionLabel.setPosition(engineerPicture.getX + engineerPicture.getPrefWidth +30,engineerPicture.getY + engineerDescriptionLabel.getPrefHeight /2)
+    engineerUnitButton.setPosition(engineerPicture.getX,engineerPicture.getY - engineerUnitButton.getPrefHeight - 10)
+    engineerCountLabel.setPosition(engineerUnitButton.getX() + engineerUnitButton.getPrefWidth + 10, engineerUnitButton.getY)
+
+
+    OKButton.setPosition(engineerUnitButton.getX,engineerUnitButton.getY - OKButton.getPrefHeight - 30)
 
   }
 

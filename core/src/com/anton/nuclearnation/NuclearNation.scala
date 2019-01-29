@@ -31,6 +31,7 @@ class NuclearNation extends Game {
   val initialUnitCount = if (sys.env.get("INITIAL_UNIT_COUNT").isEmpty) 0 else sys.env("INITIAL_UNIT_COUNT").toInt
   var soldierCounter:Int = initialUnitCount
   var scientistCounter:Int = initialUnitCount
+  var engineerCounter:Int = initialUnitCount
 
   override def create(): Unit = {
     batch = new SpriteBatch
@@ -53,6 +54,7 @@ class NuclearNation extends Game {
     assetManager.load("data/commodore64/skin/uiskin.json",classOf[Skin])
     assetManager.load("unitConstruction/crossedSwords.png",classOf[Texture])
     assetManager.load("unitConstruction/soldierUnit.png",classOf[Texture])
+    assetManager.load("unitConstruction/engineerUnit.png",classOf[Texture])
     assetManager.load("unitConstruction/scientistUnit.png",classOf[Texture])
     assetManager.load("unitConstruction/commandoUnit.png",classOf[Texture])
     assetManager.load("unitConstruction/spyUnit.png",classOf[Texture])
