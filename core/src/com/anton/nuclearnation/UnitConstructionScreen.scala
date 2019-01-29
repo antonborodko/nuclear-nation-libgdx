@@ -22,8 +22,6 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
   val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
 
   val soldierPicture = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
-  val commandoPicture = new Image(assetManager.get("unitConstruction/commandoUnit.png",classOf[Texture]))
-  val spyPicture = new Image(assetManager.get("unitConstruction/spyUnit.png",classOf[Texture]))
   val gameFont = assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf",classOf[BitmapFont])
 
   val soldierDescriptionLabel = new Label("A basic soldier. Good for performing day to day tasks that don't require much intelligence",skin)
@@ -31,19 +29,7 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
   soldierDescriptionLabel.setWrap(true)
   soldierDescriptionLabel.setWidth(400)
 
-  val commandoDescriptionLabel = new Label("Everything a soldier can do, commandos can do better",skin)
-  val commandoCountLabel = new Label(game.commandoCounter.toString,skin)
-  commandoDescriptionLabel.setWrap(true)
-  commandoDescriptionLabel.setWidth(400)
-
-  val spyDescriptionLabel = new Label("Spies can gather information and if lucky influence other cities",skin)
-  val spyCountLabel = new Label(game.spyCounter.toString,skin)
-  spyDescriptionLabel.setWrap(true)
-  spyDescriptionLabel.setWidth(400)
-
   updateCountLabel(game.soldierCounter,soldierCountLabel)
-  updateCountLabel(game.commandoCounter,commandoCountLabel)
-  updateCountLabel(game.spyCounter,spyCountLabel)
 
   val assetChain = new AssetChain(mapScreen)
 
@@ -105,8 +91,6 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
   override def show(): Unit = {
     val titleLabel = new Label("Unit construction",skin)
     val soldierUnitButton = new TextButton("Soldier",skin)
-    val commandoUnitButton = new TextButton("Commando",skin)
-    val spyUnitButton= new TextButton("Spy",skin)
 
 
 
@@ -117,70 +101,21 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
       }
     }
 
-    val buildCommandoListener = new ClickListener(){
-      override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
-        game.commandoCounter +=1
-        updateCountLabel(game.commandoCounter,commandoCountLabel)
-      }
-    }
-
-    val cantBuildCommandoListener = new ClickListener(){
-      override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
-        showRequirementsDialog("2 or more conquered cities")
-      }
-    }
-
-    val buildSpyListener = new ClickListener(){
-      override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
-        game.spyCounter +=1
-        updateCountLabel(game.spyCounter,spyCountLabel)
-      }
-    }
-
-    val cantBuildSpyListener = new ClickListener(){
-      override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
-        showRequirementsDialog("3 or more conquered cities")
-      }
-    }
 
 
     soldierUnitButton.addCaptureListener(buildSoldierListener)
     soldierPicture.addCaptureListener(buildSoldierListener)
 
 
-    if (assetChain.isCommandoEnabled){
-      commandoUnitButton.addCaptureListener(buildCommandoListener)
-      commandoPicture.addCaptureListener(buildCommandoListener)
-    } else {
-      commandoUnitButton.addCaptureListener(cantBuildCommandoListener)
-      commandoPicture.addCaptureListener(cantBuildCommandoListener)
-    }
-
-
-    if (assetChain.isSpyEnabled){
-      spyUnitButton.addCaptureListener(buildSpyListener)
-      spyPicture.addCaptureListener(buildSpyListener)
-    } else {
-      spyUnitButton.addCaptureListener(cantBuildSpyListener)
-      spyPicture.addCaptureListener(cantBuildSpyListener)
-    }
 
     stage.addActor(titleLabel)
     stage.addActor(soldierUnitButton)
-    stage.addActor(commandoUnitButton)
-    stage.addActor(spyUnitButton)
 
     stage.addActor(soldierPicture)
-    stage.addActor(commandoPicture)
-    stage.addActor(spyPicture)
 
     stage.addActor(soldierDescriptionLabel)
-    stage.addActor(commandoDescriptionLabel)
-    stage.addActor(spyDescriptionLabel)
 
     stage.addActor(soldierCountLabel)
-    stage.addActor(commandoCountLabel)
-    stage.addActor(spyCountLabel)
 
     stage.addActor(OKButton)
 
@@ -191,17 +126,7 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
     soldierUnitButton.setPosition(soldierPicture.getX,soldierPicture.getY - soldierUnitButton.getPrefHeight - 10)
     soldierCountLabel.setPosition(soldierUnitButton.getX() + soldierUnitButton.getPrefWidth + 10, soldierUnitButton.getY)
 
-    commandoPicture.setPosition(soldierUnitButton.getX,soldierUnitButton.getY - commandoPicture.getPrefHeight - 50)
-    commandoDescriptionLabel.setPosition(commandoPicture.getX + commandoPicture.getPrefWidth +30,commandoPicture.getY + commandoDescriptionLabel.getPrefHeight /2)
-    commandoUnitButton.setPosition(commandoPicture.getX,commandoPicture.getY - commandoUnitButton.getPrefHeight - 10)
-    commandoCountLabel.setPosition(commandoUnitButton.getX() + commandoUnitButton.getPrefWidth + 10, commandoUnitButton.getY)
-
-    spyPicture.setPosition(commandoUnitButton.getX,commandoUnitButton.getY - spyPicture.getPrefHeight - 50)
-    spyDescriptionLabel.setPosition(spyPicture.getX + spyPicture.getPrefWidth +30,spyPicture.getY + spyDescriptionLabel.getPrefHeight /2)
-    spyUnitButton.setPosition(spyPicture.getX,spyPicture.getY - spyUnitButton.getPrefHeight - 10)
-    spyCountLabel.setPosition(spyUnitButton.getX() + spyUnitButton.getPrefWidth + 10, spyUnitButton.getY)
-
-    OKButton.setPosition(spyUnitButton.getX,0)
+    OKButton.setPosition(soldierUnitButton.getX,soldierUnitButton.getY - OKButton.getPrefHeight - 30)
 
   }
 

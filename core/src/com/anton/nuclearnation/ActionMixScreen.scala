@@ -35,12 +35,8 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
   val resultPicture = new Image(questionMarkTexture)
 
   val soldierLabel = new Label("Soldier",skin)
-  val commandoLabel = new Label("Commando",skin)
-  val spyLabel = new Label("Spy",skin)
 
   var mixSoldierCounter = 0
-  var mixCommandoCounter = 0
-  var mixSpyCounter = 0
 
 
   val subjectPicture = targetLocation match {
@@ -53,8 +49,6 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
 
 
   val soldierUnit = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
-  val commandoUnit = new Image(assetManager.get("unitConstruction/commandoUnit.png",classOf[Texture]))
-  val spyUnit = new Image(assetManager.get("unitConstruction/spyUnit.png",classOf[Texture]))
 
 
   case class ActorUserObject(unitType: UnitType.UnitType,onRemovedFromStack:()=>Unit)
@@ -63,16 +57,6 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     game.soldierCounter +=1
     mixSoldierCounter -=1
     updateUnitCountLabel("Soldier",soldierLabel,game.soldierCounter)
-  }))
-  commandoUnit.setUserObject(ActorUserObject(UnitType.COMMANDO,()=>{
-    game.commandoCounter +=1
-    mixCommandoCounter -=1
-    updateUnitCountLabel("Commando",commandoLabel,game.commandoCounter)
-  }))
-  spyUnit.setUserObject(ActorUserObject(UnitType.SPY,()=>{
-    game.spyCounter +=1
-    mixSpyCounter -=1
-    updateUnitCountLabel("Spy",spyLabel,game.spyCounter)
   }))
 
   val actionMixScreen = new InputProcessor() {
@@ -138,10 +122,6 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     controlGroup.addActor(assetsLabel)
     controlGroup.addActor(soldierUnit)
     controlGroup.addActor(soldierLabel)
-    controlGroup.addActor(commandoUnit)
-    controlGroup.addActor(commandoLabel)
-    controlGroup.addActor(spyUnit)
-    controlGroup.addActor(spyLabel)
 
     controlGroup.setWidth(camera.viewportWidth)
 
@@ -161,31 +141,14 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     soldierUnit.setPosition(assetsLabel.getX,assetsLabel.getY - soldierUnit.getPrefHeight-10)
     soldierLabel.setPosition(soldierUnit.getX,soldierUnit.getY - soldierLabel.getPrefHeight - 10)
 
-    commandoUnit.setPosition(soldierLabel.getX,soldierLabel.getY - commandoUnit.getPrefHeight-10)
-    commandoLabel.setPosition(commandoUnit.getX,commandoUnit.getY - commandoLabel.getPrefHeight - 10)
-
-    spyUnit.setPosition(commandoLabel.getX,commandoLabel.getY - spyUnit.getPrefHeight-10)
-    spyLabel.setPosition(spyUnit.getX,spyUnit.getY - spyLabel.getPrefHeight - 10)
 
     addUnitLeftClickListener(soldierUnit,()=>game.soldierCounter>0 && mixSoldierCounter <10,assetsGroup,()=>{
       game.soldierCounter -=1
       mixSoldierCounter +=1
       updateUnitCountLabel("Soldier",soldierLabel,game.soldierCounter)
     })
-    addUnitLeftClickListener(commandoUnit,()=>game.commandoCounter>0 && mixCommandoCounter <10,assetsGroup,()=>{
-      game.commandoCounter -=1
-      mixCommandoCounter +=1
-      updateUnitCountLabel("Commando",commandoLabel,game.commandoCounter)
-    })
-    addUnitLeftClickListener(spyUnit,()=>game.spyCounter>0 && mixSpyCounter <10,assetsGroup,()=>{
-      game.spyCounter -=1
-      mixSpyCounter +=1
-      updateUnitCountLabel("Spy",spyLabel,game.spyCounter)
-    })
 
     updateUnitCountLabel("Soldier",soldierLabel,game.soldierCounter)
-    updateUnitCountLabel("Commando",commandoLabel,game.commandoCounter)
-    updateUnitCountLabel("Spy",spyLabel,game.spyCounter)
 
     stage.getBatch.setProjectionMatrix(camera.combined)
 

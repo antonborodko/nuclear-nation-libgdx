@@ -722,15 +722,6 @@ class MapScreen(game: NuclearNation) extends Screen{
     city.isOwnedByPlayer = true
     visitArea(city.mapCell.x,city.mapCell.y)
     var caption=""
-    if (assetChain.isCommandoEnabled && !isCommandoEnabledDialogShown){
-      isCommandoEnabledDialogShown = false
-      caption = "Unit enabled: Commando"
-    }
-
-    if (assetChain.isSpyEnabled && !isSpyEnabledDialogShown){
-      isSpyEnabledDialogShown = false
-      caption = "Unit enabled: Spy"
-    }
 
     val dialog = new Dialog(caption, skin) {
       override def result(result:Object) {

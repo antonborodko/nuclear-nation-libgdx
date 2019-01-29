@@ -30,8 +30,6 @@ class NuclearNation extends Game {
   //unit counts
   val initialUnitCount = sys.env.get("INITIAL_UNIT_COUNT")
   var soldierCounter:Int = if (initialUnitCount.isEmpty) 0 else initialUnitCount.get.toInt
-  var commandoCounter:Int = if (initialUnitCount.isEmpty) 0 else initialUnitCount.get.toInt
-  var spyCounter:Int = if (initialUnitCount.isEmpty) 0 else initialUnitCount.get.toInt
 
   override def create(): Unit = {
     batch = new SpriteBatch
