@@ -30,7 +30,7 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
   soldierDescriptionLabel.setWrap(true)
   soldierDescriptionLabel.setWidth(400)
 
-  val scientistDescriptionLabel = new Label("Scientists try to learn from what little was left from the old world",skin)
+  val scientistDescriptionLabel = new Label("Scientists try to learn about the old world",skin)
   val scientistCountLabel = new Label(game.scientistCounter.toString,skin)
   scientistDescriptionLabel.setWrap(true)
   scientistDescriptionLabel.setWidth(400)
