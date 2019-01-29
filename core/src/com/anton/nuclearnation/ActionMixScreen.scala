@@ -35,8 +35,10 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
   val resultPicture = new Image(questionMarkTexture)
 
   val soldierLabel = new Label("Soldier",skin)
+  val scientistLabel = new Label("Scientist",skin)
 
   var mixSoldierCounter = 0
+  var mixScientistCounter = 0
 
 
   val subjectPicture = targetLocation match {
@@ -49,6 +51,7 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
 
 
   val soldierUnit = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
+  val scientistUnit = new Image(assetManager.get("unitConstruction/scientistUnit.png",classOf[Texture]))
 
 
   case class ActorUserObject(unitType: UnitType.UnitType,onRemovedFromStack:()=>Unit)
@@ -57,6 +60,12 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     game.soldierCounter +=1
     mixSoldierCounter -=1
     updateUnitCountLabel("Soldier",soldierLabel,game.soldierCounter)
+  }))
+
+  scientistUnit.setUserObject(ActorUserObject(UnitType.SCIENTIST,()=>{
+    game.scientistCounter +=1
+    mixScientistCounter -=1
+    updateUnitCountLabel("Scientist",scientistLabel,game.scientistCounter)
   }))
 
   val actionMixScreen = new InputProcessor() {
@@ -123,6 +132,9 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     controlGroup.addActor(soldierUnit)
     controlGroup.addActor(soldierLabel)
 
+    controlGroup.addActor(scientistUnit)
+    controlGroup.addActor(scientistLabel)
+
     controlGroup.setWidth(camera.viewportWidth)
 
 
@@ -141,6 +153,10 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     soldierUnit.setPosition(assetsLabel.getX,assetsLabel.getY - soldierUnit.getPrefHeight-10)
     soldierLabel.setPosition(soldierUnit.getX,soldierUnit.getY - soldierLabel.getPrefHeight - 10)
 
+    scientistUnit.setPosition(assetsLabel.getX,soldierLabel.getY - scientistUnit.getPrefHeight-10)
+    scientistLabel.setPosition(scientistUnit.getX,scientistUnit.getY - scientistLabel.getPrefHeight - 10)
+
+
 
     addUnitLeftClickListener(soldierUnit,()=>game.soldierCounter>0 && mixSoldierCounter <10,assetsGroup,()=>{
       game.soldierCounter -=1
@@ -149,6 +165,14 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     })
 
     updateUnitCountLabel("Soldier",soldierLabel,game.soldierCounter)
+
+    addUnitLeftClickListener(scientistUnit,()=>game.scientistCounter>0 && mixScientistCounter <10,assetsGroup,()=>{
+      game.scientistCounter -=1
+      mixScientistCounter +=1
+      updateUnitCountLabel("Soldier",soldierLabel,game.soldierCounter)
+    })
+
+    updateUnitCountLabel("Scientist",scientistLabel,game.scientistCounter)
 
     stage.getBatch.setProjectionMatrix(camera.combined)
 
