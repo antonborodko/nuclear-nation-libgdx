@@ -112,6 +112,7 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
 
   override def show(): Unit = {
     val titleLabel = new Label("CREATE ACTION MIX",skin)
+    val hintLabel = new Label("Click to add one unit, SHIFT+click to add up to 10. \nMax 10 units of each kind allowed.\n",skin)
     val subjectLabel = new Label("Subject",skin)
     val meansLabel = new Label("Means",skin)
     val resultLabel = new Label("Result", skin)
@@ -125,6 +126,7 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     assetsGroup.addActor(meansPicture)
 
     controlGroup.addActor(titleLabel)
+    controlGroup.addActor(hintLabel)
     controlGroup.addActor(subjectLabel)
     controlGroup.addActor(subjectPicture)
     controlGroup.addActor(meansLabel)
@@ -145,7 +147,8 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
 
 
     titleLabel.setPosition(controlGroup.getWidth/2,controlGroup.getHeight- titleLabel.getHeight)
-    subjectLabel.setPosition(controlGroup.getWidth/2,controlGroup.getHeight- titleLabel.getHeight - subjectLabel.getHeight-30)
+    hintLabel.setPosition(controlGroup.getWidth/2,controlGroup.getHeight- titleLabel.getHeight - hintLabel.getPrefHeight-30)
+    subjectLabel.setPosition(controlGroup.getWidth/2,controlGroup.getHeight- hintLabel.getHeight - subjectLabel.getHeight-30)
     subjectPicture.setPosition(subjectLabel.getX,subjectLabel.getY-subjectPicture.getHeight-10)
     meansLabel.setPosition(subjectPicture.getX(),subjectPicture.getY() - meansLabel.getHeight - 10)
     assetsGroup.setPosition(meansLabel.getX,meansLabel.getY - meansPicture.getHeight - 10)
@@ -153,7 +156,7 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     resultPicture.setPosition(resultLabel.getX,resultLabel.getY - resultPicture.getHeight - 10)
     applyButton.setPosition(resultPicture.getX,resultPicture.getY - applyButton.getHeight - 10)
 
-    assetsLabel.setPosition(subjectLabel.getX-assetsLabel.getPrefWidth-20,subjectLabel.getY)
+    assetsLabel.setPosition(hintLabel.getX-assetsLabel.getPrefWidth-20,hintLabel.getY)
 
     soldierUnit.setPosition(assetsLabel.getX,assetsLabel.getY - soldierUnit.getPrefHeight-10)
     soldierLabel.setPosition(soldierUnit.getX,soldierUnit.getY - soldierLabel.getPrefHeight - 10)
@@ -206,9 +209,13 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     actor.addCaptureListener(new ClickListener(Buttons.LEFT){
 
       override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
-        if (condition()) {
+        val repeats = if (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Keys.SHIFT_RIGHT)) 10 else 1
+
+        var counter = 0
+        while (counter < repeats && condition()) {
           addActorToAssetGroup(actor, assetsGroup)
           callback()
+          counter +=1
         }
       }
     })
