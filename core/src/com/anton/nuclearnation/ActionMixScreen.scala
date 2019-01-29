@@ -38,6 +38,10 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
   val commandoLabel = new Label("Commando",skin)
   val spyLabel = new Label("Spy",skin)
 
+  var mixSoldierCounter = 0
+  var mixCommandoCounter = 0
+  var mixSpyCounter = 0
+
 
   val subjectPicture = targetLocation match {
     case _:RaiderCampInfo => new Image(assetManager.get("raider_camp.png",classOf[Texture]))
@@ -57,14 +61,17 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
 
   soldierUnit.setUserObject(ActorUserObject(UnitType.SOLDIER,()=>{
     game.soldierCounter +=1
+    mixSoldierCounter -=1
     updateUnitCountLabel("Soldier",soldierLabel,game.soldierCounter)
   }))
   commandoUnit.setUserObject(ActorUserObject(UnitType.COMMANDO,()=>{
     game.commandoCounter +=1
+    mixCommandoCounter -=1
     updateUnitCountLabel("Commando",commandoLabel,game.commandoCounter)
   }))
   spyUnit.setUserObject(ActorUserObject(UnitType.SPY,()=>{
     game.spyCounter +=1
+    mixSpyCounter -=1
     updateUnitCountLabel("Spy",spyLabel,game.spyCounter)
   }))
 
@@ -157,16 +164,19 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     spyUnit.setPosition(commandoLabel.getX,commandoLabel.getY - spyUnit.getPrefHeight-10)
     spyLabel.setPosition(spyUnit.getX,spyUnit.getY - spyLabel.getPrefHeight - 10)
 
-    addUnitLeftClickListener(soldierUnit,()=>game.soldierCounter>0,assetsGroup,()=>{
+    addUnitLeftClickListener(soldierUnit,()=>game.soldierCounter>0 && mixSoldierCounter <10,assetsGroup,()=>{
       game.soldierCounter -=1
+      mixSoldierCounter +=1
       updateUnitCountLabel("Soldier",soldierLabel,game.soldierCounter)
     })
-    addUnitLeftClickListener(commandoUnit,()=>game.commandoCounter>0,assetsGroup,()=>{
+    addUnitLeftClickListener(commandoUnit,()=>game.commandoCounter>0 && mixCommandoCounter <10,assetsGroup,()=>{
       game.commandoCounter -=1
+      mixCommandoCounter +=1
       updateUnitCountLabel("Commando",commandoLabel,game.commandoCounter)
     })
-    addUnitLeftClickListener(spyUnit,()=>game.spyCounter>0,assetsGroup,()=>{
+    addUnitLeftClickListener(spyUnit,()=>game.spyCounter>0 && mixSpyCounter <10,assetsGroup,()=>{
       game.spyCounter -=1
+      mixSpyCounter +=1
       updateUnitCountLabel("Spy",spyLabel,game.spyCounter)
     })
 
