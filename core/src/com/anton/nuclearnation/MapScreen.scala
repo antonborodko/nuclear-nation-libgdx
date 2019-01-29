@@ -684,35 +684,9 @@ class MapScreen(game: NuclearNation) extends Screen{
       case Some(ci:CityInfo)=>{
         game.setScreen(new SituationScreen(ci,DefendersType.SOLDIERS,game,this,expedition.units))
       }
-      case Some(ri:RuinsInfo)=>{
-        locations -= ri
-        townLayer.setCell(ri.mapCell.x,ri.mapCell.y,null)
-        townLayer.setCell(tileX,tileY,null)
-        val tech = technologies.find(t => !t.enabled)
+      case Some(ri:RuinsInfo)=>
+        game.setScreen(new CardGameScreen(ri,game,this,expedition.units))
 
-        tech match  {
-          case Some(t) =>
-            t.enabled = true
-
-            val dialog = new Dialog("New technology discovered", skin) {
-              override def result(result:Object) {
-
-              }
-            }
-
-            dialog.text(s"New technology discovered: ${t.name}")
-            dialog.button("OK", true)
-            dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
-            dialog.getContentTable.pad(20)
-            dialog.getTitleTable.pad(20)
-            dialog.pack()
-            stage.addActor(dialog)
-            dialog.setPosition(cameraCenterX - dialog.getPrefWidth/2,cameraCenterY - dialog.getPrefHeight/2)
-
-
-          case None =>
-        }
-      }
       case _=>
     }
 
