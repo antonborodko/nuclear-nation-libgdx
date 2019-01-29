@@ -22,6 +22,7 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
   val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
 
   val soldierPicture = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
+  val scientistPicture = new Image(assetManager.get("unitConstruction/scientistUnit.png",classOf[Texture]))
   val gameFont = assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf",classOf[BitmapFont])
 
   val soldierDescriptionLabel = new Label("A basic soldier. Good for performing day to day tasks that don't require much intelligence",skin)
@@ -29,7 +30,13 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
   soldierDescriptionLabel.setWrap(true)
   soldierDescriptionLabel.setWidth(400)
 
+  val scientistDescriptionLabel = new Label("Scientists try to learn from what little was left from the old world",skin)
+  val scientistCountLabel = new Label(game.scientistCounter.toString,skin)
+  scientistDescriptionLabel.setWrap(true)
+  scientistDescriptionLabel.setWidth(400)
+
   updateCountLabel(game.soldierCounter,soldierCountLabel)
+  updateCountLabel(game.scientistCounter,scientistCountLabel)
 
   val assetChain = new AssetChain(mapScreen)
 
@@ -92,7 +99,7 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
     val titleLabel = new Label("Unit construction",skin)
     val soldierUnitButton = new TextButton("Soldier",skin)
 
-
+    val scientistUnitButton = new TextButton("Scientist",skin)
 
     val buildSoldierListener = new ClickListener(){
       override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
@@ -101,21 +108,31 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
       }
     }
 
+    val buildScientistListener = new ClickListener(){
+      override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
+        game.scientistCounter +=1
+        updateCountLabel(game.scientistCounter,scientistCountLabel)
+      }
+    }
+
 
 
     soldierUnitButton.addCaptureListener(buildSoldierListener)
     soldierPicture.addCaptureListener(buildSoldierListener)
 
-
+    scientistUnitButton.addCaptureListener(buildScientistListener)
+    scientistPicture.addCaptureListener(buildScientistListener)
 
     stage.addActor(titleLabel)
     stage.addActor(soldierUnitButton)
-
     stage.addActor(soldierPicture)
-
+    stage.addActor(scientistPicture)
+    stage.addActor(scientistDescriptionLabel)
+    stage.addActor(scientistUnitButton)
     stage.addActor(soldierDescriptionLabel)
 
     stage.addActor(soldierCountLabel)
+    stage.addActor(scientistCountLabel)
 
     stage.addActor(OKButton)
 
@@ -126,7 +143,12 @@ class UnitConstructionScreen(game:NuclearNation,mapScreen: MapScreen) extends Sc
     soldierUnitButton.setPosition(soldierPicture.getX,soldierPicture.getY - soldierUnitButton.getPrefHeight - 10)
     soldierCountLabel.setPosition(soldierUnitButton.getX() + soldierUnitButton.getPrefWidth + 10, soldierUnitButton.getY)
 
-    OKButton.setPosition(soldierUnitButton.getX,soldierUnitButton.getY - OKButton.getPrefHeight - 30)
+    scientistPicture.setPosition(soldierPicture.getX,soldierCountLabel.getY - scientistPicture.getPrefHeight - 50)
+    scientistDescriptionLabel.setPosition(scientistPicture.getX + scientistPicture.getPrefWidth +30,scientistPicture.getY + scientistDescriptionLabel.getPrefHeight /2)
+    scientistUnitButton.setPosition(scientistPicture.getX,scientistPicture.getY - scientistUnitButton.getPrefHeight - 10)
+    scientistCountLabel.setPosition(scientistUnitButton.getX() + scientistUnitButton.getPrefWidth + 10, scientistUnitButton.getY)
+
+    OKButton.setPosition(scientistUnitButton.getX,scientistUnitButton.getY - OKButton.getPrefHeight - 30)
 
   }
 
