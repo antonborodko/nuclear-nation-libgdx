@@ -11,6 +11,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.{Container, HorizontalGroup, Image, La
 import com.badlogic.gdx.scenes.scene2d.utils.{ClickListener, TextureRegionDrawable}
 import com.badlogic.gdx.utils.viewport.StretchViewport
 
+import scala.collection.mutable.ListBuffer
+
 class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:MapScreen, playerUnits:List[UnitType]) extends Screen{
 
   val assetManager = game.assetManager
@@ -32,11 +34,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
   val rubbleImage = new Image(assetManager.get("cardGameScreen/rubble.png",classOf[Texture]))
 
-  val soldierPicture = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
-  val scientistPicture = new Image(assetManager.get("unitConstruction/scientistUnit.png",classOf[Texture]))
-  val engineerPicture = new Image(assetManager.get("unitConstruction/engineerUnit.png",classOf[Texture]))
-
-
+  val unitMix=ListBuffer[UnitType]()
 
   val rootTable = new Table()
   rootTable.setFillParent(true)
@@ -59,23 +57,27 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   playerUnitsTable.add(new Label("Available assets:",skin))
   playerUnitsTable.row()
   val horizontalGroup = new HorizontalGroup()
-  horizontalGroup.addActor(engineerPicture)
-  horizontalGroup.addActor(soldierPicture)
-  horizontalGroup.addActor(scientistPicture)
+  horizontalGroup.addActor(engineerUnit)
+  horizontalGroup.addActor(soldierUnit)
+  horizontalGroup.addActor(scientistUnit)
 
   val resultLabel = new Label("Result: ???",skin)
 
 
-  addUnitLeftClickListener(scientistPicture,()=>true,mixGroup,()=>{})
-  addUnitLeftClickListener(soldierPicture,()=>true,mixGroup,()=>{})
-  addUnitLeftClickListener(engineerPicture,()=>true,mixGroup,()=>{})
+  addUnitLeftClickListener(scientistUnit,()=>true,mixGroup,()=>{})
+  addUnitLeftClickListener(soldierUnit,()=>true,mixGroup,()=>{})
+  addUnitLeftClickListener(engineerUnit,()=>true,mixGroup,()=>{})
+
+  soldierUnit.setUserObject(UnitType.SOLDIER)
+  scientistUnit.setUserObject(UnitType.SCIENTIST)
+  engineerUnit.setUserObject(UnitType.ENGINEER)
 
   playerUnitsTable.add(horizontalGroup)
   playerUnitsTable.row()
   playerUnitsTable.add(new Label("Choose your mix:",skin))
   playerUnitsTable.row()
 
-  playerUnitsTable.add(mixGroup).prefHeight(soldierPicture.getPrefHeight)
+  playerUnitsTable.add(mixGroup).prefHeight(soldierUnit.getPrefHeight)
   playerUnitsTable.row()
   playerUnitsTable.add(resultLabel)
 
@@ -91,6 +93,11 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
       override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
         val actor = new Image(sourceActor.asInstanceOf[Image].getDrawable.asInstanceOf[TextureRegionDrawable].getRegion.getTexture)
         mixGroup.addActor(actor)
+        val userObj = Option(actor.getUserObject)
+        userObj match {
+          case Some(t) if t.isInstanceOf[UnitType] => unitMix += t.asInstanceOf[UnitType]
+          case _ =>
+        }
       }
     })
   }
