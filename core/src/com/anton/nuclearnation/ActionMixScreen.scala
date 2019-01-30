@@ -184,7 +184,7 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     addUnitLeftClickListener(scientistUnit,()=>game.scientistCounter>0 && mixScientistCounter <10,assetsGroup,()=>{
       game.scientistCounter -=1
       mixScientistCounter +=1
-      updateUnitCountLabel("Soldier",soldierLabel,game.soldierCounter)
+      updateUnitCountLabel("Scientist",scientistLabel,game.scientistCounter)
     })
 
     updateUnitCountLabel("Scientist",scientistLabel,game.scientistCounter)
