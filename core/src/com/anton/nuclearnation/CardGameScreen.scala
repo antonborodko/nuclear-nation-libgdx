@@ -2,11 +2,13 @@ package com.anton.nuclearnation
 
 import com.anton.nuclearnation.MapScreen.MapLocation
 import com.anton.nuclearnation.UnitType.UnitType
+import com.badlogic.gdx.Input.{Buttons, Keys}
 import com.badlogic.gdx.graphics.{GL20, OrthographicCamera, Texture}
 import com.badlogic.gdx.{Gdx, InputMultiplexer, InputProcessor, Screen}
 import com.badlogic.gdx.maps.tiled.TiledMap
-import com.badlogic.gdx.scenes.scene2d.{Group, Stage}
+import com.badlogic.gdx.scenes.scene2d.{Group, InputEvent, Stage}
 import com.badlogic.gdx.scenes.scene2d.ui.{Container, HorizontalGroup, Image, Label, Skin, Table, TextButton}
+import com.badlogic.gdx.scenes.scene2d.utils.{ClickListener, TextureRegionDrawable}
 import com.badlogic.gdx.utils.viewport.StretchViewport
 
 class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:MapScreen, playerUnits:List[UnitType]) extends Screen{
@@ -47,6 +49,8 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   opposingTable.setDebug(true)
   playerUnitsTable.setDebug(true)
 
+  val mixGroup = new HorizontalGroup
+
   opposingTable.add(rubbleImage)
   opposingTable.row()
   descriptionLabel.setWrap(true)
@@ -58,7 +62,25 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   horizontalGroup.addActor(engineerPicture)
   horizontalGroup.addActor(soldierPicture)
   horizontalGroup.addActor(scientistPicture)
+
+  val resultLabel = new Label("Result: ???",skin)
+
+  scientistPicture.addCaptureListener(new ClickListener(Buttons.LEFT){
+
+    override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
+      val actor = new Image(scientistPicture.asInstanceOf[Image].getDrawable.asInstanceOf[TextureRegionDrawable].getRegion.getTexture)
+      mixGroup.addActor(actor)
+    }
+  })
   playerUnitsTable.add(horizontalGroup)
+  playerUnitsTable.row()
+  playerUnitsTable.add(new Label("Choose your mix:",skin))
+  playerUnitsTable.row()
+
+  playerUnitsTable.add(mixGroup).prefHeight(soldierPicture.getPrefHeight)
+  playerUnitsTable.row()
+  playerUnitsTable.add(resultLabel)
+
 
   rootTable.add(playerUnitsTable)
   rootTable.add(opposingTable)
