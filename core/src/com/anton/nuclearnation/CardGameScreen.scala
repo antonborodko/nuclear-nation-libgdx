@@ -6,7 +6,7 @@ import com.badlogic.gdx.Input.{Buttons, Keys}
 import com.badlogic.gdx.graphics.{GL20, OrthographicCamera, Texture}
 import com.badlogic.gdx.{Gdx, InputMultiplexer, InputProcessor, Screen}
 import com.badlogic.gdx.maps.tiled.TiledMap
-import com.badlogic.gdx.scenes.scene2d.{Group, InputEvent, Stage}
+import com.badlogic.gdx.scenes.scene2d.{Actor, Group, InputEvent, Stage}
 import com.badlogic.gdx.scenes.scene2d.ui.{Container, HorizontalGroup, Image, Label, Skin, Table, TextButton}
 import com.badlogic.gdx.scenes.scene2d.utils.{ClickListener, TextureRegionDrawable}
 import com.badlogic.gdx.utils.viewport.StretchViewport
@@ -65,13 +65,11 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
   val resultLabel = new Label("Result: ???",skin)
 
-  scientistPicture.addCaptureListener(new ClickListener(Buttons.LEFT){
 
-    override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
-      val actor = new Image(scientistPicture.asInstanceOf[Image].getDrawable.asInstanceOf[TextureRegionDrawable].getRegion.getTexture)
-      mixGroup.addActor(actor)
-    }
-  })
+  addUnitLeftClickListener(scientistPicture,()=>true,mixGroup,()=>{})
+  addUnitLeftClickListener(soldierPicture,()=>true,mixGroup,()=>{})
+  addUnitLeftClickListener(engineerPicture,()=>true,mixGroup,()=>{})
+
   playerUnitsTable.add(horizontalGroup)
   playerUnitsTable.row()
   playerUnitsTable.add(new Label("Choose your mix:",skin))
@@ -86,6 +84,16 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   rootTable.add(opposingTable)
 
   stage.addActor(rootTable)
+
+  private def addUnitLeftClickListener(sourceActor:Actor,condition:()=>Boolean, mixGroup:Group,callback:() => Unit): Unit = {
+
+    sourceActor.addCaptureListener(new ClickListener(Buttons.LEFT) {
+      override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
+        val actor = new Image(sourceActor.asInstanceOf[Image].getDrawable.asInstanceOf[TextureRegionDrawable].getRegion.getTexture)
+        mixGroup.addActor(actor)
+      }
+    })
+  }
 
 
   override def show(): Unit = {
