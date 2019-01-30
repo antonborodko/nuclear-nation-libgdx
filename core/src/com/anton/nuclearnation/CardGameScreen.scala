@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.{GL20, OrthographicCamera, Texture}
 import com.badlogic.gdx.{Gdx, InputMultiplexer, InputProcessor, Screen}
 import com.badlogic.gdx.maps.tiled.TiledMap
 import com.badlogic.gdx.scenes.scene2d.{Group, Stage}
-import com.badlogic.gdx.scenes.scene2d.ui.{Container, Image, Label, Skin, Table, TextButton}
+import com.badlogic.gdx.scenes.scene2d.ui.{Container, HorizontalGroup, Image, Label, Skin, Table, TextButton}
 import com.badlogic.gdx.utils.viewport.StretchViewport
 
 class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:MapScreen, playerUnits:List[UnitType]) extends Screen{
@@ -27,27 +27,42 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   val startButton = new TextButton("Start",skin)
   val descriptionLabel = new Label("You have arrived to the ancient ruins. You see the entrance blocked with a pile of rubble.",skin)
 
+
   val rubbleImage = new Image(assetManager.get("cardGameScreen/rubble.png",classOf[Texture]))
+
+  val soldierPicture = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
+  val scientistPicture = new Image(assetManager.get("unitConstruction/scientistUnit.png",classOf[Texture]))
+  val engineerPicture = new Image(assetManager.get("unitConstruction/engineerUnit.png",classOf[Texture]))
+
 
 
   val rootTable = new Table()
   rootTable.setFillParent(true)
 
+  rootTable.setDebug(true)
 
-  val playerUnitsTable = new Table()
-  val opposingTable = new Table()
-  opposingTable.pad(50)
+  val playerUnitsTable = new Table().top()
+  val opposingTable = new Table().top()
 
-  playerUnitsTable.setFillParent(true)
-  opposingTable.setFillParent(true)
-
-  rootTable.add(playerUnitsTable)
-  rootTable.add(opposingTable)
+  opposingTable.setDebug(true)
+  playerUnitsTable.setDebug(true)
 
   opposingTable.add(rubbleImage)
   opposingTable.row()
   descriptionLabel.setWrap(true)
-  opposingTable.add(descriptionLabel).width(opposingTable.getWidth)
+  opposingTable.add(descriptionLabel).fillX.pad(50,0,0,0)
+
+  playerUnitsTable.add(new Label("Available assets:",skin))
+  playerUnitsTable.row()
+  val horizontalGroup = new HorizontalGroup()
+  horizontalGroup.addActor(engineerPicture)
+  horizontalGroup.addActor(soldierPicture)
+  horizontalGroup.addActor(scientistPicture)
+  playerUnitsTable.add(horizontalGroup)
+
+  rootTable.add(playerUnitsTable)
+  rootTable.add(opposingTable)
+
   stage.addActor(rootTable)
 
 
