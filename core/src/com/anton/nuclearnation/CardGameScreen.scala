@@ -25,7 +25,8 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
 
   val startButton = new TextButton("Start",skin)
-  val descriptionLabel = new Label("",skin)
+  val descriptionLabel = new Label("You have arrived to the ancient ruins. You see the entrance blocked with a pile of rubble.",skin)
+
 
   val group = new Group()
 
@@ -33,11 +34,14 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   group.addActor(descriptionLabel)
   stage.addActor(group)
 
-  group.setPosition(100,100)
+  group.setPosition(200,50)
   group.setSize(400,400)
 
-  startButton.setPosition(0,group.getHeight - startButton.getPrefHeight)
-  descriptionLabel.setPosition(0,0)
+  descriptionLabel.setWidth(descriptionLabel.getParent.getWidth)
+  descriptionLabel.setWrap(true)
+
+  startButton.setPosition(0,0)
+  descriptionLabel.setPosition(0,group.getHeight - startButton.getPrefHeight)
 
   override def show(): Unit = {
     val tacticalScreenInputProcessor = new InputProcessor {
