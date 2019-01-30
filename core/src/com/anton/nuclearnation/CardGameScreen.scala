@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.{GL20, OrthographicCamera, Texture}
 import com.badlogic.gdx.{Gdx, InputMultiplexer, InputProcessor, Screen}
 import com.badlogic.gdx.maps.tiled.TiledMap
 import com.badlogic.gdx.scenes.scene2d.{Group, Stage}
-import com.badlogic.gdx.scenes.scene2d.ui.{Image, Label, Skin, TextButton}
+import com.badlogic.gdx.scenes.scene2d.ui.{Container, Image, Label, Skin, Table, TextButton}
 import com.badlogic.gdx.utils.viewport.StretchViewport
 
 class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:MapScreen, playerUnits:List[UnitType]) extends Screen{
@@ -27,21 +27,29 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   val startButton = new TextButton("Start",skin)
   val descriptionLabel = new Label("You have arrived to the ancient ruins. You see the entrance blocked with a pile of rubble.",skin)
 
+  val rubbleImage = new Image(assetManager.get("cardGameScreen/rubble.png",classOf[Texture]))
 
-  val group = new Group()
 
-  group.addActor(startButton)
-  group.addActor(descriptionLabel)
-  stage.addActor(group)
+  val rootTable = new Table()
+  rootTable.setFillParent(true)
 
-  group.setPosition(200,50)
-  group.setSize(400,400)
 
-  descriptionLabel.setWidth(descriptionLabel.getParent.getWidth)
+  val playerUnitsTable = new Table()
+  val opposingTable = new Table()
+  opposingTable.pad(50)
+
+  playerUnitsTable.setFillParent(true)
+  opposingTable.setFillParent(true)
+
+  rootTable.add(playerUnitsTable)
+  rootTable.add(opposingTable)
+
+  opposingTable.add(rubbleImage)
+  opposingTable.row()
   descriptionLabel.setWrap(true)
+  opposingTable.add(descriptionLabel).width(opposingTable.getWidth)
+  stage.addActor(rootTable)
 
-  startButton.setPosition(0,0)
-  descriptionLabel.setPosition(0,group.getHeight - startButton.getPrefHeight)
 
   override def show(): Unit = {
     val tacticalScreenInputProcessor = new InputProcessor {
