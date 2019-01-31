@@ -68,7 +68,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
     preface = "You have arrived to the ancient ruins. You see the entrance is blocked with a pile of rubble.",
     reactsWith = ReactsWith(UnitType.ENGINEER,10),
     90,
-    "Clear the entrance",
+    "Clear the rubble",
     killFactor = "falling debris")
   val brokenMachinery = Subject(
     brokenMachineryImage,
@@ -141,8 +141,16 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   def resetActionMix(): Unit ={
     solutionMixGroup.getChildren.toArray.foreach(a=>{
       availableMixGroup.addActor(a)
-
+      availableUnitMix+=a.getUserObject.asInstanceOf[UnitType]
     })
+
+    availableMixGroup.getChildren.toArray.foreach(a=>{
+      a.clearListeners()
+      addUnitLeftClickListener(a,solutionMixGroup,()=>{},resultLabel,subjects(currentSubjectIndex))
+    })
+
+
+    solutionUnitMix.clear()
     resultLabel.setText(analyzeOutcome(subjects(currentSubjectIndex)).description)
   }
 
@@ -155,15 +163,19 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   applySolutionButton.addCaptureListener(new ClickListener(){
     override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
 
+      if (solutionMixGroup.getChildren.size == 0) return
+
       val chance = Random.nextInt(100)
       val successChance =  analyzeOutcome(subjects(currentSubjectIndex)).successChance
+      val outcomeDescription = subjects(currentSubjectIndex).outcomeDescription.toLowerCase
       val currentUnit = subjects(currentSubjectIndex).reactsWith.unit
       val unitPlural = currentUnit.toString.toLowerCase() + "s"
 
-      val dialog = new Dialog("Rubble cleared", skin) {
+
+      val dialog = new Dialog("", skin) {
         override def result(result:Object) {
           if (chance<successChance) {
-            if (currentSubjectIndex == subjects.size) {
+            if (currentSubjectIndex == subjects.size-1) {
               game.setScreen(mapScreen)
             } else {
               currentSubjectIndex += 1
@@ -178,17 +190,21 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
       }
 
       val text = if (chance<successChance) {
-        s"Your $unitPlural managed to clear the rubble."
+        s"Your $unitPlural managed to $outcomeDescription"
       } else {
         //killing some units
-        val killedUnitCount = Random.nextInt(solutionUnitMix.count(u => u == currentUnit))+1
+        val count = solutionUnitMix.count(u => u == currentUnit)
+        if (count >0){
+
+        }
+        val killedUnitCount = Random.nextInt(count)+1
         for (_ <-0 until killedUnitCount){
           solutionMixGroup.getChildren.toArray().find(a=>a.getUserObject!= null && a.getUserObject.asInstanceOf[UnitType] == currentUnit).get.remove()
           val index = solutionUnitMix.indexOf(subjects(currentSubjectIndex).reactsWith.unit)
           solutionUnitMix.remove(index)
         }
         resultLabel.setText(analyzeOutcome(subjects(currentSubjectIndex)).description)
-        s"Your $unitPlural failed to clear the rubble. $killedUnitCount were killed with ${subjects(currentSubjectIndex).killFactor.toLowerCase()}."
+        s"Your $unitPlural failed to $outcomeDescription. $killedUnitCount were killed with ${subjects(currentSubjectIndex).killFactor.toLowerCase()}."
       }
 
       val label = new Label(text,skin)
