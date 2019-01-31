@@ -105,7 +105,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   playerUnitsTable.add(applySolutionButton).pad(20,0,0,0)
 
 
-  rootTable.add(playerUnitsTable)
+  rootTable.add(playerUnitsTable).pad(0,0,0,100)
   rootTable.add(opposingTable)
 
   stage.addActor(rootTable)
