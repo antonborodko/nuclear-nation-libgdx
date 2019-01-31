@@ -130,6 +130,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
   private def addUnitLeftClickListener(sourceActor:Actor, mixGroup:Group,callback:() => Unit,resultLabel:Label,subject: Subject): Unit = {
 
+    sourceActor.clearListeners()
     sourceActor.addCaptureListener(new ClickListener(Buttons.LEFT) {
       override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
         mixGroup.addActor(sourceActor)
@@ -142,6 +143,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
             availableUnitMix += sourceActor.getUserObject.asInstanceOf[UnitType]
             val index = solutionUnitMix.indexOf(sourceActor.getUserObject.asInstanceOf[UnitType])
             solutionUnitMix.remove(index)
+            resultLabel.setText(analyzeOutcome(subject))
             true
           }
         })
