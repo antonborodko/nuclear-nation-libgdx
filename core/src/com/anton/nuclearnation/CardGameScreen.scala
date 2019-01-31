@@ -28,6 +28,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
   val startButton = new TextButton("Start",skin)
   val applySolutionButton = new TextButton("Apply solution",skin)
+  val cancelButton = new TextButton("Cancel",skin)
   val descriptionLabel = new Label("You have arrived to the ancient ruins. You see the entrance blocked with a pile of rubble.",skin)
 
 
@@ -103,6 +104,8 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   playerUnitsTable.add(resultLabel).fillX()
   playerUnitsTable.row()
   playerUnitsTable.add(applySolutionButton).pad(20,0,0,0)
+  playerUnitsTable.row()
+  playerUnitsTable.add(cancelButton).pad(20,0,0,0)
 
 
   rootTable.add(playerUnitsTable).pad(0,0,0,100)
@@ -113,6 +116,12 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
 
   resultLabel.setText(analyzeOutcome(collapsedEntrance,solutionUnitMix.toList))
+
+  cancelButton.addCaptureListener(new ClickListener(){
+    override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
+      game.setScreen(mapScreen)
+    }
+  })
 
 
   private def analyzeOutcome(subject:Subject, unitMix:List[UnitType] = solutionUnitMix.toList): String ={
@@ -205,7 +214,9 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
   override def resume(): Unit = {}
 
-  override def hide(): Unit = {}
+  override def hide(): Unit = {
+    dispose()
+  }
 
   override def dispose(): Unit = {}
 
