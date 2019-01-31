@@ -66,6 +66,10 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   val collapsedEntrance = Subject(rubbleImage,reactsWith = ReactsWith(UnitType.ENGINEER,10),90,"Clear the entrance",killFactor = "falling debris")
   val brokenMachinery = Subject(rubbleImage,reactsWith = ReactsWith(UnitType.SCIENTIST,10),90,"Study the machinery",killFactor = "poisonous gas")
 
+  val subjects:List[Subject] = List(collapsedEntrance,brokenMachinery)
+
+  var currentSubjectIndex =0
+
   val resultTitleLabel = new Label("Result:",skin)
   val resultLabel = new Label("???",skin)
   resultLabel.setWrap(true)
@@ -76,17 +80,17 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
       case UnitType.SOLDIER=>
         val soldierUnit = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
         soldierUnit.setUserObject(UnitType.SOLDIER)
-        addUnitLeftClickListener(soldierUnit,solutionMixGroup, ()=>{},resultLabel,collapsedEntrance)
+        addUnitLeftClickListener(soldierUnit,solutionMixGroup, ()=>{},resultLabel,subjects(currentSubjectIndex))
         soldierUnit
       case UnitType.SCIENTIST =>
         val scientistUnit = new Image(assetManager.get("unitConstruction/scientistUnit.png",classOf[Texture]))
         scientistUnit.setUserObject(UnitType.SCIENTIST)
-        addUnitLeftClickListener(scientistUnit,solutionMixGroup, ()=>{},resultLabel,collapsedEntrance)
+        addUnitLeftClickListener(scientistUnit,solutionMixGroup, ()=>{},resultLabel,subjects(currentSubjectIndex))
         scientistUnit
       case UnitType.ENGINEER =>
         val engineerUnit = new Image(assetManager.get("unitConstruction/engineerUnit.png",classOf[Texture]))
         engineerUnit.setUserObject(UnitType.ENGINEER)
-        addUnitLeftClickListener(engineerUnit,solutionMixGroup, ()=>{},resultLabel,collapsedEntrance)
+        addUnitLeftClickListener(engineerUnit,solutionMixGroup, ()=>{},resultLabel,subjects(currentSubjectIndex))
         engineerUnit
     }
     availableMixGroup.addActor(actor)
@@ -118,7 +122,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
 
 
-  resultLabel.setText(analyzeOutcome(collapsedEntrance,solutionUnitMix.toList).description)
+  resultLabel.setText(analyzeOutcome(subjects(currentSubjectIndex),solutionUnitMix.toList).description)
 
   cancelButton.addCaptureListener(new ClickListener(){
     override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
@@ -135,19 +139,21 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
       }
 
       val chance = Random.nextInt(100)
-      val outcomeChance =  analyzeOutcome(collapsedEntrance).successChance
+      val outcomeChance =  analyzeOutcome(subjects(currentSubjectIndex)).successChance
+      val currentUnit = subjects(currentSubjectIndex).reactsWith.unit
+      val unitPlural = currentUnit.toString.toLowerCase() + "s"
       val text = if (chance<outcomeChance) {
-        "Your engineers managed to clear the rubble."
+        s"Your $unitPlural managed to clear the rubble."
       } else {
-        //killing some engineers
-        val killedEngineerCount = Random.nextInt(solutionUnitMix.count(u => u == UnitType.ENGINEER))+1
-        for (_ <-0 until killedEngineerCount){
-          solutionMixGroup.getChildren.toArray().find(a=>a.getUserObject!= null && a.getUserObject.asInstanceOf[UnitType] == UnitType.ENGINEER).get.remove()
-          val index = solutionUnitMix.indexOf(UnitType.ENGINEER)
+        //killing some units
+        val killedUnitCount = Random.nextInt(solutionUnitMix.count(u => u == currentUnit))+1
+        for (_ <-0 until killedUnitCount){
+          solutionMixGroup.getChildren.toArray().find(a=>a.getUserObject!= null && a.getUserObject.asInstanceOf[UnitType] == currentUnit).get.remove()
+          val index = solutionUnitMix.indexOf(subjects(currentSubjectIndex).reactsWith.unit)
           solutionUnitMix.remove(index)
         }
-        resultLabel.setText(analyzeOutcome(collapsedEntrance).description)
-        s"Your engineers failed to clear the rubble. $killedEngineerCount were killed with ${collapsedEntrance.killFactor.toLowerCase()}."
+        resultLabel.setText(analyzeOutcome(subjects(currentSubjectIndex)).description)
+        s"Your $unitPlural failed to clear the rubble. $killedUnitCount were killed with ${subjects(currentSubjectIndex).killFactor.toLowerCase()}."
       }
 
       val label = new Label(text,skin)
