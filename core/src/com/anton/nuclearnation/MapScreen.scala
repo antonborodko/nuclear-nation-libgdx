@@ -611,7 +611,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     val clickInfo = getClickInfo(screenX,screenY)
 
     val mapCell = mapData.getCell(clickInfo.tileX,clickInfo.tileY)
-    if (mapCell.get.state == MapCellState.VISITED) {
+    if (mapCell.get.state != MapCellState.HIDDEN) {
       mapCell.get.location match {
         case Some(ri: RaiderCampInfo) => {
           game.setScreen(new ActionMixScreen(ri, game, this))
@@ -619,6 +619,8 @@ class MapScreen(game: NuclearNation) extends Screen{
         case Some(ci: CityInfo) => {
           game.setScreen(new ActionMixScreen(ci, game, this))
         }
+        case Some(ri: RuinsInfo) =>
+          game.setScreen(new ActionMixScreen(ri, game, this))
         case _ =>
       }
     } else { //map cell is not discovered
