@@ -63,6 +63,7 @@ class NuclearNation extends Game {
     assetManager.load("actionMix/expeditionOutcome.png",classOf[Texture])
 
     assetManager.load("cardGameScreen/rubble.png",classOf[Texture])
+    assetManager.load("cardGameScreen/brokenMachinery.png",classOf[Texture])
 
     assetManager.finishLoading()
 

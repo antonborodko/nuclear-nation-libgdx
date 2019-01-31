@@ -34,6 +34,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
 
   val rubbleImage = new Image(assetManager.get("cardGameScreen/rubble.png",classOf[Texture]))
+  val machineryImage = new Image(assetManager.get("cardGameScreen/brokenMachinery.png",classOf[Texture]))
 
   val solutionUnitMix=ListBuffer[UnitType]()
   val availableUnitMix = playerUnits.to[ListBuffer]
@@ -63,6 +64,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   availableMixGroup.wrap()
 
   val collapsedEntrance = Subject(rubbleImage,reactsWith = ReactsWith(UnitType.ENGINEER,10),90,"Clear the entrance",killFactor = "falling debris")
+  val brokenMachinery = Subject(rubbleImage,reactsWith = ReactsWith(UnitType.SCIENTIST,10),90,"Study the machinery",killFactor = "poisonous gas")
 
   val resultTitleLabel = new Label("Result:",skin)
   val resultLabel = new Label("???",skin)
