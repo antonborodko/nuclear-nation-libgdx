@@ -72,17 +72,17 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
       case UnitType.SOLDIER=>
         val soldierUnit = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
         soldierUnit.setUserObject(UnitType.SOLDIER)
-        addUnitLeftClickListener(soldierUnit,()=>true,solutionMixGroup, ()=>{},resultLabel,collapsedEntrance)
+        addUnitLeftClickListener(soldierUnit,solutionMixGroup, ()=>{},resultLabel,collapsedEntrance)
         soldierUnit
       case UnitType.SCIENTIST =>
         val scientistUnit = new Image(assetManager.get("unitConstruction/scientistUnit.png",classOf[Texture]))
         scientistUnit.setUserObject(UnitType.SCIENTIST)
-        addUnitLeftClickListener(scientistUnit,()=>true,solutionMixGroup, ()=>{},resultLabel,collapsedEntrance)
+        addUnitLeftClickListener(scientistUnit,solutionMixGroup, ()=>{},resultLabel,collapsedEntrance)
         scientistUnit
       case UnitType.ENGINEER =>
         val engineerUnit = new Image(assetManager.get("unitConstruction/engineerUnit.png",classOf[Texture]))
         engineerUnit.setUserObject(UnitType.ENGINEER)
-        addUnitLeftClickListener(engineerUnit,()=>true,solutionMixGroup, ()=>{},resultLabel,collapsedEntrance)
+        addUnitLeftClickListener(engineerUnit,solutionMixGroup, ()=>{},resultLabel,collapsedEntrance)
         engineerUnit
     }
     availableMixGroup.addActor(actor)
@@ -128,17 +128,28 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
 
 
-  private def addUnitLeftClickListener(sourceActor:Actor,condition:()=>Boolean, mixGroup:Group,callback:() => Unit,resultLabel:Label,subject: Subject): Unit = {
+  private def addUnitLeftClickListener(sourceActor:Actor, mixGroup:Group,callback:() => Unit,resultLabel:Label,subject: Subject): Unit = {
 
     sourceActor.addCaptureListener(new ClickListener(Buttons.LEFT) {
       override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
-        val actor = new Image(sourceActor.asInstanceOf[Image].getDrawable.asInstanceOf[TextureRegionDrawable].getRegion.getTexture)
-        actor.setUserObject(sourceActor.getUserObject)
-        mixGroup.addActor(actor)
+        mixGroup.addActor(sourceActor)
+        sourceActor.clearListeners()
+        sourceActor.addListener(new ClickListener(Buttons.LEFT){
+          override def touchDown(event: InputEvent, x: Float, y: Float, pointer: Int, button: Int) :Boolean= {
+            solutionMixGroup.removeActor(sourceActor)
+            availableMixGroup.addActor(sourceActor)
+            addUnitLeftClickListener(sourceActor,mixGroup,()=>{},resultLabel,subject)
+            availableUnitMix += sourceActor.getUserObject.asInstanceOf[UnitType]
+            val index = solutionUnitMix.indexOf(sourceActor.getUserObject.asInstanceOf[UnitType])
+            solutionUnitMix.remove(index)
+            true
+          }
+        })
+
         availableMixGroup.removeActor(sourceActor)
         val index = availableUnitMix.indexOf(sourceActor.getUserObject.asInstanceOf[UnitType])
         availableUnitMix.remove(index)
-        val userObj = Option(actor.getUserObject)
+        val userObj = Option(sourceActor.getUserObject)
         userObj match {
           case Some(t) if t.isInstanceOf[UnitType] =>
             solutionUnitMix += t.asInstanceOf[UnitType]
