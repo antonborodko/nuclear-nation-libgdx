@@ -694,6 +694,27 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   }
 
+  def discoverTech(ancientRuins:RuinsInfo): Unit ={
+    locations -= ancientRuins
+    ancientRuins.mapCell.location = None
+    townLayer.setCell(ancientRuins.mapCell.x,ancientRuins.mapCell.y,null)
+
+    val dialog = new Dialog("", skin) {
+      override def result(result:Object) {
+
+      }
+    }
+    val index = Random.nextInt(technologies.size)
+    dialog.text(s"Technology discovered: ${technologies(index).name}")
+    dialog.button("OK", true)
+    dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
+    dialog.getContentTable.pad(20)
+    dialog.getTitleTable.pad(20)
+    dialog.pack()
+    stage.addActor(dialog)
+    dialog.setPosition(cameraCenterX - dialog.getPrefWidth/2,cameraCenterY - dialog.getPrefHeight/2)
+  }
+
   def conquerCity(city: CityInfo) = {
     city.isOwnedByPlayer = true
     visitArea(city.mapCell.x,city.mapCell.y)

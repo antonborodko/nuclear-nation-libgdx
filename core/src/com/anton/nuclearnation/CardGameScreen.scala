@@ -1,6 +1,6 @@
 package com.anton.nuclearnation
 
-import com.anton.nuclearnation.MapScreen.{CityInfo, MapLocation, RaiderCampInfo}
+import com.anton.nuclearnation.MapScreen.{CityInfo, MapLocation, RaiderCampInfo, RuinsInfo}
 import com.anton.nuclearnation.UnitType.UnitType
 import com.badlogic.gdx.Input.{Buttons, Keys}
 import com.badlogic.gdx.graphics.{GL20, OrthographicCamera, Texture}
@@ -186,6 +186,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
         override def result(result:Object) {
           if (chance<successChance) {
             if (currentSubjectIndex == subjects.size-1) {
+              mapScreen.discoverTech(currentLocation.asInstanceOf[RuinsInfo])
               game.setScreen(mapScreen)
             } else {
               currentSubjectIndex += 1
