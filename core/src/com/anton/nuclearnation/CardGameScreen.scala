@@ -137,10 +137,20 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
       val text = if (chance<outcomeChance) {
         "Your engineers managed to clear the rubble."
       } else {
-        "Your engineers failed to clear the rubble."
+        //killing some engineers
+        val killedEngineerCount = Random.nextInt(solutionUnitMix.count(u => u == UnitType.ENGINEER))+1
+        for (_ <-0 until killedEngineerCount){
+          solutionMixGroup.getChildren.toArray().find(a=>a.getUserObject!= null && a.getUserObject.asInstanceOf[UnitType] == UnitType.ENGINEER).get.remove()
+          val index = solutionUnitMix.indexOf(UnitType.ENGINEER)
+          solutionUnitMix.remove(index)
+        }
+        resultLabel.setText(analyzeOutcome(collapsedEntrance).description)
+        s"Your engineers failed to clear the rubble. $killedEngineerCount were killed."
       }
 
-      dialog.text(text)
+      val label = new Label(text,skin)
+      label.setWrap(true)
+      dialog.getContentTable.add(label).prefWidth(350)
       dialog.button("OK", true)
       dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
       dialog.pack()
