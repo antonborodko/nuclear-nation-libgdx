@@ -34,7 +34,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
 
   val rubbleImage = new Image(assetManager.get("cardGameScreen/rubble.png",classOf[Texture]))
-  val machineryImage = new Image(assetManager.get("cardGameScreen/brokenMachinery.png",classOf[Texture]))
+  val brokenMachineryImage = new Image(assetManager.get("cardGameScreen/brokenMachinery.png",classOf[Texture]))
 
   val solutionUnitMix=ListBuffer[UnitType]()
   val availableUnitMix = playerUnits.to[ListBuffer]
@@ -53,7 +53,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   val solutionMixGroup = new HorizontalGroup
   solutionMixGroup.wrap
 
-  opposingTable.add(rubbleImage)
+  val opposingImageCell = opposingTable.add(rubbleImage)
   opposingTable.row()
   descriptionLabel.setWrap(true)
   opposingTable.add(descriptionLabel).fillX.pad(50,0,0,0)
@@ -64,7 +64,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   availableMixGroup.wrap()
 
   val collapsedEntrance = Subject(rubbleImage,reactsWith = ReactsWith(UnitType.ENGINEER,10),90,"Clear the entrance",killFactor = "falling debris")
-  val brokenMachinery = Subject(rubbleImage,reactsWith = ReactsWith(UnitType.SCIENTIST,10),90,"Study the machinery",killFactor = "poisonous gas")
+  val brokenMachinery = Subject(brokenMachineryImage,reactsWith = ReactsWith(UnitType.SCIENTIST,10),90,"Study the machinery",killFactor = "poisonous gas")
 
   val subjects:List[Subject] = List(collapsedEntrance,brokenMachinery)
 
@@ -132,17 +132,28 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
   applySolutionButton.addCaptureListener(new ClickListener(){
     override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
+
+      val chance = Random.nextInt(100)
+      val successChance =  analyzeOutcome(subjects(currentSubjectIndex)).successChance
+      val currentUnit = subjects(currentSubjectIndex).reactsWith.unit
+      val unitPlural = currentUnit.toString.toLowerCase() + "s"
+
       val dialog = new Dialog("Rubble cleared", skin) {
         override def result(result:Object) {
-
+          if (chance<successChance) {
+            if (currentSubjectIndex == subjects.size) {
+              game.setScreen(mapScreen)
+            } else {
+              currentSubjectIndex += 1
+             opposingImageCell.clearActor()
+              opposingImageCell.setActor(subjects(currentSubjectIndex).image)
+//              currentActor.setDrawable(subjects(currentSubjectIndex).image.getDrawable.asInstanceOf[TextureRegionDrawable])
+            }
+          }
         }
       }
 
-      val chance = Random.nextInt(100)
-      val outcomeChance =  analyzeOutcome(subjects(currentSubjectIndex)).successChance
-      val currentUnit = subjects(currentSubjectIndex).reactsWith.unit
-      val unitPlural = currentUnit.toString.toLowerCase() + "s"
-      val text = if (chance<outcomeChance) {
+      val text = if (chance<successChance) {
         s"Your $unitPlural managed to clear the rubble."
       } else {
         //killing some units
