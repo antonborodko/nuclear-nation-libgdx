@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.{ClickListener, TextureRegionDrawab
 import com.badlogic.gdx.utils.viewport.StretchViewport
 
 import scala.collection.mutable.ListBuffer
+import scala.util.Random
 
 class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:MapScreen, playerUnits:List[UnitType]) extends Screen{
 
@@ -115,7 +116,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
 
 
-  resultLabel.setText(analyzeOutcome(collapsedEntrance,solutionUnitMix.toList))
+  resultLabel.setText(analyzeOutcome(collapsedEntrance,solutionUnitMix.toList).description)
 
   cancelButton.addCaptureListener(new ClickListener(){
     override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
@@ -131,7 +132,15 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
         }
       }
 
-      dialog.text("Your engineers managed to clear the rubble.")
+      val chance = Random.nextInt(100)
+      val outcomeChance =  analyzeOutcome(collapsedEntrance).successChance
+      val text = if (chance<outcomeChance) {
+        "Your engineers managed to clear the rubble."
+      } else {
+        "Your engineers failed to clear the rubble."
+      }
+
+      dialog.text(text)
       dialog.button("OK", true)
       dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
       dialog.pack()
@@ -140,16 +149,17 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   })
 
 
-  private def analyzeOutcome(subject:Subject, unitMix:List[UnitType] = solutionUnitMix.toList): String ={
+  private def analyzeOutcome(subject:Subject, unitMix:List[UnitType] = solutionUnitMix.toList): Outcome ={
     val reactsWithCount = unitMix.count(u=>u == subject.reactsWith.unit)
     val deltaChance = math.min(reactsWithCount * subject.reactsWith.deltaChanceToResolve,subject.maxChanceToResolve)
 
     reactsWithCount match {
-      case x if x>0 => s"$deltaChance% to ${subject.outcomeDescription.toLowerCase}"
-      case _ => "???"
+      case x if x>0 => Outcome(deltaChance,s"$deltaChance% to ${subject.outcomeDescription.toLowerCase}")
+      case _ => Outcome(0,"???")
     }
   }
 
+  case class Outcome(successChance:Int,description:String)
 
 
 
@@ -168,7 +178,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
             availableUnitMix += sourceActor.getUserObject.asInstanceOf[UnitType]
             val index = solutionUnitMix.indexOf(sourceActor.getUserObject.asInstanceOf[UnitType])
             solutionUnitMix.remove(index)
-            resultLabel.setText(analyzeOutcome(subject))
+            resultLabel.setText(analyzeOutcome(subject).description)
             true
           }
         })
@@ -180,7 +190,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
         userObj match {
           case Some(t) if t.isInstanceOf[UnitType] =>
             solutionUnitMix += t.asInstanceOf[UnitType]
-            resultLabel.setText(analyzeOutcome(subject))
+            resultLabel.setText(analyzeOutcome(subject).description)
           case _ =>
         }
       }
