@@ -35,6 +35,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
   val rubbleImage = new Image(assetManager.get("cardGameScreen/rubble.png",classOf[Texture]))
   val brokenMachineryImage = new Image(assetManager.get("cardGameScreen/brokenMachinery.png",classOf[Texture]))
+  val monsterNestImage = new Image(assetManager.get("cardGameScreen/monster.png",classOf[Texture]))
 
   val solutionUnitMix=ListBuffer[UnitType]()
   val availableUnitMix = playerUnits.to[ListBuffer]
@@ -78,7 +79,16 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
     "Study the machinery",
     killFactor = "poisonous gas")
 
-  val subjects:List[Subject] = List(collapsedEntrance,brokenMachinery)
+  val monsterNest = Subject(
+    monsterNestImage,
+    preface = "You uncovered a monster nest",
+    reactsWith = ReactsWith(UnitType.SOLDIER,10),
+    90,
+    "Destroy the monster nest",
+    killFactor = "monsters"
+  )
+
+  val subjects:List[Subject] = List(collapsedEntrance,brokenMachinery,monsterNest)
 
   var currentSubjectIndex =0
 
