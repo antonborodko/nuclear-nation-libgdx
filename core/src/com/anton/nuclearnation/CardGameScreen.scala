@@ -138,6 +138,14 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
   resultLabel.setText(analyzeOutcome(subjects(currentSubjectIndex),solutionUnitMix.toList).description)
 
+  def resetActionMix(): Unit ={
+    solutionMixGroup.getChildren.toArray.foreach(a=>{
+      availableMixGroup.addActor(a)
+
+    })
+    resultLabel.setText(analyzeOutcome(subjects(currentSubjectIndex)).description)
+  }
+
   cancelButton.addCaptureListener(new ClickListener(){
     override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
       game.setScreen(mapScreen)
@@ -162,6 +170,8 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
               opposingImageCell.clearActor()
               opposingImageCell.setActor(subjects(currentSubjectIndex).image)
               descriptionLabel.setText(subjects(currentSubjectIndex).preface)
+              resetActionMix()
+
             }
           }
         }
