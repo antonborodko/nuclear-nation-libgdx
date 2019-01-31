@@ -1,13 +1,13 @@
 package com.anton.nuclearnation
 
-import com.anton.nuclearnation.MapScreen.MapLocation
+import com.anton.nuclearnation.MapScreen.{CityInfo, MapLocation, RaiderCampInfo}
 import com.anton.nuclearnation.UnitType.UnitType
 import com.badlogic.gdx.Input.{Buttons, Keys}
 import com.badlogic.gdx.graphics.{GL20, OrthographicCamera, Texture}
 import com.badlogic.gdx.{Gdx, InputMultiplexer, InputProcessor, Screen}
 import com.badlogic.gdx.maps.tiled.TiledMap
 import com.badlogic.gdx.scenes.scene2d.{Actor, Group, InputEvent, Stage}
-import com.badlogic.gdx.scenes.scene2d.ui.{Container, HorizontalGroup, Image, Label, Skin, Table, TextButton}
+import com.badlogic.gdx.scenes.scene2d.ui.{Container, Dialog, HorizontalGroup, Image, Label, Skin, Table, TextButton}
 import com.badlogic.gdx.scenes.scene2d.utils.{ClickListener, TextureRegionDrawable}
 import com.badlogic.gdx.utils.viewport.StretchViewport
 
@@ -120,6 +120,22 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   cancelButton.addCaptureListener(new ClickListener(){
     override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
       game.setScreen(mapScreen)
+    }
+  })
+
+  applySolutionButton.addCaptureListener(new ClickListener(){
+    override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
+      val dialog = new Dialog("Rubble cleared", skin) {
+        override def result(result:Object) {
+
+        }
+      }
+
+      dialog.text("Your engineers managed to clear the rubble.")
+      dialog.button("OK", true)
+      dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
+      dialog.pack()
+      stage.addActor(dialog)
     }
   })
 
