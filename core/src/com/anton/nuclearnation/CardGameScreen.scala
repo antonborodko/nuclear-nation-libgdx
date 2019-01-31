@@ -30,7 +30,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   val startButton = new TextButton("Start",skin)
   val applySolutionButton = new TextButton("Apply solution",skin)
   val cancelButton = new TextButton("Cancel",skin)
-  val descriptionLabel = new Label("You have arrived to the ancient ruins. You see the entrance blocked with a pile of rubble.",skin)
+  val descriptionLabel = new Label("[EMPTY]",skin)
 
 
   val rubbleImage = new Image(assetManager.get("cardGameScreen/rubble.png",classOf[Texture]))
@@ -63,12 +63,26 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   val availableMixGroup = new HorizontalGroup()
   availableMixGroup.wrap()
 
-  val collapsedEntrance = Subject(rubbleImage,reactsWith = ReactsWith(UnitType.ENGINEER,10),90,"Clear the entrance",killFactor = "falling debris")
-  val brokenMachinery = Subject(brokenMachineryImage,reactsWith = ReactsWith(UnitType.SCIENTIST,10),90,"Study the machinery",killFactor = "poisonous gas")
+  val collapsedEntrance = Subject(
+    rubbleImage,
+    preface = "You have arrived to the ancient ruins. You see the entrance is blocked with a pile of rubble.",
+    reactsWith = ReactsWith(UnitType.ENGINEER,10),
+    90,
+    "Clear the entrance",
+    killFactor = "falling debris")
+  val brokenMachinery = Subject(
+    brokenMachineryImage,
+    preface = "You see remnants of old machinery. It could be studied.",
+    reactsWith = ReactsWith(UnitType.SCIENTIST,10),
+    90,
+    "Study the machinery",
+    killFactor = "poisonous gas")
 
   val subjects:List[Subject] = List(collapsedEntrance,brokenMachinery)
 
   var currentSubjectIndex =0
+
+  descriptionLabel.setText(subjects(currentSubjectIndex).preface)
 
   val resultTitleLabel = new Label("Result:",skin)
   val resultLabel = new Label("???",skin)
@@ -145,9 +159,9 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
               game.setScreen(mapScreen)
             } else {
               currentSubjectIndex += 1
-             opposingImageCell.clearActor()
+              opposingImageCell.clearActor()
               opposingImageCell.setActor(subjects(currentSubjectIndex).image)
-//              currentActor.setDrawable(subjects(currentSubjectIndex).image.getDrawable.asInstanceOf[TextureRegionDrawable])
+              descriptionLabel.setText(subjects(currentSubjectIndex).preface)
             }
           }
         }
@@ -276,6 +290,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   override def dispose(): Unit = {}
 
   case class Subject(image:Image,
+                     preface: String,
                      reactsWith:ReactsWith,
                      maxChanceToResolve:Int,
                      outcomeDescription:String,
