@@ -29,6 +29,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
 
   val startButton = new TextButton("Start",skin)
+  val applySolutionButton = new TextButton("Apply solution",skin)
   val descriptionLabel = new Label("You have arrived to the ancient ruins. You see the entrance blocked with a pile of rubble.",skin)
 
 
@@ -39,15 +40,16 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   val rootTable = new Table()
   rootTable.setFillParent(true)
 
-  rootTable.setDebug(true)
 
   val playerUnitsTable = new Table().top()
   val opposingTable = new Table().top()
+//
+//  rootTable.setDebug(true)
+//  opposingTable.setDebug(true)
+//  playerUnitsTable.setDebug(true)
 
-  opposingTable.setDebug(true)
-  playerUnitsTable.setDebug(true)
-
-  val mixGroup = new HorizontalGroup
+  val solutionMix = new HorizontalGroup
+  solutionMix.wrap
 
   opposingTable.add(rubbleImage)
   opposingTable.row()
@@ -56,30 +58,39 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
   playerUnitsTable.add(new Label("Available assets:",skin))
   playerUnitsTable.row()
-  val horizontalGroup = new HorizontalGroup()
-  horizontalGroup.addActor(engineerUnit)
-  horizontalGroup.addActor(soldierUnit)
-  horizontalGroup.addActor(scientistUnit)
-
-  val resultLabel = new Label("Result: ???",skin)
+  val availableMix = new HorizontalGroup()
+  availableMix.addActor(engineerUnit)
+  availableMix.addActor(soldierUnit)
+  availableMix.addActor(scientistUnit)
 
 
-  addUnitLeftClickListener(scientistUnit,()=>true,mixGroup,()=>{})
-  addUnitLeftClickListener(soldierUnit,()=>true,mixGroup,()=>{})
-  addUnitLeftClickListener(engineerUnit,()=>true,mixGroup,()=>{})
+  val resultTitleLabel = new Label("Result:",skin)
+  val resultLabel = new Label("???",skin)
+  resultLabel.setWrap(true)
+
+  val collapsedEntrance = Subject(rubbleImage,reactsWith = ReactsWith(UnitType.ENGINEER,10),90,"Clear the entrance")
+
+
+  addUnitLeftClickListener(scientistUnit,()=>true,solutionMix, ()=>{},resultLabel,collapsedEntrance)
+  addUnitLeftClickListener(soldierUnit,()=>true,solutionMix, ()=>{},resultLabel,collapsedEntrance)
+  addUnitLeftClickListener(engineerUnit,()=>true,solutionMix, ()=>{},resultLabel,collapsedEntrance)
 
   soldierUnit.setUserObject(UnitType.SOLDIER)
   scientistUnit.setUserObject(UnitType.SCIENTIST)
   engineerUnit.setUserObject(UnitType.ENGINEER)
 
-  playerUnitsTable.add(horizontalGroup)
+  playerUnitsTable.add(availableMix).fillX().prefHeight(soldierUnit.getPrefHeight)
   playerUnitsTable.row()
   playerUnitsTable.add(new Label("Choose your mix:",skin))
   playerUnitsTable.row()
 
-  playerUnitsTable.add(mixGroup).prefHeight(soldierUnit.getPrefHeight)
+  playerUnitsTable.add(solutionMix).fillX().prefHeight(soldierUnit.getPrefHeight)
   playerUnitsTable.row()
-  playerUnitsTable.add(resultLabel)
+  playerUnitsTable.add(resultTitleLabel)
+  playerUnitsTable.row()
+  playerUnitsTable.add(resultLabel).fillX()
+  playerUnitsTable.row()
+  playerUnitsTable.add(applySolutionButton).pad(20,0,0,0)
 
 
   rootTable.add(playerUnitsTable)
@@ -87,15 +98,36 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
   stage.addActor(rootTable)
 
-  private def addUnitLeftClickListener(sourceActor:Actor,condition:()=>Boolean, mixGroup:Group,callback:() => Unit): Unit = {
+
+
+  resultLabel.setText(analyzeOutcome(collapsedEntrance,unitMix.toList))
+
+
+  private def analyzeOutcome(subject:Subject, unitMix:List[UnitType] = unitMix.toList): String ={
+    val reactsWithCount = unitMix.count(u=>u == subject.reactsWith.unit)
+    val deltaChance = math.min(reactsWithCount * subject.reactsWith.deltaChanceToResolve,subject.maxChanceToResolve)
+
+    reactsWithCount match {
+      case x if x>0 => s"$deltaChance% to ${subject.outcomeDescription.toLowerCase}"
+      case _ => "???"
+    }
+  }
+
+
+
+
+  private def addUnitLeftClickListener(sourceActor:Actor,condition:()=>Boolean, mixGroup:Group,callback:() => Unit,resultLabel:Label,subject: Subject): Unit = {
 
     sourceActor.addCaptureListener(new ClickListener(Buttons.LEFT) {
       override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
         val actor = new Image(sourceActor.asInstanceOf[Image].getDrawable.asInstanceOf[TextureRegionDrawable].getRegion.getTexture)
+        actor.setUserObject(sourceActor.getUserObject)
         mixGroup.addActor(actor)
         val userObj = Option(actor.getUserObject)
         userObj match {
-          case Some(t) if t.isInstanceOf[UnitType] => unitMix += t.asInstanceOf[UnitType]
+          case Some(t) if t.isInstanceOf[UnitType] =>
+            unitMix += t.asInstanceOf[UnitType]
+            resultLabel.setText(analyzeOutcome(subject))
           case _ =>
         }
       }
@@ -148,4 +180,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   override def hide(): Unit = {}
 
   override def dispose(): Unit = {}
+
+  case class Subject(image:Image,reactsWith:ReactsWith,maxChanceToResolve:Int,outcomeDescription:String)
+  case class ReactsWith(unit:UnitType,deltaChanceToResolve:Int)
 }
