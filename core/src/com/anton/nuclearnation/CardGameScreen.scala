@@ -22,9 +22,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   val stage = new Stage(new StretchViewport(800,600,new OrthographicCamera()))
   val camera = stage.getCamera
 
-  val soldierUnit = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
-  val scientistUnit = new Image(assetManager.get("unitConstruction/scientistUnit.png",classOf[Texture]))
-  val engineerUnit = new Image(assetManager.get("unitConstruction/engineerUnit.png",classOf[Texture]))
+
 
   val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
 
@@ -35,7 +33,8 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
   val rubbleImage = new Image(assetManager.get("cardGameScreen/rubble.png",classOf[Texture]))
 
-  val unitMix=ListBuffer[UnitType]()
+  val solutionUnitMix=ListBuffer[UnitType]()
+  val availableUnitMix = playerUnits.to[ListBuffer]
 
   val rootTable = new Table()
   rootTable.setFillParent(true)
@@ -48,8 +47,8 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 //  opposingTable.setDebug(true)
 //  playerUnitsTable.setDebug(true)
 
-  val solutionMix = new HorizontalGroup
-  solutionMix.wrap
+  val solutionMixGroup = new HorizontalGroup
+  solutionMixGroup.wrap
 
   opposingTable.add(rubbleImage)
   opposingTable.row()
@@ -58,33 +57,46 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
   playerUnitsTable.add(new Label("Available assets:",skin))
   playerUnitsTable.row()
-  val availableMix = new HorizontalGroup()
-  availableMix.addActor(engineerUnit)
-  availableMix.addActor(soldierUnit)
-  availableMix.addActor(scientistUnit)
+  val availableMixGroup = new HorizontalGroup()
+  availableMixGroup.wrap()
 
+  val collapsedEntrance = Subject(rubbleImage,reactsWith = ReactsWith(UnitType.ENGINEER,10),90,"Clear the entrance")
 
   val resultTitleLabel = new Label("Result:",skin)
   val resultLabel = new Label("???",skin)
   resultLabel.setWrap(true)
 
-  val collapsedEntrance = Subject(rubbleImage,reactsWith = ReactsWith(UnitType.ENGINEER,10),90,"Clear the entrance")
+  playerUnits.foreach(u=>{
+
+    val actor = u match {
+      case UnitType.SOLDIER=>
+        val soldierUnit = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
+        soldierUnit.setUserObject(UnitType.SOLDIER)
+        addUnitLeftClickListener(soldierUnit,()=>true,solutionMixGroup, ()=>{},resultLabel,collapsedEntrance)
+        soldierUnit
+      case UnitType.SCIENTIST =>
+        val scientistUnit = new Image(assetManager.get("unitConstruction/scientistUnit.png",classOf[Texture]))
+        scientistUnit.setUserObject(UnitType.SCIENTIST)
+        addUnitLeftClickListener(scientistUnit,()=>true,solutionMixGroup, ()=>{},resultLabel,collapsedEntrance)
+        scientistUnit
+      case UnitType.ENGINEER =>
+        val engineerUnit = new Image(assetManager.get("unitConstruction/engineerUnit.png",classOf[Texture]))
+        engineerUnit.setUserObject(UnitType.ENGINEER)
+        addUnitLeftClickListener(engineerUnit,()=>true,solutionMixGroup, ()=>{},resultLabel,collapsedEntrance)
+        engineerUnit
+    }
+    availableMixGroup.addActor(actor)
+  })
+
+  val mixPrefHeight = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture])).getPrefHeight
 
 
-  addUnitLeftClickListener(scientistUnit,()=>true,solutionMix, ()=>{},resultLabel,collapsedEntrance)
-  addUnitLeftClickListener(soldierUnit,()=>true,solutionMix, ()=>{},resultLabel,collapsedEntrance)
-  addUnitLeftClickListener(engineerUnit,()=>true,solutionMix, ()=>{},resultLabel,collapsedEntrance)
-
-  soldierUnit.setUserObject(UnitType.SOLDIER)
-  scientistUnit.setUserObject(UnitType.SCIENTIST)
-  engineerUnit.setUserObject(UnitType.ENGINEER)
-
-  playerUnitsTable.add(availableMix).fillX().prefHeight(soldierUnit.getPrefHeight)
+  playerUnitsTable.add(availableMixGroup).fillX().prefHeight(mixPrefHeight)
   playerUnitsTable.row()
   playerUnitsTable.add(new Label("Choose your mix:",skin))
   playerUnitsTable.row()
 
-  playerUnitsTable.add(solutionMix).fillX().prefHeight(soldierUnit.getPrefHeight)
+  playerUnitsTable.add(solutionMixGroup).fillX().prefHeight(mixPrefHeight)
   playerUnitsTable.row()
   playerUnitsTable.add(resultTitleLabel)
   playerUnitsTable.row()
@@ -100,10 +112,10 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
 
 
-  resultLabel.setText(analyzeOutcome(collapsedEntrance,unitMix.toList))
+  resultLabel.setText(analyzeOutcome(collapsedEntrance,solutionUnitMix.toList))
 
 
-  private def analyzeOutcome(subject:Subject, unitMix:List[UnitType] = unitMix.toList): String ={
+  private def analyzeOutcome(subject:Subject, unitMix:List[UnitType] = solutionUnitMix.toList): String ={
     val reactsWithCount = unitMix.count(u=>u == subject.reactsWith.unit)
     val deltaChance = math.min(reactsWithCount * subject.reactsWith.deltaChanceToResolve,subject.maxChanceToResolve)
 
@@ -123,10 +135,13 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
         val actor = new Image(sourceActor.asInstanceOf[Image].getDrawable.asInstanceOf[TextureRegionDrawable].getRegion.getTexture)
         actor.setUserObject(sourceActor.getUserObject)
         mixGroup.addActor(actor)
+        availableMixGroup.removeActor(sourceActor)
+        val index = availableUnitMix.indexOf(sourceActor.getUserObject.asInstanceOf[UnitType])
+        availableUnitMix.remove(index)
         val userObj = Option(actor.getUserObject)
         userObj match {
           case Some(t) if t.isInstanceOf[UnitType] =>
-            unitMix += t.asInstanceOf[UnitType]
+            solutionUnitMix += t.asInstanceOf[UnitType]
             resultLabel.setText(analyzeOutcome(subject))
           case _ =>
         }
