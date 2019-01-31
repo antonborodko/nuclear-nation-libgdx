@@ -62,7 +62,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   val availableMixGroup = new HorizontalGroup()
   availableMixGroup.wrap()
 
-  val collapsedEntrance = Subject(rubbleImage,reactsWith = ReactsWith(UnitType.ENGINEER,10),90,"Clear the entrance")
+  val collapsedEntrance = Subject(rubbleImage,reactsWith = ReactsWith(UnitType.ENGINEER,10),90,"Clear the entrance",killFactor = "falling debris")
 
   val resultTitleLabel = new Label("Result:",skin)
   val resultLabel = new Label("???",skin)
@@ -145,7 +145,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
           solutionUnitMix.remove(index)
         }
         resultLabel.setText(analyzeOutcome(collapsedEntrance).description)
-        s"Your engineers failed to clear the rubble. $killedEngineerCount were killed."
+        s"Your engineers failed to clear the rubble. $killedEngineerCount were killed with ${collapsedEntrance.killFactor.toLowerCase()}."
       }
 
       val label = new Label(text,skin)
@@ -256,6 +256,11 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
   override def dispose(): Unit = {}
 
-  case class Subject(image:Image,reactsWith:ReactsWith,maxChanceToResolve:Int,outcomeDescription:String)
+  case class Subject(image:Image,
+                     reactsWith:ReactsWith,
+                     maxChanceToResolve:Int,
+                     outcomeDescription:String,
+                     killFactor:String
+                    )
   case class ReactsWith(unit:UnitType,deltaChanceToResolve:Int)
 }
