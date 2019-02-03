@@ -48,6 +48,8 @@ class MapScreen(game: NuclearNation) extends Screen{
   val mapWidthTiles = 30
   val mapHeightTiles = 30
 
+  val DEFAULT_DISCOVERABLE_RADIUS = if (sys.env.get("DEFAULT_DISCOVERABLE_RADIUS").isEmpty) 1 else sys.env("DEFAULT_DISCOVERABLE_RADIUS").toInt
+
   val desertTileTexture = assetManager.get("desert_tile.png",classOf[Texture])
   val ruinedBuildingTexture = assetManager.get("ruined-building.png",classOf[Texture])
   val desertLayer = new TiledMapTileLayer(mapHeightTiles, mapWidthTiles, desertTileTexture.getWidth, desertTileTexture.getHeight)
@@ -436,7 +438,7 @@ class MapScreen(game: NuclearNation) extends Screen{
   }
 
 
-  def visitTile(tileX: Int, tileY: Int, radiusTiles:Int=5)  {
+  def visitTile(tileX: Int, tileY: Int, radiusTiles:Int=DEFAULT_DISCOVERABLE_RADIUS)  {
     val tile = mapData.getCell(tileX,tileY) match {
       case Some(t)=>t
       case None=>
