@@ -718,22 +718,6 @@ class MapScreen(game: NuclearNation) extends Screen{
   def conquerCity(city: CityInfo) = {
     city.isOwnedByPlayer = true
     visitArea(city.mapCell.x,city.mapCell.y)
-    var caption=""
-
-    val dialog = new Dialog(caption, skin) {
-      override def result(result:Object) {
-
-      }
-    }
-
-    dialog.text(caption)
-    dialog.button("OK", true)
-    dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
-    dialog.getContentTable.pad(20)
-    dialog.getTitleTable.pad(20)
-    dialog.pack()
-    stage.addActor(dialog)
-    dialog.setPosition(cameraCenterX - dialog.getPrefWidth/2,cameraCenterY - dialog.getPrefHeight/2)
   }
 
 
