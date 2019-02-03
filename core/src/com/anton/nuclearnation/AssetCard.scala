@@ -19,4 +19,6 @@ class AssetCard(texture:Texture,count:Int,game:NuclearNation) extends Group{
   table.row()
   table.add(countLabel).right().bottom()
 
+  addActor(table)
+
 }
