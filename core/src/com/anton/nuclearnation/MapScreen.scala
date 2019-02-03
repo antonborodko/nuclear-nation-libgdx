@@ -742,6 +742,7 @@ class MapScreen(game: NuclearNation) extends Screen{
   def deleteCamp(camp: RaiderCampInfo) = {
     if (locations.contains(camp)){
       locations -= camp
+      camp.mapCell.location = None
       val desertTile = new StaticTiledMapTile(new TextureRegion(desertTileTexture))
       val desertCell = new Cell
       desertCell.setTile(desertTile)
