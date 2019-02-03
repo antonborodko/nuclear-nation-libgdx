@@ -159,6 +159,7 @@ class MapScreen(game: NuclearNation) extends Screen{
         val randomDestCity = citiesExcludingSource(Random.nextInt(citiesExcludingSource.size)).asInstanceOf[CityInfo]
 
 
+
         sendExpedition(randomSourceCity.mapCell,randomDestCity.mapCell,tradeCaravanTexture,owner = ExpeditionOwner.COMPUTER,units = scala.List[UnitType](),Objective.TRADE,speed = caravanSpeed)
       }
 
