@@ -203,8 +203,10 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
       override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
 
         val result = analyzeActionMix(assetsGroup)
-        mapScreen.sendExpedition(destCell = targetLocation.mapCell,units =result._2, objective = result._1)
-        game.setScreen(mapScreen)
+        if (mixEngineerCounter + mixScientistCounter + mixSoldierCounter >0){
+          mapScreen.sendExpedition(destCell = targetLocation.mapCell,units =result._2, objective = result._1)
+          game.setScreen(mapScreen)
+        }
       }
     })
 
