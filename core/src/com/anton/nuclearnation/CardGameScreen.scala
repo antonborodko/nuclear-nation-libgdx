@@ -39,7 +39,6 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   val brokenMachineryImage = new Image(assetManager.get("cardGameScreen/brokenMachinery.png",classOf[Texture]))
   val monsterNestImage = new Image(assetManager.get("cardGameScreen/monster.png",classOf[Texture]))
 
-  val availableUnitMix = playerUnits.to[ListBuffer]
 
   val rootTable = new Table()
   rootTable.setFillParent(true)
@@ -154,7 +153,6 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   def resetActionMix(): Unit ={
     solutionMixGroup.getChildren.toArray.foreach(a=>{
       availableMixGroup.addActor(a)
-      availableUnitMix+=a.getUserObject.asInstanceOf[UnitType]
     })
 
     availableMixGroup.getChildren.toArray.foreach(a=>{
@@ -201,37 +199,53 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
         }
       }
 
-//      val text = if (chance<successChance) {
-//        s"Your $unitPlural managed to $outcomeDescription"
-//      } else {
-//        //killing some units
-//        val count = solutionUnitMix.count(u => u == currentUnit)
-//        if (count >0){
-//
-//        }
-//        val killedUnitCount = Random.nextInt(count)+1
-//        for (_ <-0 until killedUnitCount){
-//          solutionMixGroup.getChildren.toArray().find(a=>a.getUserObject!= null && a.getUserObject.asInstanceOf[UnitType] == currentUnit).get.remove()
-//          val index = solutionUnitMix.indexOf(subjects(currentSubjectIndex).reactsWith.unit)
-//          solutionUnitMix.remove(index)
-//        }
-//        resultLabel.setText(analyzeOutcome(subjects(currentSubjectIndex)).description)
-//        s"Your $unitPlural failed to $outcomeDescription. $killedUnitCount were killed with ${subjects(currentSubjectIndex).killFactor.toLowerCase()}."
-//      }
-//
-//      val label = new Label(text,skin)
-//      label.setWrap(true)
-//      dialog.getContentTable.add(label).prefWidth(350)
-//      dialog.button("OK", true)
-//      dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
-//      dialog.pack()
-//      stage.addActor(dialog)
+      val text = if (chance<successChance) {
+        Some(s"Your $unitPlural managed to $outcomeDescription")
+      } else {
+        //killing some units
+        val assetCard =
+          solutionMixGroup
+            .getChildren
+            .toArray.find(u => u.asInstanceOf[AssetCard]
+            .getUserObject.asInstanceOf[UnitType] == currentUnit)
+        assetCard match {
+          case None=>None
+          case Some(c) => c.asInstanceOf[AssetCard]
+            val assetCard = c.asInstanceOf[AssetCard]
+            val killedUnitCount = Random.nextInt(assetCard.count)+1
+            assetCard.updateCount(-killedUnitCount)
+            if (assetCard.count <=0){
+              solutionMixGroup.removeActor(assetCard)
+            }
+            resultLabel.setText(analyzeOutcome(subjects(currentSubjectIndex)).description)
+            Some(s"Your $unitPlural failed to $outcomeDescription. $killedUnitCount were killed with ${subjects(currentSubjectIndex).killFactor.toLowerCase()}.")
+        }
+
+      }
+
+      text match{
+        case Some(t)=>
+          val label = new Label(t,skin)
+          label.setWrap(true)
+          dialog.getContentTable.add(label).prefWidth(350)
+          dialog.button("OK", true)
+          dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
+          dialog.pack()
+          stage.addActor(dialog)
+        case None=>
+      }
+
     }
   })
 
 
   private def analyzeOutcome(subject:Subject): Outcome ={
-    val reactsWithCount = solutionMixGroup.getChildren.toArray().find(u=>u.getUserObject.asInstanceOf[UnitType] == subject.reactsWith.unit)
+    val reactsWithUnit = solutionMixGroup.getChildren.toArray().find(u=>u.getUserObject.asInstanceOf[UnitType] == subject.reactsWith.unit)
+
+    val reactsWithCount = reactsWithUnit match{
+      case Some(u) => u.asInstanceOf[AssetCard].count
+      case None=> 0
+    }
     val deltaChance = math.min(reactsWithCount * subject.reactsWith.deltaChanceToResolve,subject.maxChanceToResolve)
 
     reactsWithCount match {
@@ -256,16 +270,12 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
             solutionMixGroup.removeActor(sourceActor)
             availableMixGroup.addActor(sourceActor)
             addUnitLeftClickListener(sourceActor,mixGroup,resultLabel,subject)
-            availableUnitMix += sourceActor.getUserObject.asInstanceOf[UnitType]
             resultLabel.setText(analyzeOutcome(subject).description)
             true
           }
         })
 
         availableMixGroup.removeActor(sourceActor)
-        val index = availableUnitMix.indexOf(sourceActor.getUserObject.asInstanceOf[UnitType])
-        availableUnitMix.remove(index)
-        val userObj = Option(sourceActor.getUserObject)
         resultLabel.setText(analyzeOutcome(subject).description)
       }
     })

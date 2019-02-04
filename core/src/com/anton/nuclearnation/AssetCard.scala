@@ -32,7 +32,7 @@ class AssetCard(image:Image,var count:Int,game:NuclearNation,unitType: UnitType)
 
   pad(10)
 
-  setUserObject(UnitType)
+  setUserObject(unitType)
 
 
   def updateCount(delta:Int): Unit ={
