@@ -23,7 +23,9 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   val stage = new Stage(new StretchViewport(800,600,new OrthographicCamera()))
   val camera = stage.getCamera
 
-
+  val soldierUnit = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
+  val scientistUnit = new Image(assetManager.get("unitConstruction/scientistUnit.png",classOf[Texture]))
+  val engineerUnit = new Image(assetManager.get("unitConstruction/engineerUnit.png",classOf[Texture]))
 
   val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
 
@@ -37,7 +39,6 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   val brokenMachineryImage = new Image(assetManager.get("cardGameScreen/brokenMachinery.png",classOf[Texture]))
   val monsterNestImage = new Image(assetManager.get("cardGameScreen/monster.png",classOf[Texture]))
 
-  val solutionUnitMix=ListBuffer[UnitType]()
   val availableUnitMix = playerUnits.to[ListBuffer]
 
   val rootTable = new Table()
@@ -46,10 +47,6 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
   val playerUnitsTable = new Table().top()
   val opposingTable = new Table().top()
-//
-//  rootTable.setDebug(true)
-//  opposingTable.setDebug(true)
-//  playerUnitsTable.setDebug(true)
 
   val solutionMixGroup = new HorizontalGroup
   solutionMixGroup.wrap
@@ -98,34 +95,42 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   val resultLabel = new Label("???",skin)
   resultLabel.setWrap(true)
 
-  playerUnits.foreach(u=>{
+  val soldierCard = new AssetCard(soldierUnit,0,game,UnitType.SOLDIER)
+  val engineerCard = new AssetCard(engineerUnit,0,game,UnitType.ENGINEER)
+  val scientistCard = new AssetCard(scientistUnit,0,game,UnitType.SCIENTIST)
 
-    val actor = u match {
-      case UnitType.SOLDIER=>
-        val soldierUnit = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
-        soldierUnit.setUserObject(UnitType.SOLDIER)
-        addUnitLeftClickListener(soldierUnit,solutionMixGroup, ()=>{},resultLabel,subjects(currentSubjectIndex))
-        soldierUnit
-      case UnitType.SCIENTIST =>
-        val scientistUnit = new Image(assetManager.get("unitConstruction/scientistUnit.png",classOf[Texture]))
-        scientistUnit.setUserObject(UnitType.SCIENTIST)
-        addUnitLeftClickListener(scientistUnit,solutionMixGroup, ()=>{},resultLabel,subjects(currentSubjectIndex))
-        scientistUnit
-      case UnitType.ENGINEER =>
-        val engineerUnit = new Image(assetManager.get("unitConstruction/engineerUnit.png",classOf[Texture]))
-        engineerUnit.setUserObject(UnitType.ENGINEER)
-        addUnitLeftClickListener(engineerUnit,solutionMixGroup, ()=>{},resultLabel,subjects(currentSubjectIndex))
-        engineerUnit
-    }
-    availableMixGroup.addActor(actor)
-  })
+  playerUnits.foreach {
+    case UnitType.SOLDIER =>
+      soldierCard.updateCount(1)
+    case UnitType.SCIENTIST =>
+      scientistCard.updateCount(1)
+    case UnitType.ENGINEER =>
+      engineerCard.updateCount(1)
+  }
+
+  if (soldierCard.count >0){
+    availableMixGroup.addActor(soldierCard)
+  }
+
+  if (engineerCard.count >0){
+    availableMixGroup.addActor(engineerCard)
+  }
+
+  if (scientistCard.count >0){
+    availableMixGroup.addActor(scientistCard)
+  }
+
+  addUnitLeftClickListener(soldierCard,solutionMixGroup,resultLabel,subjects(currentSubjectIndex))
+  addUnitLeftClickListener(engineerCard,solutionMixGroup,resultLabel,subjects(currentSubjectIndex))
+  addUnitLeftClickListener(scientistCard,solutionMixGroup,resultLabel,subjects(currentSubjectIndex))
+
 
   val mixPrefHeight = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture])).getPrefHeight
 
 
   playerUnitsTable.add(availableMixGroup).fillX().prefHeight(mixPrefHeight)
   playerUnitsTable.row()
-  playerUnitsTable.add(new Label("Choose your mix:",skin))
+  playerUnitsTable.add(new Label("Choose your stack:",skin))
   playerUnitsTable.row()
 
   playerUnitsTable.add(solutionMixGroup).fillX().prefHeight(mixPrefHeight)
@@ -144,9 +149,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
   stage.addActor(rootTable)
 
-
-
-  resultLabel.setText(analyzeOutcome(subjects(currentSubjectIndex),solutionUnitMix.toList).description)
+  resultLabel.setText(analyzeOutcome(subjects(currentSubjectIndex)).description)
 
   def resetActionMix(): Unit ={
     solutionMixGroup.getChildren.toArray.foreach(a=>{
@@ -156,11 +159,9 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
     availableMixGroup.getChildren.toArray.foreach(a=>{
       a.clearListeners()
-      addUnitLeftClickListener(a,solutionMixGroup,()=>{},resultLabel,subjects(currentSubjectIndex))
+      addUnitLeftClickListener(a.asInstanceOf[AssetCard],solutionMixGroup,resultLabel,subjects(currentSubjectIndex))
     })
 
-
-    solutionUnitMix.clear()
     resultLabel.setText(analyzeOutcome(subjects(currentSubjectIndex)).description)
   }
 
@@ -200,37 +201,37 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
         }
       }
 
-      val text = if (chance<successChance) {
-        s"Your $unitPlural managed to $outcomeDescription"
-      } else {
-        //killing some units
-        val count = solutionUnitMix.count(u => u == currentUnit)
-        if (count >0){
-
-        }
-        val killedUnitCount = Random.nextInt(count)+1
-        for (_ <-0 until killedUnitCount){
-          solutionMixGroup.getChildren.toArray().find(a=>a.getUserObject!= null && a.getUserObject.asInstanceOf[UnitType] == currentUnit).get.remove()
-          val index = solutionUnitMix.indexOf(subjects(currentSubjectIndex).reactsWith.unit)
-          solutionUnitMix.remove(index)
-        }
-        resultLabel.setText(analyzeOutcome(subjects(currentSubjectIndex)).description)
-        s"Your $unitPlural failed to $outcomeDescription. $killedUnitCount were killed with ${subjects(currentSubjectIndex).killFactor.toLowerCase()}."
-      }
-
-      val label = new Label(text,skin)
-      label.setWrap(true)
-      dialog.getContentTable.add(label).prefWidth(350)
-      dialog.button("OK", true)
-      dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
-      dialog.pack()
-      stage.addActor(dialog)
+//      val text = if (chance<successChance) {
+//        s"Your $unitPlural managed to $outcomeDescription"
+//      } else {
+//        //killing some units
+//        val count = solutionUnitMix.count(u => u == currentUnit)
+//        if (count >0){
+//
+//        }
+//        val killedUnitCount = Random.nextInt(count)+1
+//        for (_ <-0 until killedUnitCount){
+//          solutionMixGroup.getChildren.toArray().find(a=>a.getUserObject!= null && a.getUserObject.asInstanceOf[UnitType] == currentUnit).get.remove()
+//          val index = solutionUnitMix.indexOf(subjects(currentSubjectIndex).reactsWith.unit)
+//          solutionUnitMix.remove(index)
+//        }
+//        resultLabel.setText(analyzeOutcome(subjects(currentSubjectIndex)).description)
+//        s"Your $unitPlural failed to $outcomeDescription. $killedUnitCount were killed with ${subjects(currentSubjectIndex).killFactor.toLowerCase()}."
+//      }
+//
+//      val label = new Label(text,skin)
+//      label.setWrap(true)
+//      dialog.getContentTable.add(label).prefWidth(350)
+//      dialog.button("OK", true)
+//      dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
+//      dialog.pack()
+//      stage.addActor(dialog)
     }
   })
 
 
-  private def analyzeOutcome(subject:Subject, unitMix:List[UnitType] = solutionUnitMix.toList): Outcome ={
-    val reactsWithCount = unitMix.count(u=>u == subject.reactsWith.unit)
+  private def analyzeOutcome(subject:Subject): Outcome ={
+    val reactsWithCount = solutionMixGroup.getChildren.toArray().find(u=>u.getUserObject.asInstanceOf[UnitType] == subject.reactsWith.unit)
     val deltaChance = math.min(reactsWithCount * subject.reactsWith.deltaChanceToResolve,subject.maxChanceToResolve)
 
     reactsWithCount match {
@@ -243,7 +244,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
 
 
-  private def addUnitLeftClickListener(sourceActor:Actor, mixGroup:Group,callback:() => Unit,resultLabel:Label,subject: Subject): Unit = {
+  private def addUnitLeftClickListener(sourceActor:AssetCard, mixGroup:Group,resultLabel:Label,subject: Subject): Unit = {
 
     sourceActor.clearListeners()
     sourceActor.addCaptureListener(new ClickListener(Buttons.LEFT) {
@@ -254,10 +255,8 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
           override def touchDown(event: InputEvent, x: Float, y: Float, pointer: Int, button: Int) :Boolean= {
             solutionMixGroup.removeActor(sourceActor)
             availableMixGroup.addActor(sourceActor)
-            addUnitLeftClickListener(sourceActor,mixGroup,()=>{},resultLabel,subject)
+            addUnitLeftClickListener(sourceActor,mixGroup,resultLabel,subject)
             availableUnitMix += sourceActor.getUserObject.asInstanceOf[UnitType]
-            val index = solutionUnitMix.indexOf(sourceActor.getUserObject.asInstanceOf[UnitType])
-            solutionUnitMix.remove(index)
             resultLabel.setText(analyzeOutcome(subject).description)
             true
           }
@@ -267,12 +266,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
         val index = availableUnitMix.indexOf(sourceActor.getUserObject.asInstanceOf[UnitType])
         availableUnitMix.remove(index)
         val userObj = Option(sourceActor.getUserObject)
-        userObj match {
-          case Some(t) if t.isInstanceOf[UnitType] =>
-            solutionUnitMix += t.asInstanceOf[UnitType]
-            resultLabel.setText(analyzeOutcome(subject).description)
-          case _ =>
-        }
+        resultLabel.setText(analyzeOutcome(subject).description)
       }
     })
   }

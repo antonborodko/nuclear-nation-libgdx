@@ -214,9 +214,6 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     stage.addActor(controlGroup)
     val actor = new AssetCard(new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture])),10,game)
 
-    stage.addActor(actor)
-    actor.setPosition(100,100)
-
     controlGroup.setPosition(0, camera.unproject(new Vector3(0,0,0)).y)
 
   }
