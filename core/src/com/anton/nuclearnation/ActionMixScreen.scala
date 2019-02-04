@@ -17,7 +17,7 @@ import scala.collection.mutable.ListBuffer
 
 class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen: MapScreen) extends Screen{
 
-  val stage = new Stage(new StretchViewport(1600,960,new OrthographicCamera()))
+  val stage = new Stage(new StretchViewport(800 ,600,new OrthographicCamera()))
   val camera = stage.getCamera.asInstanceOf[OrthographicCamera]
 
   val assetManager = game.assetManager
@@ -212,7 +212,7 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
 
 
     stage.addActor(controlGroup)
-    val actor = new AssetCard(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]),10,game)
+    val actor = new AssetCard(new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture])),10,game)
 
     stage.addActor(actor)
     actor.setPosition(100,100)
