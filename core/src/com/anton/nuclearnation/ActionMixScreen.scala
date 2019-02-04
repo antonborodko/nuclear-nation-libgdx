@@ -38,10 +38,6 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
   val scientistLabel = new Label("Scientist",skin)
   val engineerLabel = new Label("Engineer",skin)
 
-  var mixSoldierCounter = 0
-  var mixScientistCounter = 0
-  var mixEngineerCounter = 0
-
 
   val subjectPicture = targetLocation match {
     case _:RaiderCampInfo => new Image(assetManager.get("raider_camp.png",classOf[Texture]))
@@ -52,28 +48,42 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
   }
 
 
-  val soldierUnit = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
-  val scientistUnit = new Image(assetManager.get("unitConstruction/scientistUnit.png",classOf[Texture]))
-  val engineerUnit = new Image(assetManager.get("unitConstruction/engineerUnit.png",classOf[Texture]))
+  val soldierUnitClass = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
+  val scientistUnitClass = new Image(assetManager.get("unitConstruction/scientistUnit.png",classOf[Texture]))
+  val engineerUnitClass = new Image(assetManager.get("unitConstruction/engineerUnit.png",classOf[Texture]))
+
+  val soldierCard = new AssetCard(soldierUnitClass,0,game,UnitType.SOLDIER)
+  val engineerCard = new AssetCard(engineerUnitClass,0,game,UnitType.ENGINEER)
+  val scientistCard = new AssetCard(scientistUnitClass,0,game,UnitType.SCIENTIST)
 
 
   case class ActorUserObject(unitType: UnitType.UnitType,onRemovedFromStack:()=>Unit)
+  val assetsGroup = new Group()
 
-  soldierUnit.setUserObject(ActorUserObject(UnitType.SOLDIER,()=>{
+  soldierUnitClass.setUserObject(ActorUserObject(UnitType.SOLDIER, ()=>{
     game.soldierCounter +=1
-    mixSoldierCounter -=1
+    soldierCard.updateCount(-1)
+    if (soldierCard.count <=0){
+      assetsGroup.removeActor(soldierCard)
+    }
     updateUnitCountLabel("Soldier",soldierLabel,game.soldierCounter)
   }))
 
-  scientistUnit.setUserObject(ActorUserObject(UnitType.SCIENTIST,()=>{
+  scientistUnitClass.setUserObject(ActorUserObject(UnitType.SCIENTIST, ()=>{
     game.scientistCounter +=1
-    mixScientistCounter -=1
+    scientistCard.updateCount(-1)
+    if (scientistCard.count <=0){
+      assetsGroup.removeActor(scientistCard)
+    }
     updateUnitCountLabel("Scientist",scientistLabel,game.scientistCounter)
   }))
 
-  engineerUnit.setUserObject(ActorUserObject(UnitType.ENGINEER,()=>{
+  engineerUnitClass.setUserObject(ActorUserObject(UnitType.ENGINEER, ()=>{
     game.engineerCounter +=1
-    mixEngineerCounter -=1
+    engineerCard.updateCount(-1)
+    if (engineerCard.count <=0){
+      assetsGroup.removeActor(engineerCard)
+    }
     updateUnitCountLabel("Engineer",engineerLabel,game.engineerCounter)
   }))
 
@@ -124,7 +134,7 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     val applyButton = new TextButton("Apply mix",skin)
 
     val controlGroup = new Group()
-    val assetsGroup = new Group()
+
     assetsGroup.addActor(meansPicture)
 
     controlGroup.addActor(titleLabel)
@@ -138,13 +148,13 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     controlGroup.addActor(applyButton)
 
     controlGroup.addActor(assetsLabel)
-    controlGroup.addActor(soldierUnit)
+    controlGroup.addActor(soldierUnitClass)
     controlGroup.addActor(soldierLabel)
 
-    controlGroup.addActor(scientistUnit)
+    controlGroup.addActor(scientistUnitClass)
     controlGroup.addActor(scientistLabel)
 
-    controlGroup.addActor(engineerUnit)
+    controlGroup.addActor(engineerUnitClass)
     controlGroup.addActor(engineerLabel)
 
     controlGroup.setWidth(camera.viewportWidth)
@@ -162,36 +172,44 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
 
     assetsLabel.setPosition(hintLabel.getX-assetsLabel.getPrefWidth-20,hintLabel.getY)
 
-    soldierUnit.setPosition(assetsLabel.getX,assetsLabel.getY - soldierUnit.getPrefHeight-10)
-    soldierLabel.setPosition(soldierUnit.getX,soldierUnit.getY - soldierLabel.getPrefHeight - 10)
+    soldierUnitClass.setPosition(assetsLabel.getX,assetsLabel.getY - soldierUnitClass.getPrefHeight-10)
+    soldierLabel.setPosition(soldierUnitClass.getX,soldierUnitClass.getY - soldierLabel.getPrefHeight - 10)
 
-    scientistUnit.setPosition(assetsLabel.getX,soldierLabel.getY - scientistUnit.getPrefHeight-10)
-    scientistLabel.setPosition(scientistUnit.getX,scientistUnit.getY - scientistLabel.getPrefHeight - 10)
+    scientistUnitClass.setPosition(assetsLabel.getX,soldierLabel.getY - scientistUnitClass.getPrefHeight-10)
+    scientistLabel.setPosition(scientistUnitClass.getX,scientistUnitClass.getY - scientistLabel.getPrefHeight - 10)
 
-    engineerUnit.setPosition(assetsLabel.getX,scientistLabel.getY - engineerUnit.getPrefHeight-10)
-    engineerLabel.setPosition(engineerUnit.getX,engineerUnit.getY - engineerLabel.getPrefHeight - 10)
+    engineerUnitClass.setPosition(assetsLabel.getX,scientistLabel.getY - engineerUnitClass.getPrefHeight-10)
+    engineerLabel.setPosition(engineerUnitClass.getX,engineerUnitClass.getY - engineerLabel.getPrefHeight - 10)
 
 
 
-    addUnitLeftClickListener(soldierUnit,()=>game.soldierCounter>0 && mixSoldierCounter <10,assetsGroup,()=>{
+    addUnitLeftClickListener(soldierUnitClass, ()=>game.soldierCounter>0 && soldierCard.count <10,assetsGroup, ()=>{
       game.soldierCounter -=1
-      mixSoldierCounter +=1
+      if (soldierCard.count == 0){
+        assetsGroup.addActor(soldierCard)
+      }
+      soldierCard.updateCount(1)
       updateUnitCountLabel("Soldier",soldierLabel,game.soldierCounter)
     })
 
     updateUnitCountLabel("Soldier",soldierLabel,game.soldierCounter)
 
-    addUnitLeftClickListener(scientistUnit,()=>game.scientistCounter>0 && mixScientistCounter <10,assetsGroup,()=>{
+    addUnitLeftClickListener(scientistUnitClass, ()=>game.scientistCounter>0 && scientistCard.count <10,assetsGroup, ()=>{
       game.scientistCounter -=1
-      mixScientistCounter +=1
+      if (scientistCard.count == 0){
+        assetsGroup.addActor(scientistCard)
+      }
+      scientistCard.updateCount(1)
       updateUnitCountLabel("Scientist",scientistLabel,game.scientistCounter)
     })
-
     updateUnitCountLabel("Scientist",scientistLabel,game.scientistCounter)
 
-    addUnitLeftClickListener(engineerUnit,()=>game.engineerCounter >0 && mixEngineerCounter <10,assetsGroup,()=>{
+    addUnitLeftClickListener(engineerUnitClass, ()=>game.engineerCounter >0 && engineerCard.count <10,assetsGroup, ()=>{
       game.engineerCounter -=1
-      mixEngineerCounter +=1
+      if (engineerCard.count == 0){
+        assetsGroup.addActor(engineerCard)
+      }
+      engineerCard.updateCount(1)
       updateUnitCountLabel("Engineer",engineerLabel,game.engineerCounter)
     })
 
@@ -203,7 +221,7 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
       override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
 
         val result = analyzeActionMix(assetsGroup)
-        if (mixEngineerCounter + mixScientistCounter + mixSoldierCounter >0){
+        if (engineerCard.count + soldierCard.count + scientistCard.count >0){
           mapScreen.sendExpedition(destCell = targetLocation.mapCell,units =result._2, objective = result._1)
           game.setScreen(mapScreen)
         }
@@ -217,7 +235,7 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
 
   }
 
-  private def addUnitLeftClickListener(actor:Actor,condition:()=>Boolean, assetsGroup:Group,callback:() => Unit): Unit ={
+  private def addUnitLeftClickListener(actor:Image,condition:()=>Boolean, assetsGroup:Group,callback:() => Unit): Unit ={
     actor.addCaptureListener(new ClickListener(Buttons.LEFT){
 
       override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
