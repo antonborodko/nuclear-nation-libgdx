@@ -47,14 +47,45 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
     case _=> throw new RuntimeException(s"Unknown target location type for: ${targetLocation.name}")
   }
 
+  val soldierTexture = assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture])
+  val scientistTexture = assetManager.get("unitConstruction/scientistUnit.png",classOf[Texture])
+  val engineerTexture = assetManager.get("unitConstruction/engineerUnit.png",classOf[Texture])
 
-  val soldierUnitClass = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
-  val scientistUnitClass = new Image(assetManager.get("unitConstruction/scientistUnit.png",classOf[Texture]))
-  val engineerUnitClass = new Image(assetManager.get("unitConstruction/engineerUnit.png",classOf[Texture]))
+  val soldierUnitClass = new Image(soldierTexture)
+  val scientistUnitClass = new Image(scientistTexture)
+  val engineerUnitClass = new Image(engineerTexture)
 
-  val soldierCard = new AssetCard(soldierUnitClass,0,game,UnitType.SOLDIER)
-  val engineerCard = new AssetCard(engineerUnitClass,0,game,UnitType.ENGINEER)
-  val scientistCard = new AssetCard(scientistUnitClass,0,game,UnitType.SCIENTIST)
+  val soldierCard = new AssetCard(new Image(soldierTexture),0,game,None)
+  val engineerCard = new AssetCard(new Image(scientistTexture),0,game,None)
+  val scientistCard = new AssetCard(new Image(engineerTexture),0,game,None)
+
+  soldierCard.setUserObject(ActorUserObject(UnitType.SOLDIER, ()=>{
+    game.soldierCounter +=1
+    soldierCard.updateCount(-1)
+    if (soldierCard.count <=0){
+      assetsGroup.removeActor(soldierCard)
+    }
+    updateUnitCountLabel("Soldier",soldierLabel,game.soldierCounter)
+  }))
+
+  scientistCard.setUserObject(ActorUserObject(UnitType.SCIENTIST, ()=>{
+    game.scientistCounter +=1
+    scientistCard.updateCount(-1)
+    if (scientistCard.count <=0){
+      assetsGroup.removeActor(scientistCard)
+    }
+    updateUnitCountLabel("Scientist",scientistLabel,game.scientistCounter)
+  }))
+
+
+  engineerCard.setUserObject(ActorUserObject(UnitType.ENGINEER, ()=>{
+    game.engineerCounter +=1
+    engineerCard.updateCount(-1)
+    if (engineerCard.count <=0){
+      assetsGroup.removeActor(engineerCard)
+    }
+    updateUnitCountLabel("Engineer",engineerLabel,game.engineerCounter)
+  }))
 
 
   case class ActorUserObject(unitType: UnitType.UnitType,onRemovedFromStack:()=>Unit)
@@ -183,33 +214,30 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
 
 
 
-    addUnitLeftClickListener(soldierUnitClass, ()=>game.soldierCounter>0 && soldierCard.count <10,assetsGroup, ()=>{
+    addUnitLeftClickListener(soldierUnitClass, soldierCard,()=>game.soldierCounter>0 && soldierCard.count <10,assetsGroup, ()=>{
       game.soldierCounter -=1
       if (soldierCard.count == 0){
         assetsGroup.addActor(soldierCard)
       }
-      soldierCard.updateCount(1)
       updateUnitCountLabel("Soldier",soldierLabel,game.soldierCounter)
     })
 
     updateUnitCountLabel("Soldier",soldierLabel,game.soldierCounter)
 
-    addUnitLeftClickListener(scientistUnitClass, ()=>game.scientistCounter>0 && scientistCard.count <10,assetsGroup, ()=>{
+    addUnitLeftClickListener(scientistUnitClass, scientistCard, ()=>game.scientistCounter>0 && scientistCard.count <10,assetsGroup, ()=>{
       game.scientistCounter -=1
       if (scientistCard.count == 0){
         assetsGroup.addActor(scientistCard)
       }
-      scientistCard.updateCount(1)
       updateUnitCountLabel("Scientist",scientistLabel,game.scientistCounter)
     })
     updateUnitCountLabel("Scientist",scientistLabel,game.scientistCounter)
 
-    addUnitLeftClickListener(engineerUnitClass, ()=>game.engineerCounter >0 && engineerCard.count <10,assetsGroup, ()=>{
+    addUnitLeftClickListener(engineerUnitClass,engineerCard, ()=>game.engineerCounter >0 && engineerCard.count <10,assetsGroup, ()=>{
       game.engineerCounter -=1
       if (engineerCard.count == 0){
         assetsGroup.addActor(engineerCard)
       }
-      engineerCard.updateCount(1)
       updateUnitCountLabel("Engineer",engineerLabel,game.engineerCounter)
     })
 
@@ -235,15 +263,15 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
 
   }
 
-  private def addUnitLeftClickListener(actor:Image,condition:()=>Boolean, assetsGroup:Group,callback:() => Unit): Unit ={
-    actor.addCaptureListener(new ClickListener(Buttons.LEFT){
+  private def addUnitLeftClickListener(sourceActor:Image,card:AssetCard,condition:()=>Boolean, assetsGroup:Group,callback:() => Unit): Unit ={
+    sourceActor.addCaptureListener(new ClickListener(Buttons.LEFT){
 
       override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
         val repeats = if (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Keys.SHIFT_RIGHT)) 10 else 1
 
         var counter = 0
         while (counter < repeats && condition()) {
-          addActorToAssetGroup(actor, assetsGroup)
+          addActorToAssetGroup(card, assetsGroup)
           callback()
           counter +=1
         }
@@ -252,84 +280,68 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
   }
 
 
-  private def addActorToAssetGroup(sourceActor:Actor,assetGroup:Group): Unit ={
+  private def addActorToAssetGroup(assetCard:AssetCard,assetGroup:Group): Unit ={
     val means = assetGroup.findActor[Image]("means")
-    val size = assetGroup.getChildren.size
-    val furthestRightActor = if (means == null) assetGroup.getChildren.get(size-1) else means
-    val actor = new Image(sourceActor.asInstanceOf[Image].getDrawable.asInstanceOf[TextureRegionDrawable].getRegion.getTexture)
-    actor.setUserObject(sourceActor.getUserObject)
-    actor.setPosition(furthestRightActor.getX + actor.getPrefWidth + 5,furthestRightActor.getY)
-    assetGroup.addActor(actor)
+    assetGroup.getChildren.toArray().find(
+        c=>c.isInstanceOf[AssetCard]
+        && c.getUserObject.asInstanceOf[ActorUserObject].unitType == assetCard.getUserObject.asInstanceOf[ActorUserObject].unitType
+    ) match {
+      case None=>
+        val size = assetGroup.getChildren.size
+        val furthestRightActor = if (means == null) assetGroup.getChildren.get(size-1) else means
+        assetCard.setPosition(furthestRightActor.getX + assetCard.getPrefWidth + 5,furthestRightActor.getY)
+        assetGroup.addActor(assetCard)
+      case Some(_)=>
+    }
+    assetCard.updateCount(1)
     updateResultPicture(assetGroup)
 
-    actor.addListener(new ClickListener(){
-      override def touchDown(event: InputEvent, x: Float, y: Float, pointer: Int, button: Int) :Boolean= {
-        if (button == Buttons.RIGHT || button == Buttons.LEFT){
-          assetGroup.removeActor(actor)
-          val userObject = actor.getUserObject.asInstanceOf[ActorUserObject]
-          userObject.onRemovedFromStack()
-          val size = assetGroup.getChildren.size
-          for (i<-0 until size){
-            val groupActor = assetGroup.getChildren.get(i)
-            if (i ==0 ) {
-              groupActor.setPosition(0, 0)
-            } else {
-              val previousActor = assetGroup.getChildren.get(i - 1)
-              groupActor.setPosition(previousActor.getX + previousActor.getWidth + 5, previousActor.getY())
-            }
-          }
-
-          if (assetGroup.getChildren.size == 0){
-            assetGroup.addActor(meansPicture)
-            meansPicture.setPosition(0,0)
-            meansPicture.setColor(Color.WHITE)
-          }
-          updateResultPicture(assetGroup)
-          return true
-        }
-        false
-      }
-    })
+//    assetCard.addListener(new ClickListener(){
+//      override def touchDown(event: InputEvent, x: Float, y: Float, pointer: Int, button: Int) :Boolean= {
+//        if (button == Buttons.RIGHT || button == Buttons.LEFT){
+//          assetGroup.removeActor(assetCard)
+//          val userObject = assetCard.getUserObject.asInstanceOf[ActorUserObject]
+//          userObject.onRemovedFromStack()
+//          val size = assetGroup.getChildren.size
+//          for (i<-0 until size){
+//            val groupActor = assetGroup.getChildren.get(i)
+//            if (i ==0 ) {
+//              groupActor.setPosition(0, 0)
+//            } else {
+//              val previousActor = assetGroup.getChildren.get(i - 1)
+//              groupActor.setPosition(previousActor.getX + previousActor.getWidth + 5, previousActor.getY())
+//            }
+//          }
+//
+//          if (assetGroup.getChildren.size == 0){
+//            assetGroup.addActor(meansPicture)
+//            meansPicture.setPosition(0,0)
+//            meansPicture.setColor(Color.WHITE)
+//          }
+//          updateResultPicture(assetGroup)
+//          return true
+//        }
+//        false
+//      }
+//    })
 
     if (means != null){
-      actor.setX(means.getX)
+      assetCard.setX(means.getX)
       assetGroup.removeActor(means)
     }
   }
 
   private def analyzeActionMix(assetGroup:Group): (Objective.Objective,scala.List[UnitType]) ={
-    var soldiersCommandoCounter = 0
-    var spyCounter = 0
-
-    val filteredAssetGroup = assetGroup.getChildren.toArray.filter(a=>a != meansPicture)
-    val size = filteredAssetGroup.length
     val units = ListBuffer[UnitType]()
-    for (i<-0 until size){
-      val actor = filteredAssetGroup(i)
-      if (actor.getUserObject != null) {
-        val unitType = filteredAssetGroup(i).getUserObject.asInstanceOf[ActorUserObject].unitType
-        unitType match {
-          case UnitType.SOLDIER | UnitType.COMMANDO => soldiersCommandoCounter += 1
-          case UnitType.SPY => spyCounter += 1
-          case _ =>
-        }
-        units += unitType
+
+    assetGroup.getChildren.toArray().filter(u=>u.isInstanceOf[AssetCard]).foreach(u=>{
+      val c = u.asInstanceOf[AssetCard]
+      for (_<- 0 until c.count){
+        units += c.getUserObject.asInstanceOf[ActorUserObject].unitType
       }
-    }
+    })
 
-    val objective = if (targetLocation.isInstanceOf[CoveredAreaInfo] && size >0){
-      Objective.EXPEDITION
-    } else{ //target is discovered
-        if (soldiersCommandoCounter > 0 && spyCounter == 0) {
-          Objective.COMBAT
-        } else if (spyCounter > 0 && soldiersCommandoCounter == 0) {
-          Objective.SURVEILLANCE
-        } else {
-          Objective.UNKNOWN
-        }
-    }
-
-    (objective,units.toList)
+    (Objective.EXPEDITION,units.toList)
 
 
   }

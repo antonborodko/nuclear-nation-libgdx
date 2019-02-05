@@ -9,7 +9,7 @@ import com.badlogic.gdx.math.{Vector2, Vector3}
 import com.badlogic.gdx.scenes.scene2d.ui._
 import com.badlogic.gdx.scenes.scene2d.{Actor, Group}
 
-class AssetCard(image:Image,var count:Int,game:NuclearNation,unitType: UnitType) extends Table{
+class AssetCard(image:Image,var count:Int,game:NuclearNation,userObject: Option[Object]) extends Table{
 
   val renderer = new ShapeRenderer
   val assetManager = game.assetManager
@@ -28,11 +28,12 @@ class AssetCard(image:Image,var count:Int,game:NuclearNation,unitType: UnitType)
 
   setHeight(stack.getPrefHeight)
   setWidth(stack.getPrefWidth)
-  add(stack)
+  add(stack).fill()
 
-  pad(10)
 
-  setUserObject(unitType)
+  if (userObject.isDefined){
+    setUserObject(userObject.get)
+  }
 
 
   def updateCount(delta:Int): Unit ={
