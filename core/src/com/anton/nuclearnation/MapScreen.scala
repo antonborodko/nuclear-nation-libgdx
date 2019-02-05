@@ -605,6 +605,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   override def hide(): Unit = {
     Timer.instance().stop()
+    music.stop()
   }
 
   override def dispose(): Unit = {

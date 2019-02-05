@@ -60,6 +60,8 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   val availableMixGroup = new HorizontalGroup()
   availableMixGroup.wrap()
 
+  val music = Gdx.audio.newMusic(Gdx.files.internal("music/POL-secret-labs-short.mp3"))
+
   val collapsedEntrance = Subject(
     rubbleImage,
     preface = "You have arrived to the ancient ruins. You see the entrance is blocked with a pile of rubble.",
@@ -283,6 +285,8 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
 
   override def show(): Unit = {
+    music.setLooping(true)
+    music.play()
     val tacticalScreenInputProcessor = new InputProcessor {
       override def keyDown(keycode: Int): Boolean = {true}
 
@@ -325,10 +329,13 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   override def resume(): Unit = {}
 
   override def hide(): Unit = {
+    music.stop()
     dispose()
   }
 
-  override def dispose(): Unit = {}
+  override def dispose(): Unit = {
+    music.dispose()
+  }
 
   case class Subject(image:Image,
                      preface: String,
