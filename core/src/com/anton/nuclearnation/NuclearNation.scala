@@ -23,6 +23,7 @@ class NuclearNation extends Game {
   assetManager.setLoader(classOf[FreeTypeFontGenerator], fontGenerator)
   assetManager.setLoader(classOf[BitmapFont], ".ttf", new FreetypeFontLoader(resolver))
 
+  lazy val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
   val gameFontParam = new FreeTypeFontLoaderParameter()
 
   lazy val mapScreen = new MapScreen(this)
@@ -65,6 +66,7 @@ class NuclearNation extends Game {
     assetManager.load("cardGameScreen/rubble.png",classOf[Texture])
     assetManager.load("cardGameScreen/brokenMachinery.png",classOf[Texture])
     assetManager.load("cardGameScreen/monster.png",classOf[Texture])
+    assetManager.load("city/cityPicture.png",classOf[Texture])
 
     assetManager.finishLoading()
 

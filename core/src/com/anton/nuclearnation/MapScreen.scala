@@ -200,9 +200,13 @@ class MapScreen(game: NuclearNation) extends Screen{
     override def touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean = {
       if (button == Input.Buttons.RIGHT) {
         mapRightClicked(screenX,screenY)
-        return true
+        true
+      } else if (button == Input.Buttons.LEFT) {
+          mapLeftClicked(screenX, screenY)
+          true
+      } else {
+        false
       }
-      false
     }
 
     override def keyDown(keycode: Int): Boolean = {true}
@@ -608,6 +612,19 @@ class MapScreen(game: NuclearNation) extends Screen{
     val clickedTileX = (coordX / desertLayer.getTileWidth).toInt
     val clickedTileY = (coordY / desertLayer.getTileHeight).toInt
     MapClickInfo(coordX,coordY,clickedTileX,clickedTileY)
+  }
+
+  private def mapLeftClicked(screenX:Int,screenY:Int): Unit ={
+    val clickInfo = getClickInfo(screenX,screenY)
+    val mapCell = mapData.getCell(clickInfo.tileX,clickInfo.tileY)
+    if (mapCell.get.state != MapCellState.HIDDEN) {
+      mapCell.get.location match {
+        case Some(ci: CityInfo) => {
+          game.setScreen(new CityScreen(ci, game, this))
+        }
+        case None =>
+      }
+    }
   }
 
   private def mapRightClicked(screenX: Int, screenY: Int):Unit = {
