@@ -88,7 +88,7 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
   }))
 
 
-  case class ActorUserObject(unitType: UnitType.UnitType,onRemovedFromStack:()=>Unit)
+  case class ActorUserObject(unitType: UnitType.UnitType, onCountDecreased:()=>Unit)
   val assetsGroup = new Group()
 
   soldierUnitClass.setUserObject(ActorUserObject(UnitType.SOLDIER, ()=>{
@@ -291,39 +291,43 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
         val furthestRightActor = if (means == null) assetGroup.getChildren.get(size-1) else means
         assetCard.setPosition(furthestRightActor.getX + assetCard.getPrefWidth + 5,furthestRightActor.getY)
         assetGroup.addActor(assetCard)
+        assetCard.clearListeners()
+        assetCard.addListener(new ClickListener(){
+          override def touchDown(event: InputEvent, x: Float, y: Float, pointer: Int, button: Int) :Boolean= {
+            if (button == Buttons.RIGHT || button == Buttons.LEFT){
+              val userObject = assetCard.getUserObject.asInstanceOf[ActorUserObject]
+              userObject.onCountDecreased()
+              if (assetCard.count == 0){
+                assetGroup.removeActor(assetCard)
+                val size = assetGroup.getChildren.size
+                for (i<-0 until size){
+                  val groupActor = assetGroup.getChildren.get(i)
+                  if (i ==0 ) {
+                    groupActor.setPosition(0, 0)
+                  } else {
+                    val previousActor = assetGroup.getChildren.get(i - 1)
+                    groupActor.setPosition(previousActor.getX + previousActor.getWidth + 5, previousActor.getY())
+                  }
+                }
+
+                if (assetGroup.getChildren.size == 0){
+                  assetGroup.addActor(meansPicture)
+                  meansPicture.setPosition(0,0)
+                  meansPicture.setColor(Color.WHITE)
+                }
+                updateResultPicture(assetGroup)
+                return true
+              }
+            }
+            false
+          }
+        })
       case Some(_)=>
     }
     assetCard.updateCount(1)
     updateResultPicture(assetGroup)
 
-//    assetCard.addListener(new ClickListener(){
-//      override def touchDown(event: InputEvent, x: Float, y: Float, pointer: Int, button: Int) :Boolean= {
-//        if (button == Buttons.RIGHT || button == Buttons.LEFT){
-//          assetGroup.removeActor(assetCard)
-//          val userObject = assetCard.getUserObject.asInstanceOf[ActorUserObject]
-//          userObject.onRemovedFromStack()
-//          val size = assetGroup.getChildren.size
-//          for (i<-0 until size){
-//            val groupActor = assetGroup.getChildren.get(i)
-//            if (i ==0 ) {
-//              groupActor.setPosition(0, 0)
-//            } else {
-//              val previousActor = assetGroup.getChildren.get(i - 1)
-//              groupActor.setPosition(previousActor.getX + previousActor.getWidth + 5, previousActor.getY())
-//            }
-//          }
-//
-//          if (assetGroup.getChildren.size == 0){
-//            assetGroup.addActor(meansPicture)
-//            meansPicture.setPosition(0,0)
-//            meansPicture.setColor(Color.WHITE)
-//          }
-//          updateResultPicture(assetGroup)
-//          return true
-//        }
-//        false
-//      }
-//    })
+
 
     if (means != null){
       assetCard.setX(means.getX)
