@@ -101,6 +101,8 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   var isPaused = false
 
+  val music = Gdx.audio.newMusic(Gdx.files.internal("music/POL-dark-crossing-short.mp3"))
+
   val randomCaravanSpawnChance =  sys.env.get("RANDOM_CARAVAN_SPAWN_CHANCE") match {
     case Some(v)=>v.toLowerCase().toInt
     case None=>1
@@ -372,6 +374,10 @@ class MapScreen(game: NuclearNation) extends Screen{
   override def show(): Unit = {
 
    Timer.instance().start()
+    import com.badlogic.gdx.Gdx
+
+    music.setLooping(true)
+    music.play()
 
 
     val multiplexer = new InputMultiplexer()
@@ -604,6 +610,7 @@ class MapScreen(game: NuclearNation) extends Screen{
   override def dispose(): Unit = {
     map.dispose()
     renderer.dispose()
+    music.dispose()
   }
 
   private def getClickInfo(cameraXPixel:Float,cameraYPixel:Float):MapClickInfo = {
@@ -622,7 +629,7 @@ class MapScreen(game: NuclearNation) extends Screen{
         case Some(ci: CityInfo) => {
           game.setScreen(new CityScreen(ci, game, this))
         }
-        case None =>
+        case _ =>
       }
     }
   }
