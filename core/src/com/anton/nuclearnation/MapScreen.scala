@@ -99,7 +99,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   var isPaused = false
 
-  val music = Gdx.audio.newMusic(Gdx.files.internal("music/POL-torn-short.mp3"))
+  val music = Gdx.audio.newMusic(Gdx.files.internal("music/POL-dark-crossing-short.mp3"))
 
   val randomCaravanSpawnChance =  sys.env.get("RANDOM_CARAVAN_SPAWN_CHANCE") match {
     case Some(v)=>v.toLowerCase().toInt
@@ -374,6 +374,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
     if (!game.NO_MUSIC){
       music.setLooping(true)
+      music.setVolume(0.1f)
       music.play()
     }
 

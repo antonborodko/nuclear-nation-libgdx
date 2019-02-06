@@ -288,6 +288,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
     if (!game.NO_MUSIC) {
       music.setLooping(true)
+      music.setVolume(0.1f)
       music.play()
     }
     val tacticalScreenInputProcessor = new InputProcessor {
