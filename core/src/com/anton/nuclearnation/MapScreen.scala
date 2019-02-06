@@ -534,18 +534,19 @@ class MapScreen(game: NuclearNation) extends Screen{
 
     expeditions.foreach(expedition => {
 
-      val destinationPixelX = expedition.destinationCell.x * desertLayer.getTileWidth + expedition.marker.getWidth/2
-      val destinationPixelY = expedition.destinationCell.y * desertLayer.getTileHeight + expedition.marker.getHeight/2
+      val destinationPixelX = expedition.destinationCell.x * desertLayer.getTileWidth + expedition.actor.getPrefWidth/2
+      val destinationPixelY = expedition.destinationCell.y * desertLayer.getTileHeight + expedition.actor.getPrefHeight/2
 
-      if(expedition.positionGlobalPixelX != destinationPixelX || expedition.positionGlobalPixelY != destinationPixelY) {
+      val actor = expedition.actor
+      if(actor.getX != destinationPixelX || actor.getY() != destinationPixelY) {
 
-        val currentPos = new Vector2(expedition.positionGlobalPixelX,expedition.positionGlobalPixelY)
         val destination = new Vector2(destinationPixelX,destinationPixelY)
+        val oldDirection = new Vector2(destination).sub(new Vector2(actor.getX,actor.getY)).nor()
 
-        val oldDirection = new Vector2(destination).sub(currentPos).nor()
-
-        val newPositionX = expedition.positionGlobalPixelX + oldDirection.x * expedition.speed * delta
-        val newPositionY = expedition.positionGlobalPixelY + oldDirection.y * expedition.speed * delta
+        val deltaX = oldDirection.x * expedition.speed * delta
+        val deltaY = oldDirection.y * expedition.speed * delta
+        val newPositionX = actor.getX + deltaX
+        val newPositionY = actor.getY + deltaY
 
         val newPos = new Vector2(newPositionX,newPositionY)
 
@@ -559,16 +560,19 @@ class MapScreen(game: NuclearNation) extends Screen{
         if (expedition.owner == ExpeditionOwner.PLAYER) {
           visitTile(tileX,tileY)
         }
+        expedition.actor.moveBy(deltaX,deltaY)
 
         if (newDirection.hasSameDirection(oldDirection)){
-          expeditions(expeditionIndex) = expedition.copy(positionGlobalPixelX = newPositionX, positionGlobalPixelY = newPositionY)
           val cell = mapData.getCell(tileX,tileY).get
           if ((expedition.owner == ExpeditionOwner.COMPUTER && cell.state == MapCellState.VISITED) || expedition.owner == ExpeditionOwner.PLAYER) {
-            stage.getBatch.draw(expedition.marker, expedition.positionGlobalPixelX,expedition.positionGlobalPixelY)
+            actor.setVisible(true)
+          } else {
+            actor.setVisible(false)
           }
         } else {
           checkExpeditionTile(tileX,tileY,expedition)
           expeditions.remove(expeditionIndex)
+          expedition.actor.remove()
         }
 
 
@@ -668,17 +672,19 @@ class MapScreen(game: NuclearNation) extends Screen{
                      objective: Objective.Objective,
                      speed: Int = 600
                     ): Unit ={
+    val actor = new ExpeditionActor(game,Some(texture))
     expeditions += ExpeditionInfo(
       originCell,
-      originCell.x * desertLayer.getTileWidth  + texture.getWidth/2,
-      originCell.y * desertLayer.getTileHeight +texture.getHeight/2,
       destCell,
-      texture,
+      actor,
       owner = owner,
       units = units,
       objective = objective,
       speed = speed
     )
+    val actorCoords = actor.screenToLocalCoordinates(new Vector2(originCell.x * desertLayer.getTileWidth  + actor.getPrefWidth/2,originCell.y * desertLayer.getTileHeight + actor.getPrefHeight/2))
+    actor.setPosition(actorCoords.x,actorCoords.y)
+    stage.addActor(actor)
   }
 
   private def discoverTile(x:Int,y:Int): Unit ={
@@ -709,19 +715,25 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   private def checkExpeditionTile(tileX:Int,tileY:Int,expedition:ExpeditionInfo): Unit ={
     if (expedition.owner == ExpeditionOwner.COMPUTER) return
-    val cell = mapData.getCell(tileX,tileY).get
-    cell.location match {
-      case Some(rci:RaiderCampInfo)=>{
-        game.setScreen(new SituationScreen(rci,DefendersType.RAIDERS,game,this,expedition.units))
-      }
-      case Some(ci:CityInfo)=>{
-        game.setScreen(new SituationScreen(ci,DefendersType.SOLDIERS,game,this,expedition.units))
-      }
-      case Some(ri:RuinsInfo)=>
-        game.setScreen(new CardGameScreen(ri,game,this,expedition.units))
+    val cell = mapData.getCell(tileX,tileY)
+    cell match {
+      case Some(c)=>
+        c.location match {
+          case Some(rci:RaiderCampInfo)=>{
+            game.setScreen(new SituationScreen(rci,DefendersType.RAIDERS,game,this,expedition.units))
+          }
+          case Some(ci:CityInfo)=>{
+            game.setScreen(new SituationScreen(ci,DefendersType.SOLDIERS,game,this,expedition.units))
+          }
+          case Some(ri:RuinsInfo)=>
+            game.setScreen(new CardGameScreen(ri,game,this,expedition.units))
 
-      case _=>
+          case _=>
+        }
+      case None=>
+        println(s"Unknown cell visited $tileX,$tileY")
     }
+
 
   }
 
@@ -775,10 +787,8 @@ object MapScreen{
   case class MapClickInfo(pixelX:Float, pixelY: Float, tileX:Int,tileY:Int)
   case class ExpeditionInfo(
                              originCell:MapCellData,
-                             positionGlobalPixelX:Float,
-                             positionGlobalPixelY:Float,
                              destinationCell:MapCellData,
-                             marker:Texture,
+                             actor:ExpeditionActor,
                              speed:Int = 600,
                              owner:ExpeditionOwner.ExpeditionOwner = ExpeditionOwner.PLAYER,
                              objective:Objective.Objective,
