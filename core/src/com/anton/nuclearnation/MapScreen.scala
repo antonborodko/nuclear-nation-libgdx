@@ -287,6 +287,10 @@ class MapScreen(game: NuclearNation) extends Screen{
 
     val location = mapData.getCell(x,y).get.location
 
+    if (game.DISABLE_FOG_OF_WAR){
+      mapData.getCell(x,y).get.state = MapCellState.VISITED
+    }
+
     location match {
       case Some(_:RuinsInfo) => {
         val ruinRegion = new TextureRegion(ruinedBuildingTexture)
@@ -520,7 +524,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     renderer.renderTileLayer(townLayer)
 
 
-    if (sys.env.get("DISABLE_FOG_OF_WAR").isEmpty || sys.env("DISABLE_FOG_OF_WAR").toLowerCase() != "true"){
+    if (!game.DISABLE_FOG_OF_WAR){
       renderer.renderTileLayer(fogOfWarLayer)
     }
 
@@ -624,6 +628,16 @@ class MapScreen(game: NuclearNation) extends Screen{
   }
 
   private def mapLeftClicked(screenX:Int,screenY:Int): Unit ={
+
+    //clearing dialogs
+    stage
+      .getActors
+      .toArray
+      .filter(a=>a.isInstanceOf[Dialog])
+      .foreach(a=>
+        a.remove()
+      )
+
     val clickInfo = getClickInfo(screenX,screenY)
     val mapCell = mapData.getCell(clickInfo.tileX,clickInfo.tileY)
     if (mapCell.get.state != MapCellState.HIDDEN) {
@@ -642,6 +656,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     val clickInfo = getClickInfo(screenX,screenY)
 
     val mapCell = mapData.getCell(clickInfo.tileX,clickInfo.tileY)
+
     if (mapCell.get.state != MapCellState.HIDDEN) {
       mapCell.get.location match {
         case Some(ri: RaiderCampInfo) => {
@@ -651,7 +666,21 @@ class MapScreen(game: NuclearNation) extends Screen{
           game.setScreen(new ActionMixScreen(ci, game, this))
         }
         case Some(ri: RuinsInfo) =>
-          game.setScreen(new ActionMixScreen(ri, game, this))
+          val dialog = new Dialog("", skin) {
+            override def result(result:Object) {
+              if (result.asInstanceOf[Boolean]) {
+                game.setScreen(new ActionMixScreen(ri, game, MapScreen.this))
+              }
+            }
+          }
+
+          dialog.button("Send Expedition", true)
+          dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
+          dialog.pack()
+          dialog.setModal(false)
+          stage.addActor(dialog)
+          dialog.setPosition(clickInfo.pixelX - dialog.getPrefWidth/2,clickInfo.pixelY - dialog.getPrefHeight/2)
+
         case _ =>
       }
     } else { //map cell is not discovered

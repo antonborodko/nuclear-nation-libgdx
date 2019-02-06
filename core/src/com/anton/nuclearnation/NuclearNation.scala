@@ -23,6 +23,8 @@ class NuclearNation extends Game {
   assetManager.setLoader(classOf[FreeTypeFontGenerator], fontGenerator)
   assetManager.setLoader(classOf[BitmapFont], ".ttf", new FreetypeFontLoader(resolver))
 
+  val DISABLE_FOG_OF_WAR = if (sys.env.get("DISABLE_FOG_OF_WAR").isEmpty) false else sys.env("DISABLE_FOG_OF_WAR").toLowerCase().toBoolean
+
   lazy val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
   val gameFontParam = new FreeTypeFontLoaderParameter()
 
