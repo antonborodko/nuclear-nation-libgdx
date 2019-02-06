@@ -285,8 +285,11 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
 
   override def show(): Unit = {
-    music.setLooping(true)
-    music.play()
+
+    if (!game.NO_MUSIC) {
+      music.setLooping(true)
+      music.play()
+    }
     val tacticalScreenInputProcessor = new InputProcessor {
       override def keyDown(keycode: Int): Boolean = {true}
 

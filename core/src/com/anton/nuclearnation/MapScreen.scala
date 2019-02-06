@@ -376,9 +376,10 @@ class MapScreen(game: NuclearNation) extends Screen{
    Timer.instance().start()
     import com.badlogic.gdx.Gdx
 
-    music.setLooping(true)
-    music.play()
-
+    if (!game.NO_MUSIC){
+      music.setLooping(true)
+      music.play()
+    }
 
     val multiplexer = new InputMultiplexer()
     multiplexer.addProcessor(stage)

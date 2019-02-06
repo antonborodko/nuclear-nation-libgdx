@@ -28,6 +28,8 @@ class NuclearNation extends Game {
 
   lazy val mapScreen = new MapScreen(this)
 
+  val NO_MUSIC = if (sys.env.get("NO_MUSIC").isEmpty) true else sys.env("NO_MUSIC").toLowerCase().toBoolean
+
   //unit counts
   val initialUnitCount = if (sys.env.get("INITIAL_UNIT_COUNT").isEmpty) 0 else sys.env("INITIAL_UNIT_COUNT").toInt
   var soldierCounter:Int = initialUnitCount
