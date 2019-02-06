@@ -1,6 +1,5 @@
 package com.anton.nuclearnation
 
-import com.anton.nuclearnation.MapScreen.ExpeditionInfo
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx._
 import com.badlogic.gdx.graphics.g2d.BitmapFont

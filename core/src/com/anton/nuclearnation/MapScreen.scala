@@ -75,8 +75,6 @@ class MapScreen(game: NuclearNation) extends Screen{
   desertTileCell.setTile(new StaticTiledMapTile(region))
   fogOfWarCell.setTile(new StaticTiledMapTile(new TextureRegion(fogOfWarTexture)))
 
-  val expeditions = ListBuffer[ExpeditionInfo]()
-
   val coordsGenerator = new MapCoordsGenerator(mapWidthTiles,mapHeightTiles,3)
 
   val mapData = new MapData(mapWidthTiles,mapHeightTiles)
@@ -532,19 +530,20 @@ class MapScreen(game: NuclearNation) extends Screen{
     stage.getBatch.begin()
     stage.getBatch.setProjectionMatrix(camera.combined)
 
-    expeditions.foreach(expedition => {
+    stage.getActors.toArray.filter(actor=>actor.isInstanceOf[ExpeditionActor]).foreach(a => {
 
-      val destinationPixelX = expedition.destinationCell.x * desertLayer.getTileWidth + expedition.actor.getPrefWidth/2
-      val destinationPixelY = expedition.destinationCell.y * desertLayer.getTileHeight + expedition.actor.getPrefHeight/2
+      val expeditionActor = a.asInstanceOf[ExpeditionActor]
+      val destinationPixelX = expeditionActor.destinationCell.x * desertLayer.getTileWidth + expeditionActor.getPrefWidth/2
+      val destinationPixelY = expeditionActor.destinationCell.y * desertLayer.getTileHeight + expeditionActor.getPrefHeight/2
 
-      val actor = expedition.actor
+      val actor = expeditionActor
       if(actor.getX != destinationPixelX || actor.getY() != destinationPixelY) {
 
         val destination = new Vector2(destinationPixelX,destinationPixelY)
         val oldDirection = new Vector2(destination).sub(new Vector2(actor.getX,actor.getY)).nor()
 
-        val deltaX = oldDirection.x * expedition.speed * delta
-        val deltaY = oldDirection.y * expedition.speed * delta
+        val deltaX = oldDirection.x * expeditionActor.speed * delta
+        val deltaY = oldDirection.y * expeditionActor.speed * delta
         val newPositionX = actor.getX + deltaX
         val newPositionY = actor.getY + deltaY
 
@@ -555,24 +554,22 @@ class MapScreen(game: NuclearNation) extends Screen{
 
         val newDirection = new Vector2(destination).sub(newPos).nor()
 
-        val expeditionIndex = expeditions.indexOf(expedition)
 
-        if (expedition.owner == ExpeditionOwner.PLAYER) {
+        if (expeditionActor.owner == ExpeditionOwner.PLAYER) {
           visitTile(tileX,tileY)
         }
-        expedition.actor.moveBy(deltaX,deltaY)
+        expeditionActor.moveBy(deltaX,deltaY)
 
         if (newDirection.hasSameDirection(oldDirection)){
           val cell = mapData.getCell(tileX,tileY).get
-          if ((expedition.owner == ExpeditionOwner.COMPUTER && cell.state == MapCellState.VISITED) || expedition.owner == ExpeditionOwner.PLAYER) {
+          if ((expeditionActor.owner == ExpeditionOwner.COMPUTER && cell.state == MapCellState.VISITED) || expeditionActor.owner == ExpeditionOwner.PLAYER) {
             actor.setVisible(true)
           } else {
             actor.setVisible(false)
           }
         } else {
-          checkExpeditionTile(tileX,tileY,expedition)
-          expeditions.remove(expeditionIndex)
-          expedition.actor.remove()
+          checkExpeditionTile(tileX,tileY,expeditionActor)
+          expeditionActor.remove()
         }
 
 
@@ -672,11 +669,13 @@ class MapScreen(game: NuclearNation) extends Screen{
                      objective: Objective.Objective,
                      speed: Int = 600
                     ): Unit ={
-    val actor = new ExpeditionActor(game,Some(texture))
-    expeditions += ExpeditionInfo(
+
+    val actor = new ExpeditionActor(
+      game,
+      this,
+      Some(texture),
       originCell,
       destCell,
-      actor,
       owner = owner,
       units = units,
       objective = objective,
@@ -713,7 +712,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
 
 
-  private def checkExpeditionTile(tileX:Int,tileY:Int,expedition:ExpeditionInfo): Unit ={
+  private def checkExpeditionTile(tileX:Int,tileY:Int,expedition:ExpeditionActor): Unit ={
     if (expedition.owner == ExpeditionOwner.COMPUTER) return
     val cell = mapData.getCell(tileX,tileY)
     cell match {
@@ -785,7 +784,7 @@ object MapScreen{
 
 
   case class MapClickInfo(pixelX:Float, pixelY: Float, tileX:Int,tileY:Int)
-  case class ExpeditionInfo(
+  case class ExpeditionActor(
                              originCell:MapCellData,
                              destinationCell:MapCellData,
                              actor:ExpeditionActor,
