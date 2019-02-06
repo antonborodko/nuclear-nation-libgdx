@@ -2,7 +2,7 @@ package com.anton.nuclearnation
 
 import java.lang.Math
 
-import com.anton.nuclearnation.ExpeditionOwner.ExpeditionOwner
+import com.anton.nuclearnation.ControlledBy.ControlledBy
 import com.anton.nuclearnation.MapScreen._
 import com.anton.nuclearnation.UnitType.UnitType
 import com.badlogic.gdx.Input.Keys
@@ -160,9 +160,7 @@ class MapScreen(game: NuclearNation) extends Screen{
         val citiesExcludingSource = cities.filter(l=>l!=randomSourceCity)
         val randomDestCity = citiesExcludingSource(Random.nextInt(citiesExcludingSource.size)).asInstanceOf[CityInfo]
 
-
-
-        sendExpedition(randomSourceCity.mapCell,randomDestCity.mapCell,tradeCaravanTexture,owner = ExpeditionOwner.COMPUTER,units = scala.List[UnitType](),Objective.TRADE,speed = caravanSpeed)
+        sendExpedition(randomSourceCity.mapCell,randomDestCity.mapCell,tradeCaravanTexture,owner = ControlledBy.COMPUTER,units = scala.List[UnitType](),Objective.TRADE,speed = caravanSpeed)
       }
 
       //spawning more frequent expeditions between cities and capital
@@ -177,14 +175,14 @@ class MapScreen(game: NuclearNation) extends Screen{
           case _ => capital
         }
 
-        val objective = Random.shuffle(List(Objective.TRADE, Objective.COMBAT)).head
+        val objective = Random.shuffle(List(Objective.TRADE, Objective.PATROL)).head
 
         val texture = objective match {
-          case Objective.COMBAT => militaryCaravanTexture
+          case Objective.PATROL => militaryCaravanTexture
           case _ => tradeCaravanTexture
         }
 
-        sendExpedition(randomSourceCity.mapCell, randomDestCity.mapCell, texture, owner = ExpeditionOwner.COMPUTER, units = scala.List[UnitType](), objective, speed = caravanSpeed)
+        sendExpedition(randomSourceCity.mapCell, randomDestCity.mapCell, texture, owner = ControlledBy.COMPUTER, units = scala.List[UnitType](), objective, speed = caravanSpeed)
       }
     }
 
@@ -555,14 +553,14 @@ class MapScreen(game: NuclearNation) extends Screen{
         val newDirection = new Vector2(destination).sub(newPos).nor()
 
 
-        if (expeditionActor.owner == ExpeditionOwner.PLAYER) {
+        if (expeditionActor.owner == ControlledBy.PLAYER) {
           visitTile(tileX,tileY)
         }
         expeditionActor.moveBy(deltaX,deltaY)
 
         if (newDirection.hasSameDirection(oldDirection)){
           val cell = mapData.getCell(tileX,tileY).get
-          if ((expeditionActor.owner == ExpeditionOwner.COMPUTER && cell.state == MapCellState.VISITED) || expeditionActor.owner == ExpeditionOwner.PLAYER) {
+          if ((expeditionActor.owner == ControlledBy.COMPUTER && cell.state == MapCellState.VISITED) || expeditionActor.owner == ControlledBy.PLAYER) {
             actor.setVisible(true)
           } else {
             actor.setVisible(false)
@@ -664,7 +662,7 @@ class MapScreen(game: NuclearNation) extends Screen{
   def sendExpedition(originCell:MapCellData = mapData.getCell(capital.mapCell.x,capital.mapCell.y).get,
                      destCell:MapCellData,
                      texture:Texture = expeditionTexture,
-                     owner:ExpeditionOwner.ExpeditionOwner = ExpeditionOwner.PLAYER,
+                     owner:ControlledBy.ControlledBy = ControlledBy.PLAYER,
                      units:scala.List[UnitType],
                      objective: Objective.Objective,
                      speed: Int = 600
@@ -713,7 +711,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
 
   private def checkExpeditionTile(tileX:Int,tileY:Int,expedition:ExpeditionActor): Unit ={
-    if (expedition.owner == ExpeditionOwner.COMPUTER) return
+    if (expedition.owner == ControlledBy.COMPUTER) return
     val cell = mapData.getCell(tileX,tileY)
     cell match {
       case Some(c)=>
@@ -785,13 +783,13 @@ object MapScreen{
 
   case class MapClickInfo(pixelX:Float, pixelY: Float, tileX:Int,tileY:Int)
   case class ExpeditionActor(
-                             originCell:MapCellData,
-                             destinationCell:MapCellData,
-                             actor:ExpeditionActor,
-                             speed:Int = 600,
-                             owner:ExpeditionOwner.ExpeditionOwner = ExpeditionOwner.PLAYER,
-                             objective:Objective.Objective,
-                             units:scala.List[UnitType],
+                              originCell:MapCellData,
+                              destinationCell:MapCellData,
+                              actor:ExpeditionActor,
+                              speed:Int = 600,
+                              owner:ControlledBy.ControlledBy = ControlledBy.PLAYER,
+                              objective:Objective.Objective,
+                              units:scala.List[UnitType],
                            )
 
   sealed abstract class MapLocation(){

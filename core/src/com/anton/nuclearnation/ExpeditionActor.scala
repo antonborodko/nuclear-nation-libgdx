@@ -14,7 +14,7 @@ class ExpeditionActor(
                        val originCell:MapCellData,
                        val destinationCell:MapCellData,
                        val speed:Int = 600,
-                       val owner:ExpeditionOwner.ExpeditionOwner = ExpeditionOwner.PLAYER,
+                       val owner:ControlledBy.Value = ControlledBy.PLAYER,
                        val objective:Objective.Objective,
                        val units:scala.List[UnitType],
                      ) extends Image(texture.getOrElse(game.assetManager.get("tradeCaravan.png",classOf[Texture]))
@@ -34,8 +34,17 @@ class ExpeditionActor(
 
       dialog.getContentTable.pad(20)
       dialog.getTitleTable.pad(20)
-      dialog.getContentTable.addActor(new Label("Expedition info: ",game.skin))
-      dialog.getContentTable.addActor(new Label(s"Objective: $objective",game.skin))
+      val title = objective match {
+        case Objective.TRADE => "Trade caravan"
+        case Objective.COMBAT => "Military unit"
+        case Objective.PATROL => "Route patrol"
+        case _ => "Unknown expedition"
+      }
+      dialog.getContentTable.add(new Label(title,game.skin)).fillX()
+      dialog.getContentTable.row()
+      dialog.getContentTable.add(new Label(s"Origin: ${originCell.location.get.name}",game.skin)).fillX()
+      dialog.getContentTable.row()
+      dialog.getContentTable.add(new Label(s"Destination: ${destinationCell.location.get.name}",game.skin)).fillX()
 
       dialog.pack()
       mapScreen.stage.addActor(dialog)
