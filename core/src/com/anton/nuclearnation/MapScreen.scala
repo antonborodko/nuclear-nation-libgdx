@@ -564,7 +564,7 @@ class MapScreen(game: NuclearNation) extends Screen{
           expeditions(expeditionIndex) = expedition.copy(positionGlobalPixelX = newPositionX, positionGlobalPixelY = newPositionY)
           val cell = mapData.getCell(tileX,tileY).get
           if ((expedition.owner == ExpeditionOwner.COMPUTER && cell.state == MapCellState.VISITED) || expedition.owner == ExpeditionOwner.PLAYER) {
-            stage.getBatch.draw(expedition.marker, expedition.positionGlobalPixelX - expedition.marker.getWidth / 2, expedition.positionGlobalPixelY - expedition.marker.getHeight / 2)
+            stage.getBatch.draw(expedition.marker, expedition.positionGlobalPixelX,expedition.positionGlobalPixelY)
           }
         } else {
           checkExpeditionTile(tileX,tileY,expedition)
