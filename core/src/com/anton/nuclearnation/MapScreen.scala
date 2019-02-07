@@ -656,29 +656,43 @@ class MapScreen(game: NuclearNation) extends Screen{
     }
   }
 
-  private def addUnitLeftClickListener(actorCard:AssetCard, availableGroup:Table, solutionGroup:Table,dialog:Dialog): Unit = {
 
-    actorCard.clearListeners()
-    actorCard.addCaptureListener(new ClickListener(Buttons.LEFT) {
-      override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
-        solutionGroup.add(actorCard).pad(10,10,10,10)
-        actorCard.clearListeners()
-        dialog.pack()
-        actorCard.addListener(new ClickListener(Buttons.LEFT){
-          override def touchDown(event: InputEvent, x: Float, y: Float, pointer: Int, button: Int) :Boolean= {
-            solutionGroup.removeActor(actorCard)
-            availableGroup.add(actorCard).pad(10,10,10,10)
-            dialog.pack()
-            addUnitLeftClickListener(actorCard,availableGroup,solutionGroup,dialog)
-            true
-          }
-        })
-        availableGroup.removeActor(actorCard)
-      }
-    })
-  }
 
   private def mapRightClicked(screenX: Int, screenY: Int):Unit = {
+
+    val outcomeLabel = new Label("???",skin)
+
+    def addUnitLeftClickListener(actorCard:AssetCard, availableGroup:Table, solutionGroup:Table,dialog:Dialog,outcomeLabel: Label = outcomeLabel): Unit = {
+      def analyzeOutcome(solutionGroup: Table): String ={
+        if (solutionGroup.getCells.toArray.exists(a => a.getActor.isInstanceOf[AssetCard] && a.getActor.asInstanceOf[AssetCard].name.toLowerCase == "soldier")){
+          "BASIC ATTACK"
+        } else {
+          "???"
+        }
+      }
+      actorCard.clearListeners()
+      actorCard.addCaptureListener(new ClickListener(Buttons.LEFT) {
+        override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
+          availableGroup.removeActor(actorCard)
+          solutionGroup.add(actorCard).pad(10,10,10,10)
+          actorCard.clearListeners()
+          dialog.pack()
+          outcomeLabel.setText(analyzeOutcome(solutionGroup))
+          actorCard.addListener(new ClickListener(Buttons.LEFT){
+            override def touchDown(event: InputEvent, x: Float, y: Float, pointer: Int, button: Int) :Boolean= {
+              solutionGroup.removeActor(actorCard)
+              availableGroup.add(actorCard).pad(10,10,10,10)
+              dialog.pack()
+              addUnitLeftClickListener(actorCard,availableGroup,solutionGroup,dialog)
+              outcomeLabel.setText(analyzeOutcome(solutionGroup))
+              true
+            }
+          })
+          availableGroup.removeActor(actorCard)
+        }
+      })
+    }
+
     Gdx.app.log("INFO","Right clicked on map")
 
     val clickInfo = getClickInfo(screenX,screenY)
@@ -727,6 +741,10 @@ class MapScreen(game: NuclearNation) extends Screen{
             table.add(actionMixTable)
             table.row()
             table.add(new Label("Outcome:",skin))
+            table.row()
+
+            outcomeLabel.setAlignment(Align.center)
+            table.add(outcomeLabel).expandX()
 
             dialog.button("OK", true).button("CANCEL",false)
             dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
