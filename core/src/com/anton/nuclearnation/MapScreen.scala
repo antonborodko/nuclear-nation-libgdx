@@ -94,14 +94,9 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   val assetChain = new AssetChain(this)
 
-
-  val soldierUnit = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
-  val scientistUnit = new Image(assetManager.get("unitConstruction/scientistUnit.png",classOf[Texture]))
-  val engineerUnit = new Image(assetManager.get("unitConstruction/engineerUnit.png",classOf[Texture]))
-
-  val soldierCard = new AssetCard(soldierUnit,"SOLDIER",game.soldierCounter,game,Some(UnitType.SOLDIER))
-  val engineerCard = new AssetCard(engineerUnit,"ENGINEER",game.engineerCounter,game,Some(UnitType.ENGINEER))
-  val scientistCard = new AssetCard(scientistUnit,"SCIENTIST",game.scientistCounter,game,Some(UnitType.SCIENTIST))
+  val soldierCard = new SoldierAssetCard(game.soldierCounter,game,Some(UnitType.SOLDIER))
+  val engineerCard = new EngineerAssetCard(game.engineerCounter,game,Some(UnitType.ENGINEER))
+  val scientistCard = new ScientistAssetCard(game.scientistCounter,game,Some(UnitType.SCIENTIST))
 
   var isPaused = false
 
@@ -664,7 +659,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
     def addUnitLeftClickListener(actorCard:AssetCard, availableGroup:Table, solutionGroup:Table,dialog:Dialog,outcomeLabel: Label = outcomeLabel): Unit = {
       def analyzeOutcome(solutionGroup: Table): String ={
-        if (solutionGroup.getCells.toArray.exists(a => a.getActor.isInstanceOf[AssetCard] && a.getActor.asInstanceOf[AssetCard].name.toLowerCase == "soldier")){
+        if (solutionGroup.getCells.toArray.exists(a => a.getActor.isInstanceOf[SoldierAssetCard])){
           "BASIC ATTACK"
         } else {
           "???"
