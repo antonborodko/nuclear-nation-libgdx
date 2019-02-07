@@ -32,7 +32,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.{Button, Dialog, Image, Label, Skin, T
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.Timer.Task
 import com.badlogic.gdx.utils.viewport.StretchViewport
-import com.badlogic.gdx.utils.Timer
+import com.badlogic.gdx.utils.{Align, Timer}
 
 import scala.collection.mutable.ListBuffer
 
@@ -656,6 +656,28 @@ class MapScreen(game: NuclearNation) extends Screen{
     }
   }
 
+  private def addUnitLeftClickListener(actorCard:AssetCard, availableGroup:Table, solutionGroup:Table,dialog:Dialog): Unit = {
+
+    actorCard.clearListeners()
+    actorCard.addCaptureListener(new ClickListener(Buttons.LEFT) {
+      override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
+        solutionGroup.add(actorCard).pad(10,10,10,10)
+        actorCard.clearListeners()
+        dialog.pack()
+        actorCard.addListener(new ClickListener(Buttons.LEFT){
+          override def touchDown(event: InputEvent, x: Float, y: Float, pointer: Int, button: Int) :Boolean= {
+            solutionGroup.removeActor(actorCard)
+            availableGroup.add(actorCard).pad(10,10,10,10)
+            dialog.pack()
+            addUnitLeftClickListener(actorCard,availableGroup,solutionGroup,dialog)
+            true
+          }
+        })
+        availableGroup.removeActor(actorCard)
+      }
+    })
+  }
+
   private def mapRightClicked(screenX: Int, screenY: Int):Unit = {
     Gdx.app.log("INFO","Right clicked on map")
 
@@ -688,21 +710,15 @@ class MapScreen(game: NuclearNation) extends Screen{
             availableUnitsTable.add(engineerCard).pad(10,10,10,10)
             availableUnitsTable.add(scientistCard).pad(10,10,10,10)
 
-            soldierCard.addCaptureListener(new ClickListener(Buttons.LEFT){
-              override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
-                availableUnitsTable.removeActor(soldierCard)
-                actionMixTable.add(soldierCard).pad(10,10,10,10)
-                soldierCard.clearListeners()
-//                soldierCard.addCaptureListener(new ClickListener(Buttons.LEFT){
-//                  actionMixTable.removeActor(soldierCard)
-//                  availableUnitsTable.add(soldierCard).pad(10,10,10,10)
-//                })
-              }
-            })
+            addUnitLeftClickListener(soldierCard,availableUnitsTable,actionMixTable,dialog)
+            addUnitLeftClickListener(engineerCard,availableUnitsTable,actionMixTable,dialog)
+            addUnitLeftClickListener(scientistCard,availableUnitsTable,actionMixTable,dialog)
 
             table.add(new Label(s"Design your action upon: ${ci.name}",skin)).fillX()
             table.row()
-            table.add(new Label("Available units:",skin)).fillX()
+            val l = new Label("Available units:",skin)
+            l.setAlignment(Align.center)
+            table.add(l).fillX()
             table.row()
             table.add(availableUnitsTable)
             table.row()
