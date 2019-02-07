@@ -55,9 +55,9 @@ class ActionMixScreen(targetLocation: MapLocation, game:NuclearNation, mapScreen
   val scientistUnitClass = new Image(scientistTexture)
   val engineerUnitClass = new Image(engineerTexture)
 
-  val soldierCard = new AssetCard(new Image(soldierTexture),0,game,None)
-  val engineerCard = new AssetCard(new Image(scientistTexture),0,game,None)
-  val scientistCard = new AssetCard(new Image(engineerTexture),0,game,None)
+  val soldierCard = new AssetCard(new Image(soldierTexture),"SOLDIER",0,game,None)
+  val engineerCard = new AssetCard(new Image(scientistTexture),"ENGINEER",0,game,None)
+  val scientistCard = new AssetCard(new Image(engineerTexture),"SCIENTIST",0,game,None)
 
   soldierCard.setUserObject(ActorUserObject(UnitType.SOLDIER, ()=>{
     game.soldierCounter +=1

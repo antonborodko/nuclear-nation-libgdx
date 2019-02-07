@@ -96,9 +96,9 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
   val resultLabel = new Label("???",skin)
   resultLabel.setWrap(true)
 
-  val soldierCard = new AssetCard(soldierUnit,0,game,Some(UnitType.SOLDIER))
-  val engineerCard = new AssetCard(engineerUnit,0,game,Some(UnitType.ENGINEER))
-  val scientistCard = new AssetCard(scientistUnit,0,game,Some(UnitType.SCIENTIST))
+  val soldierCard = new AssetCard(soldierUnit,"SOLDIER",0,game,Some(UnitType.SOLDIER))
+  val engineerCard = new AssetCard(engineerUnit,"ENGINEER",0,game,Some(UnitType.ENGINEER))
+  val scientistCard = new AssetCard(scientistUnit,"SCIENTIST",0,game,Some(UnitType.SCIENTIST))
 
   playerUnits.foreach {
     case UnitType.SOLDIER =>

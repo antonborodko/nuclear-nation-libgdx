@@ -94,8 +94,14 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   val assetChain = new AssetChain(this)
 
-  var isCommandoEnabledDialogShown = false
-  var isSpyEnabledDialogShown = false
+
+  val soldierUnit = new Image(assetManager.get("unitConstruction/soldierUnit.png",classOf[Texture]))
+  val scientistUnit = new Image(assetManager.get("unitConstruction/scientistUnit.png",classOf[Texture]))
+  val engineerUnit = new Image(assetManager.get("unitConstruction/engineerUnit.png",classOf[Texture]))
+
+  val soldierCard = new AssetCard(soldierUnit,"SOLDIER",game.soldierCounter,game,Some(UnitType.SOLDIER))
+  val engineerCard = new AssetCard(engineerUnit,"ENGINEER",game.engineerCounter,game,Some(UnitType.ENGINEER))
+  val scientistCard = new AssetCard(scientistUnit,"SCIENTIST",game.scientistCounter,game,Some(UnitType.SCIENTIST))
 
   var isPaused = false
 
@@ -663,7 +669,41 @@ class MapScreen(game: NuclearNation) extends Screen{
           game.setScreen(new ActionMixScreen(ri, game, this))
         }
         case Some(ci: CityInfo) => {
-          game.setScreen(new ActionMixScreen(ci, game, this))
+          if (!ci.isOwnedByPlayer){
+            val dialog = new Dialog("", skin) {
+              override def result(result:Object) {
+                if (result.asInstanceOf[Boolean]) {
+
+                }
+                isPaused = false
+              }
+            }
+
+            val table = dialog.getContentTable
+            val availableUnitsTable = new Table().center()
+
+
+            availableUnitsTable.add(soldierCard).pad(10,10,10,10)
+            availableUnitsTable.add(engineerCard).pad(10,10,10,10)
+            availableUnitsTable.add(scientistCard).pad(10,10,10,10)
+            table.add(new Label(s"Design your action upon: ${ci.name}",skin)).fillX()
+            table.row()
+            table.add(new Label("Available units:",skin)).fillX()
+            table.row()
+            table.add(availableUnitsTable)
+            table.row()
+            table.add(new Label("Action mix units:",skin))
+            table.row()
+            table.add(new Label("Outcome:",skin))
+
+            dialog.button("OK", true).button("CANCEL",false)
+            dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
+            dialog.pack()
+            isPaused = true
+            stage.addActor(dialog)
+            dialog.setPosition(cameraCenterX - dialog.getPrefWidth/2,cameraCenterY - dialog.getPrefHeight/2)
+          }
+
         }
         case Some(ri: RuinsInfo) =>
           val dialog = new Dialog("", skin) {

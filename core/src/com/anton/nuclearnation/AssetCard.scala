@@ -9,7 +9,7 @@ import com.badlogic.gdx.math.{Vector2, Vector3}
 import com.badlogic.gdx.scenes.scene2d.ui._
 import com.badlogic.gdx.scenes.scene2d.{Actor, Group}
 
-class AssetCard(image:Image,var count:Int,game:NuclearNation,userObject: Option[Object]) extends Table{
+class AssetCard(image:Image,val name:String,var count:Int,game:NuclearNation,userObject: Option[Object]) extends Table{
 
   val renderer = new ShapeRenderer
   val assetManager = game.assetManager
@@ -28,7 +28,9 @@ class AssetCard(image:Image,var count:Int,game:NuclearNation,userObject: Option[
 
   setHeight(stack.getPrefHeight)
   setWidth(stack.getPrefWidth)
-  add(stack).fill()
+  add(stack).expandX()
+  row()
+  add(new Label(name,skin)).fillX()
 
 
   if (userObject.isDefined){
