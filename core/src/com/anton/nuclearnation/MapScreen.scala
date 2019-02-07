@@ -5,7 +5,7 @@ import java.lang.Math
 import com.anton.nuclearnation.ControlledBy.ControlledBy
 import com.anton.nuclearnation.MapScreen._
 import com.anton.nuclearnation.UnitType.UnitType
-import com.badlogic.gdx.Input.Keys
+import com.badlogic.gdx.Input.{Buttons, Keys}
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver
 import com.badlogic.gdx._
@@ -681,11 +681,25 @@ class MapScreen(game: NuclearNation) extends Screen{
 
             val table = dialog.getContentTable
             val availableUnitsTable = new Table().center()
+            val actionMixTable = new Table().center()
 
 
             availableUnitsTable.add(soldierCard).pad(10,10,10,10)
             availableUnitsTable.add(engineerCard).pad(10,10,10,10)
             availableUnitsTable.add(scientistCard).pad(10,10,10,10)
+
+            soldierCard.addCaptureListener(new ClickListener(Buttons.LEFT){
+              override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
+                availableUnitsTable.removeActor(soldierCard)
+                actionMixTable.add(soldierCard).pad(10,10,10,10)
+                soldierCard.clearListeners()
+//                soldierCard.addCaptureListener(new ClickListener(Buttons.LEFT){
+//                  actionMixTable.removeActor(soldierCard)
+//                  availableUnitsTable.add(soldierCard).pad(10,10,10,10)
+//                })
+              }
+            })
+
             table.add(new Label(s"Design your action upon: ${ci.name}",skin)).fillX()
             table.row()
             table.add(new Label("Available units:",skin)).fillX()
@@ -693,6 +707,8 @@ class MapScreen(game: NuclearNation) extends Screen{
             table.add(availableUnitsTable)
             table.row()
             table.add(new Label("Action mix units:",skin))
+            table.row()
+            table.add(actionMixTable)
             table.row()
             table.add(new Label("Outcome:",skin))
 
