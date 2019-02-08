@@ -569,6 +569,15 @@ class MapScreen(game: NuclearNation) extends Screen{
         }
         expeditionActor.moveBy(deltaX,deltaY)
 
+        if (expeditionActor.objective == Objective.BUILD_ROAD){
+          val originCell = actor.originCell
+          drawRoadLine(new Vector2(originCell.x * desertLayer.getTileWidth + townImage.getWidth /2, originCell.y * desertLayer.getTileHeight + townImage.getHeight/2),
+            new Vector2(actor.getX + actor.getWidth/2, actor.getY + actor.getHeight/2), 3)
+
+//          drawRoadLine(new Vector2(capital.mapCell.x * desertLayer.getTileWidth + townImage.getWidth /2, capital.mapCell.y * desertLayer.getTileHeight + townImage.getHeight/2),
+//            new Vector2(city.mapCell.x * desertLayer.getTileWidth + townImage.getWidth/2, city.mapCell.y * desertLayer.getTileHeight + townImage.getHeight/2), 3)
+        }
+
         if (newDirection.hasSameDirection(oldDirection)){
           val cell = mapData.getCell(tileX,tileY).get
           if ((expeditionActor.owner == ControlledBy.COMPUTER && cell.state == MapCellState.VISITED) || expeditionActor.owner == ControlledBy.PLAYER) {
@@ -665,6 +674,8 @@ class MapScreen(game: NuclearNation) extends Screen{
       case 1=>
         if (solutionGroup.getCells.toArray.exists(a => a.getActor.isInstanceOf[SoldierAssetCard])){
           ActionMixOutcome(Objective.BASIC_ATTACK,"BASIC ATTACK")
+        } else  if (solutionGroup.getCells.toArray.exists(a => a.getActor.isInstanceOf[EngineerAssetCard])){
+          ActionMixOutcome(Objective.BUILD_ROAD,"BUILD ROAD")
         } else {
           ActionMixOutcome(Objective.UNKNOWN,"???")
         }
@@ -756,10 +767,17 @@ class MapScreen(game: NuclearNation) extends Screen{
                   outcome match {
                     case ActionMixOutcome(Objective.BASIC_ATTACK,_)=>
                       val units = ListBuffer[UnitType]()
-                      for (_<-0 until availableSoldierCard.count){
+                      for (_<-0 until mixSoldierCard.count){
                         units += UnitType.SOLDIER
                       }
                       sendExpedition(capital.mapCell,ci.mapCell,objective = Objective.BASIC_ATTACK,units = units.toList)
+                    case ActionMixOutcome(Objective.BUILD_ROAD,_)=>
+                      val units = ListBuffer[UnitType]()
+                      for (_<-0 until mixEngineerCard.count){
+                        units += UnitType.ENGINEER
+                      }
+                      val t = game.assetManager.get("unitConstruction/engineerUnit.png",classOf[Texture])
+                      sendExpedition(capital.mapCell,ci.mapCell,objective = Objective.BUILD_ROAD,units = units.toList,speed = 100,texture = t)
                     case _=>
                   }
                 }
