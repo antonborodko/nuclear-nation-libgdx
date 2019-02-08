@@ -95,9 +95,13 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   val assetChain = new AssetChain(this)
 
-  val soldierCard = new SoldierAssetCard(game.soldierCounter,game,Some(UnitType.SOLDIER))
-  val engineerCard = new EngineerAssetCard(game.engineerCounter,game,Some(UnitType.ENGINEER))
-  val scientistCard = new ScientistAssetCard(game.scientistCounter,game,Some(UnitType.SCIENTIST))
+  val availableSoldierCard = new SoldierAssetCard(game.soldierCounter,game,Some(UnitType.SOLDIER))
+  val availableEngineerCard = new EngineerAssetCard(game.engineerCounter,game,Some(UnitType.ENGINEER))
+  val availableScientistCard = new ScientistAssetCard(game.scientistCounter,game,Some(UnitType.SCIENTIST))
+
+  val mixSoldierCard = new SoldierAssetCard(0,game,Some(UnitType.SOLDIER))
+  val mixEngineerCard = new EngineerAssetCard(0,game,Some(UnitType.ENGINEER))
+  val mixScientistCard = new ScientistAssetCard(0,game,Some(UnitType.SCIENTIST))
 
   var isPaused = false
 
@@ -673,27 +677,61 @@ class MapScreen(game: NuclearNation) extends Screen{
 
     val outcomeLabel = new Label("???",skin)
     val actionMixTable = new Table().center()
+    val availableUnitsTable = new Table().center()
 
-    def addUnitLeftClickListener(actorCard:AssetCard, availableGroup:Table, solutionGroup:Table,dialog:Dialog,outcomeLabel: Label = outcomeLabel): Unit = {
-      actorCard.clearListeners()
-      actorCard.addCaptureListener(new ClickListener(Buttons.LEFT) {
+    def resetGroups(dialog:Option[Dialog] = None): Unit ={
+      availableUnitsTable.clearChildren()
+
+      if (availableSoldierCard.count>0) availableUnitsTable.add(availableSoldierCard).pad(10,10,10,10)
+      if (availableEngineerCard.count>0) availableUnitsTable.add(availableEngineerCard).pad(10,10,10,10)
+      if (availableScientistCard.count>0) availableUnitsTable.add(availableScientistCard).pad(10,10,10,10)
+
+      actionMixTable.clearChildren()
+
+      if (mixSoldierCard.count>0) actionMixTable.add(mixSoldierCard).pad(10,10,10,10)
+      if (mixEngineerCard.count>0) actionMixTable.add(mixEngineerCard).pad(10,10,10,10)
+      if (mixScientistCard.count>0) actionMixTable.add(mixScientistCard).pad(10,10,10,10)
+
+      //adding dummy cell for keeping height
+      if (actionMixTable.getChildren.size == 0){
+        val dummy = new Image()
+        actionMixTable.add(dummy).size(availableSoldierCard.getPrefWidth,availableSoldierCard.getPrefHeight)
+      }
+
+      //adding dummy cell for keeping height
+      if (availableUnitsTable.getChildren.size == 0){
+        val dummy = new Image()
+        availableUnitsTable.add(dummy).size(availableSoldierCard.getPrefWidth,availableSoldierCard.getPrefHeight)
+      }
+
+      if (dialog.isDefined){
+        dialog.get.pack()
+      }
+    }
+
+    def addUnitLeftClickListener(availableCard:AssetCard, mixCard:AssetCard,availableGroup:Table, solutionGroup:Table,dialog:Dialog,outcomeLabel: Label = outcomeLabel): Unit = {
+      availableCard.clearListeners()
+      mixCard.clearListeners()
+      availableCard.addCaptureListener(new ClickListener(Buttons.LEFT) {
         override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
-          availableGroup.removeActor(actorCard)
-          solutionGroup.add(actorCard).pad(10,10,10,10)
-          actorCard.clearListeners()
-          dialog.pack()
+          val repeats = scala.math.min(if (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Keys.SHIFT_RIGHT)) 10 else 1,availableCard.count)
+          for (_ <-0 until repeats) {
+            availableCard.updateCount(-1)
+            mixCard.updateCount(1)
+          }
+          resetGroups(Some(dialog))
           outcomeLabel.setText(analyzeOutcome(solutionGroup).description)
-          actorCard.addListener(new ClickListener(Buttons.LEFT){
-            override def touchDown(event: InputEvent, x: Float, y: Float, pointer: Int, button: Int) :Boolean= {
-              solutionGroup.removeActor(actorCard)
-              availableGroup.add(actorCard).pad(10,10,10,10)
-              dialog.pack()
-              addUnitLeftClickListener(actorCard,availableGroup,solutionGroup,dialog)
+          mixCard.addListener(new ClickListener(Buttons.LEFT){
+            override def clicked(event: InputEvent, x: Float, y: Float): Unit= {
+              val repeats = scala.math.min(if (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Keys.SHIFT_RIGHT)) 10 else 1,mixCard.count)
+              for (_ <-0 until repeats) {
+                availableCard.updateCount(1)
+                mixCard.updateCount(-1)
+              }
+              resetGroups(Some(dialog))
               outcomeLabel.setText(analyzeOutcome(solutionGroup).description)
-              true
             }
           })
-          availableGroup.removeActor(actorCard)
         }
       })
     }
@@ -718,29 +756,36 @@ class MapScreen(game: NuclearNation) extends Screen{
                   outcome match {
                     case ActionMixOutcome(Objective.BASIC_ATTACK,_)=>
                       val units = ListBuffer[UnitType]()
-                      for (_<-0 until soldierCard.count){
+                      for (_<-0 until availableSoldierCard.count){
                         units += UnitType.SOLDIER
                       }
                       sendExpedition(capital.mapCell,ci.mapCell,objective = Objective.BASIC_ATTACK,units = units.toList)
                     case _=>
                   }
                 }
+                availableSoldierCard.setCount(game.soldierCounter)
+                mixSoldierCard.setCount(0)
+
+                availableEngineerCard.setCount(game.engineerCounter)
+                mixEngineerCard.setCount(0)
+
+                availableScientistCard.setCount(game.scientistCounter)
+                mixScientistCard.setCount(0)
+
                 isPaused = false
               }
             }
 
             val table = dialog.getContentTable
-            val availableUnitsTable = new Table().center()
 
 
 
-            availableUnitsTable.add(soldierCard).pad(10,10,10,10)
-            availableUnitsTable.add(engineerCard).pad(10,10,10,10)
-            availableUnitsTable.add(scientistCard).pad(10,10,10,10)
+            resetGroups()
 
-            addUnitLeftClickListener(soldierCard,availableUnitsTable,actionMixTable,dialog)
-            addUnitLeftClickListener(engineerCard,availableUnitsTable,actionMixTable,dialog)
-            addUnitLeftClickListener(scientistCard,availableUnitsTable,actionMixTable,dialog)
+
+            addUnitLeftClickListener(availableSoldierCard,mixSoldierCard,availableUnitsTable,actionMixTable,dialog)
+            addUnitLeftClickListener(availableEngineerCard,mixEngineerCard,availableUnitsTable,actionMixTable,dialog)
+            addUnitLeftClickListener(availableScientistCard,mixScientistCard,availableUnitsTable,actionMixTable,dialog)
 
             table.add(new Label(s"Design your action upon: ${ci.name}",skin)).fillX()
             table.row()
@@ -756,9 +801,10 @@ class MapScreen(game: NuclearNation) extends Screen{
             table.row()
             table.add(new Label("Outcome:",skin))
             table.row()
-
             outcomeLabel.setAlignment(Align.center)
             table.add(outcomeLabel).expandX()
+            table.row()
+            table.add(new Label("HINT: use SHIFT to transfer up to 10 units",skin)).fillX().pad(30,0,30,0)
 
             dialog.button("OK", true).button("CANCEL",false)
             dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)

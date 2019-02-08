@@ -9,13 +9,14 @@ import com.badlogic.gdx.math.{Vector2, Vector3}
 import com.badlogic.gdx.scenes.scene2d.ui._
 import com.badlogic.gdx.scenes.scene2d.{Actor, Group}
 
-class AssetCard(image:Image,val name:String,var count:Int,game:NuclearNation,userObject: Option[Object]) extends Table{
+class AssetCard(image:Image, val name:String, initialCount:Int, game:NuclearNation, userObject: Option[Object]) extends Table{
 
   val renderer = new ShapeRenderer
   val assetManager = game.assetManager
   val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
 
-  val countLabel = new Label(count.toString,skin)
+  val countLabel = new Label(initialCount.toString,skin)
+  var count = initialCount
 
   val stack = new Stack()
 
@@ -37,6 +38,10 @@ class AssetCard(image:Image,val name:String,var count:Int,game:NuclearNation,use
     setUserObject(userObject.get)
   }
 
+  def setCount(count:Int): Unit = {
+    this.count = count
+    countLabel.setText(count.toString)
+  }
 
   def updateCount(delta:Int): Unit ={
     count +=delta
