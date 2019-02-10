@@ -107,6 +107,8 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   val music = Gdx.audio.newMusic(Gdx.files.internal("music/POL-dark-crossing-short.mp3"))
 
+  val roads = ListBuffer[(MapCellData,MapCellData)]()
+
   val randomCaravanSpawnChance =  sys.env.get("RANDOM_CARAVAN_SPAWN_CHANCE") match {
     case Some(v)=>v.toLowerCase().toInt
     case None=>1
@@ -169,17 +171,12 @@ class MapScreen(game: NuclearNation) extends Screen{
         sendExpedition(randomSourceCity.mapCell,randomDestCity.mapCell,tradeCaravanTexture,owner = ControlledBy.COMPUTER,units = scala.List[UnitType](),Objective.TRADE,speed = caravanSpeed)
       }
 
-      //spawning more frequent expeditions between cities and capital
-      val playerOwnedCities = cities.filter(c=>c.asInstanceOf[CityInfo].isOwnedByPlayer).asInstanceOf[ListBuffer[CityInfo]]
-      val playerOwnedCitiesExcludingCapital = playerOwnedCities.filter(c=>c != capital)
+      //spawning more frequent expeditions between cities with roads
 
-
-      if (playerOwnedCities.size>1 && Random.nextInt(100)<ownedCaravanSpawnChance) {
-        val randomSourceCity = playerOwnedCities(Random.nextInt(playerOwnedCities.size))
-        val randomDestCity = randomSourceCity match {
-          case `capital` => playerOwnedCitiesExcludingCapital(Random.nextInt(playerOwnedCitiesExcludingCapital.size))
-          case _ => capital
-        }
+      if (roads.nonEmpty && Random.nextInt(100)<ownedCaravanSpawnChance) {
+        val randomRoad =  roads(Random.nextInt(roads.size))
+        val randomSourceCity = randomRoad._1
+        val randomDestCity = randomRoad._2
 
         val objective = Random.shuffle(List(Objective.TRADE, Objective.PATROL)).head
 
@@ -188,7 +185,7 @@ class MapScreen(game: NuclearNation) extends Screen{
           case _ => tradeCaravanTexture
         }
 
-        sendExpedition(randomSourceCity.mapCell, randomDestCity.mapCell, texture, owner = ControlledBy.COMPUTER, units = scala.List[UnitType](), objective, speed = caravanSpeed)
+        sendExpedition(randomSourceCity, randomDestCity, texture, owner = ControlledBy.COMPUTER, units = scala.List[UnitType](), objective, speed = caravanSpeed)
       }
     }
 
@@ -428,15 +425,10 @@ class MapScreen(game: NuclearNation) extends Screen{
     stage.draw()
 
     //drawing roads between cities
-    locations
-        .filter(location=>location.isInstanceOf[CityInfo])
-        .filter(location=>location!=capital)
-        .foreach(location => {
-          val city = location.asInstanceOf[CityInfo]
-          if (city.isOwnedByPlayer) {
-            drawRoadLine(new Vector2(capital.mapCell.x * desertLayer.getTileWidth + townImage.getWidth /2, capital.mapCell.y * desertLayer.getTileHeight + townImage.getHeight/2),
-              new Vector2(city.mapCell.x * desertLayer.getTileWidth + townImage.getWidth/2, city.mapCell.y * desertLayer.getTileHeight + townImage.getHeight/2), 3)
-          }
+    roads
+        .foreach(road => {
+            drawRoadLine(new Vector2(road._1.x * desertLayer.getTileWidth + townImage.getWidth /2, road._1.y * desertLayer.getTileHeight + townImage.getHeight/2),
+              new Vector2(road._2.x  * desertLayer.getTileWidth + townImage.getWidth/2, road._2.y * desertLayer.getTileHeight + townImage.getHeight/2), 3)
         })
 
   }
@@ -759,7 +751,6 @@ class MapScreen(game: NuclearNation) extends Screen{
           game.setScreen(new ActionMixScreen(ri, game, this))
         }
         case Some(ci: CityInfo) => {
-          if (!ci.isOwnedByPlayer){
             val dialog = new Dialog("", skin) {
               override def result(result:Object) {
                 if (result.asInstanceOf[Boolean]) {
@@ -830,7 +821,6 @@ class MapScreen(game: NuclearNation) extends Screen{
             isPaused = true
             stage.addActor(dialog)
             dialog.setPosition(cameraCenterX - dialog.getPrefWidth/2,cameraCenterY - dialog.getPrefHeight/2)
-          }
 
         }
         case Some(ri: RuinsInfo) =>
@@ -911,22 +901,32 @@ class MapScreen(game: NuclearNation) extends Screen{
   private def checkExpeditionTile(tileX:Int,tileY:Int,expedition:ExpeditionActor): Unit ={
     if (expedition.owner == ControlledBy.COMPUTER) return
     val cell = mapData.getCell(tileX,tileY)
-    cell match {
-      case Some(c)=>
-        c.location match {
-          case Some(rci:RaiderCampInfo)=>{
-            game.setScreen(new SituationScreen(rci,DefendersType.RAIDERS,game,this,expedition.units))
-          }
-          case Some(ci:CityInfo)=>{
-            game.setScreen(new SituationScreen(ci,DefendersType.SOLDIERS,game,this,expedition.units))
-          }
-          case Some(ri:RuinsInfo)=>
-            game.setScreen(new CardGameScreen(ri,game,this,expedition.units))
+    expedition.objective match {
+      case Objective.COMBAT | Objective.BASIC_ATTACK =>
+        cell match {
+          case Some(c)=>
+            c.location match {
+              case Some(rci:RaiderCampInfo)=>{
+                game.setScreen(new SituationScreen(rci,DefendersType.RAIDERS,game,this,expedition.units))
+              }
+              case Some(ci:CityInfo)=>{
+                game.setScreen(new SituationScreen(ci,DefendersType.SOLDIERS,game,this,expedition.units))
+              }
+              case Some(ri:RuinsInfo)=>
+                game.setScreen(new CardGameScreen(ri,game,this,expedition.units))
 
-          case _=>
+              case _=>
+            }
+          case None=>
+            println(s"Unknown cell visited $tileX,$tileY")
         }
-      case None=>
-        println(s"Unknown cell visited $tileX,$tileY")
+      case Objective.BUILD_ROAD =>
+        if (!roads.contains((expedition.originCell, expedition.destinationCell)) && !roads.contains((expedition.destinationCell, expedition.originCell))){
+          roads += Tuple2(expedition.originCell,expedition.destinationCell)
+        }
+
+      case _=>
+
     }
 
 
