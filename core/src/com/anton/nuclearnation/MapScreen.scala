@@ -109,6 +109,10 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   val roads = ListBuffer[(MapCellData,MapCellData)]()
 
+  var scrap = 0
+  val scrapLabelButton = new TextButton("Scrap: ",skin)
+  scrapLabelButton.setDisabled(true)
+
   val randomCaravanSpawnChance =  sys.env.get("RANDOM_CARAVAN_SPAWN_CHANCE") match {
     case Some(v)=>v.toLowerCase().toInt
     case None=>1
@@ -158,6 +162,8 @@ class MapScreen(game: NuclearNation) extends Screen{
   stage.addActor(tileGroup)
   stage.addActor(buttonsGroup)
 
+  stage.addActor(scrapLabelButton)
+
 
   Timer.schedule(() => {
     val cities = locations.filter(l => l.isInstanceOf[CityInfo])
@@ -187,6 +193,9 @@ class MapScreen(game: NuclearNation) extends Screen{
 
         sendExpedition(randomSourceCity, randomDestCity, texture, owner = ControlledBy.COMPUTER, units = scala.List[UnitType](), objective, speed = caravanSpeed)
       }
+      scrap += Random.nextInt(10)
+      scrapLabelButton.setText(s"Scrap: $scrap")
+      scrapLabelButton.pack()
     }
 
   },0,1)
@@ -605,6 +614,8 @@ class MapScreen(game: NuclearNation) extends Screen{
     unitConstructionButton.setPosition(unitConstructionButtonCoords.x,unitConstructionButtonCoords.y)
     centerOnCapitalButton.setPosition(unitConstructionButton.getX - centerOnCapitalButton.getPrefWidth-5,unitConstructionButton.getY)
     pauseButton.setPosition(centerOnCapitalButton.getX - pauseButton.getPrefWidth - 5,centerOnCapitalButton.getY)
+    val scrapLabelCoords = camera.unproject(new Vector3(stage.getViewport.getScreenWidth - scrapLabelButton.getPrefWidth,scrapLabelButton.getPrefHeight,0))
+    scrapLabelButton.setPosition(scrapLabelCoords.x,scrapLabelCoords.y)
   }
 
   override def resize(width: Int, height: Int): Unit = {}
