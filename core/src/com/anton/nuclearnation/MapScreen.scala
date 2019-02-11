@@ -29,7 +29,7 @@ import com.badlogic.gdx.scenes.scene2d.{Group, InputEvent, InputListener, Stage}
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle
 import com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle
-import com.badlogic.gdx.scenes.scene2d.ui.{Button, Dialog, Image, Label, Skin, Table, TextButton}
+import com.badlogic.gdx.scenes.scene2d.ui.{Button, Dialog, Image, Label, ScrollPane, Skin, Table, TextButton, Value}
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.Timer.Task
 import com.badlogic.gdx.utils.viewport.StretchViewport
@@ -574,9 +574,6 @@ class MapScreen(game: NuclearNation) extends Screen{
           val originCell = actor.originCell
           drawRoadLine(new Vector2(originCell.x * desertLayer.getTileWidth + townImage.getWidth /2, originCell.y * desertLayer.getTileHeight + townImage.getHeight/2),
             new Vector2(actor.getX + actor.getWidth/2, actor.getY + actor.getHeight/2), 3)
-
-//          drawRoadLine(new Vector2(capital.mapCell.x * desertLayer.getTileWidth + townImage.getWidth /2, capital.mapCell.y * desertLayer.getTileHeight + townImage.getHeight/2),
-//            new Vector2(city.mapCell.x * desertLayer.getTileWidth + townImage.getWidth/2, city.mapCell.y * desertLayer.getTileHeight + townImage.getHeight/2), 3)
         }
 
         if (newDirection.hasSameDirection(oldDirection)){
@@ -796,42 +793,65 @@ class MapScreen(game: NuclearNation) extends Screen{
               }
             }
 
-            val table = dialog.getContentTable
+
+          resetGroups()
 
 
+          addUnitLeftClickListener(availableSoldierCard,mixSoldierCard,availableUnitsTable,actionMixTable,dialog)
+          addUnitLeftClickListener(availableEngineerCard,mixEngineerCard,availableUnitsTable,actionMixTable,dialog)
+          addUnitLeftClickListener(availableScientistCard,mixScientistCard,availableUnitsTable,actionMixTable,dialog)
 
-            resetGroups()
+          val recipesMainTable = new Table()
+          val targetTable = new Table()
+
+//          dialog.getContentTable.debugAll()
 
 
-            addUnitLeftClickListener(availableSoldierCard,mixSoldierCard,availableUnitsTable,actionMixTable,dialog)
-            addUnitLeftClickListener(availableEngineerCard,mixEngineerCard,availableUnitsTable,actionMixTable,dialog)
-            addUnitLeftClickListener(availableScientistCard,mixScientistCard,availableUnitsTable,actionMixTable,dialog)
+          dialog.getContentTable.add(recipesMainTable).fill()
+          dialog.getContentTable.add(targetTable).pad(0,10,0,0)
 
-            table.add(new Label(s"Design your action upon: ${ci.name}",skin)).fillX()
-            table.row()
-            val l = new Label("Available units:",skin)
-            l.setAlignment(Align.center)
-            table.add(l).fillX()
-            table.row()
-            table.add(availableUnitsTable)
-            table.row()
-            table.add(new Label("Action mix units:",skin))
-            table.row()
-            table.add(actionMixTable)
-            table.row()
-            table.add(new Label("Outcome:",skin))
-            table.row()
-            outcomeLabel.setAlignment(Align.center)
-            table.add(outcomeLabel).expandX()
-            table.row()
-            table.add(new Label("HINT: use SHIFT to transfer up to 10 units",skin)).fillX().pad(30,0,30,0)
+          val actionLabel = new Label(s"Design your action upon: ${ci.name}",skin)
+          val recipesListTable = new Table().top()
+//          recipesListTable.debugAll()
+          recipesListTable.add(new Label("Recipe 1",skin)).pad(5,0,0,0)
+          recipesListTable.row()
+          recipesListTable.add(new Label("Recipe 2",skin)).pad(5,0,0,0)
+          recipesListTable.row()
+          recipesListTable.add(new Label("Recipe 3",skin)).pad(5,0,0,0)
+          recipesListTable.row()
+          recipesListTable.add(new Label("Recipe 4",skin)).pad(5,0,0,0)
 
-            dialog.button("OK", true).button("CANCEL",false)
-            dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
-            dialog.pack()
-            isPaused = true
-            stage.addActor(dialog)
-            dialog.setPosition(cameraCenterX - dialog.getPrefWidth/2,cameraCenterY - dialog.getPrefHeight/2)
+
+          recipesMainTable.add(new Label("Available recipes",skin))
+          recipesMainTable.row()
+          recipesMainTable.add(recipesListTable).grow().pad(10,0,0,0)
+//          recipesMainTable.debugAll()
+          actionLabel.setAlignment(Align.center)
+          targetTable.add(actionLabel).fillX()
+          targetTable.row()
+          val l = new Label("Available units:",skin)
+          l.setAlignment(Align.center)
+          targetTable.add(l).fillX()
+          targetTable.row()
+          targetTable.add(availableUnitsTable)
+          targetTable.row()
+          targetTable.add(new Label("Action mix units:",skin))
+          targetTable.row()
+          targetTable.add(actionMixTable)
+          targetTable.row()
+          targetTable.add(new Label("Outcome:",skin))
+          targetTable.row()
+          outcomeLabel.setAlignment(Align.center)
+          targetTable.add(outcomeLabel).expandX()
+          targetTable.row()
+          targetTable.add(new Label("HINT: use SHIFT to transfer up to 10 units",skin)).fillX().pad(30,0,30,0)
+
+          dialog.button("OK", true).button("CANCEL",false)
+          dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
+          dialog.pack()
+          isPaused = true
+          stage.addActor(dialog)
+          dialog.setPosition(cameraCenterX - dialog.getPrefWidth/2,cameraCenterY - dialog.getPrefHeight/2)
 
         }
         case Some(ri: RuinsInfo) =>
