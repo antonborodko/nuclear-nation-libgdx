@@ -24,7 +24,7 @@ com.badlogic.gdx.scenes.scene2d.ui.ProgressBar$ProgressBarStyle: {
 	default-vertical: { background: progress-bar, knobBefore: progress-bar-knob }
 },
 com.badlogic.gdx.scenes.scene2d.ui.TextTooltip$TextTooltipStyle: {
-	default: {label: {font: commodore-64}, background: button, wrapWidth: 400}
+	default: {label: {font: commodore-64}, background: window, wrapWidth: 400}
 },
 com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
 	default: {

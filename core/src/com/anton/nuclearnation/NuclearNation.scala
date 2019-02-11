@@ -13,6 +13,8 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader.FreeTypeFontLoa
 import com.badlogic.gdx.graphics.g2d.{BitmapFont, SpriteBatch}
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 
+import scala.collection.mutable.ListBuffer
+
 
 class NuclearNation extends Game {
   var batch:SpriteBatch = _
@@ -42,7 +44,11 @@ class NuclearNation extends Game {
   var engineerCounter:Int = initialUnitCount
 
 
-  val soldierRecipe = Recipe(()=>true, (_:List[MapLocation])=>true,()=>this.soldierCounter+=1)
+  val soldierRecipe = Recipe("Basic soldier","A basic soldier. Good for performing day to day tasks that don't require much intelligence",()=>true,()=>this.soldierCounter+=1,()=>soldierCounter)
+  val scientistRecipe = Recipe("Basic scientist","Scientists try to learn about the old world",()=>true,()=>this.soldierCounter+=1,()=>soldierCounter)
+  val engineerRecipe = Recipe("Basic engineer","Engineers are good in making and breaking things",()=>true,()=>this.soldierCounter+=1,()=>soldierCounter)
+
+  val recipes = List[Recipe](soldierRecipe,scientistRecipe,engineerRecipe)
 
   override def create(): Unit = {
     batch = new SpriteBatch

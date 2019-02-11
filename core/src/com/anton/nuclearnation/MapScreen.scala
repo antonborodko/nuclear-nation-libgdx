@@ -29,7 +29,7 @@ import com.badlogic.gdx.scenes.scene2d.{Group, InputEvent, InputListener, Stage}
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle
 import com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle
-import com.badlogic.gdx.scenes.scene2d.ui.{Button, Dialog, Image, Label, ScrollPane, Skin, Table, TextButton, TextTooltip, Value}
+import com.badlogic.gdx.scenes.scene2d.ui.{Button, Dialog, Image, Label, ScrollPane, Skin, Table, TextButton, TextTooltip, TooltipManager, Value}
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.Timer.Task
 import com.badlogic.gdx.utils.viewport.StretchViewport
@@ -812,17 +812,23 @@ class MapScreen(game: NuclearNation) extends Screen{
 
           val actionLabel = new Label(s"Design your action upon: ${ci.name}",skin)
           val recipesListTable = new Table().top()
-//          recipesListTable.debugAll()
-          val recipe1 = new TextButton("Recipe 1",skin)
-          recipe1.addListener(new TextTooltip("You can press this", skin))
-          recipesListTable.add(recipe1).pad(5,0,0,0)
-          recipesListTable.row()
-          recipesListTable.add(new Label("Recipe 2",skin)).pad(5,0,0,0)
-          recipesListTable.row()
-          recipesListTable.add(new Label("Recipe 3",skin)).pad(5,0,0,0)
-          recipesListTable.row()
-          recipesListTable.add(new Label("Recipe 4",skin)).pad(5,0,0,0)
-
+          game.recipes.foreach(r=>{
+            val recipeButton = new TextButton(s"${r.name} x${r.getCount()}",skin)
+            val toolTip = new TextTooltip(r.description, skin)
+            toolTip.setInstant(true)
+            toolTip.getManager.
+            recipeButton.addListener(toolTip)
+            recipesListTable.add(recipeButton).pad(5,0,0,0)
+            recipeButton.setDisabled(!r.enabled)
+            recipeButton.addCaptureListener(new ClickListener(){
+              override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
+                super.clicked(event, x, y)
+                r.doCrafting()
+                recipeButton.setText(s"${r.name} x${r.getCount()}")
+              }
+            })
+            recipesListTable.row()
+          })
 
           recipesMainTable.add(new Label("Available recipes",skin))
           recipesMainTable.row()
@@ -851,7 +857,7 @@ class MapScreen(game: NuclearNation) extends Screen{
           dialog.button("OK", true).button("CANCEL",false)
           dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
           dialog.pack()
-          isPaused = true
+//          isPaused = true
           stage.addActor(dialog)
           dialog.setPosition(cameraCenterX - dialog.getPrefWidth/2,cameraCenterY - dialog.getPrefHeight/2)
 
