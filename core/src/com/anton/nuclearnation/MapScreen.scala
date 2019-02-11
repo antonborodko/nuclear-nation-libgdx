@@ -29,7 +29,7 @@ import com.badlogic.gdx.scenes.scene2d.{Group, InputEvent, InputListener, Stage}
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle
 import com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle
-import com.badlogic.gdx.scenes.scene2d.ui.{Button, Dialog, Image, Label, ScrollPane, Skin, Table, TextButton, Value}
+import com.badlogic.gdx.scenes.scene2d.ui.{Button, Dialog, Image, Label, ScrollPane, Skin, Table, TextButton, TextTooltip, Value}
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.Timer.Task
 import com.badlogic.gdx.utils.viewport.StretchViewport
@@ -813,7 +813,9 @@ class MapScreen(game: NuclearNation) extends Screen{
           val actionLabel = new Label(s"Design your action upon: ${ci.name}",skin)
           val recipesListTable = new Table().top()
 //          recipesListTable.debugAll()
-          recipesListTable.add(new Label("Recipe 1",skin)).pad(5,0,0,0)
+          val recipe1 = new TextButton("Recipe 1",skin)
+          recipe1.addListener(new TextTooltip("You can press this", skin))
+          recipesListTable.add(recipe1).pad(5,0,0,0)
           recipesListTable.row()
           recipesListTable.add(new Label("Recipe 2",skin)).pad(5,0,0,0)
           recipesListTable.row()

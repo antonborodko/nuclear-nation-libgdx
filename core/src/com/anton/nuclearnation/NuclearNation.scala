@@ -2,6 +2,7 @@ package com.anton.nuclearnation
 
 import java.io.File
 
+import com.anton.nuclearnation.MapScreen.MapLocation
 import com.badlogic.gdx.{ApplicationAdapter, Game, Gdx, Screen}
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.assets.loaders.resolvers.{ExternalFileHandleResolver, InternalFileHandleResolver}
@@ -23,6 +24,8 @@ class NuclearNation extends Game {
   assetManager.setLoader(classOf[FreeTypeFontGenerator], fontGenerator)
   assetManager.setLoader(classOf[BitmapFont], ".ttf", new FreetypeFontLoader(resolver))
 
+
+
   val DISABLE_FOG_OF_WAR = if (sys.env.get("DISABLE_FOG_OF_WAR").isEmpty) false else sys.env("DISABLE_FOG_OF_WAR").toLowerCase().toBoolean
 
   lazy val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
@@ -37,6 +40,9 @@ class NuclearNation extends Game {
   var soldierCounter:Int = initialUnitCount
   var scientistCounter:Int = initialUnitCount
   var engineerCounter:Int = initialUnitCount
+
+
+  val soldierRecipe = Recipe(()=>true, (_:List[MapLocation])=>true,()=>this.soldierCounter+=1)
 
   override def create(): Unit = {
     batch = new SpriteBatch
