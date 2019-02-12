@@ -89,7 +89,7 @@ class MapScreen(game: NuclearNation) extends Screen{
   val stage = new Stage(new StretchViewport(1600,960,new OrthographicCamera()))
   val camera = stage.getCamera.asInstanceOf[OrthographicCamera]
 
-  val unitConstructionButton = new TextButton("Units",skin)
+  val craftingButton = new TextButton("Crafting",skin)
   val centerOnCapitalButton = new TextButton("Re-center",skin)
   val pauseButton = new TextButton("Pause",skin)
 
@@ -137,9 +137,9 @@ class MapScreen(game: NuclearNation) extends Screen{
   }
 
 
-  unitConstructionButton.addCaptureListener(new ClickListener(){
+  craftingButton.addCaptureListener(new ClickListener(){
     override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
-      game.setScreen(new UnitConstructionScreen(game,MapScreen.this))
+      showCraftingDialog(capital)
     }
   })
 
@@ -157,7 +157,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   val buttonsGroup = new Group()
   val tileGroup = new Group()
-  buttonsGroup.addActor(unitConstructionButton)
+  buttonsGroup.addActor(craftingButton)
   buttonsGroup.addActor(centerOnCapitalButton)
   buttonsGroup.addActor(pauseButton)
   stage.addActor(tileGroup)
@@ -609,9 +609,9 @@ class MapScreen(game: NuclearNation) extends Screen{
     }
     stage.getBatch.end()
 
-    val unitConstructionButtonCoords = camera.unproject(new Vector3(stage.getViewport.getScreenWidth - unitConstructionButton.getPrefWidth,stage.getViewport.getScreenHeight,0))
-    unitConstructionButton.setPosition(unitConstructionButtonCoords.x,unitConstructionButtonCoords.y)
-    centerOnCapitalButton.setPosition(unitConstructionButton.getX - centerOnCapitalButton.getPrefWidth-5,unitConstructionButton.getY)
+    val craftingConstructionButtonCoords = camera.unproject(new Vector3(stage.getViewport.getScreenWidth - craftingButton.getPrefWidth,stage.getViewport.getScreenHeight,0))
+    craftingButton.setPosition(craftingConstructionButtonCoords.x,craftingConstructionButtonCoords.y)
+    centerOnCapitalButton.setPosition(craftingButton.getX - centerOnCapitalButton.getPrefWidth-5,craftingButton.getY)
     pauseButton.setPosition(centerOnCapitalButton.getX - pauseButton.getPrefWidth - 5,centerOnCapitalButton.getY)
     val scrapLabelCoords = camera.unproject(new Vector3(stage.getViewport.getScreenWidth - scrapLabelButton.getPrefWidth,scrapLabelButton.getPrefHeight,0))
     scrapLabelButton.setPosition(scrapLabelCoords.x,scrapLabelCoords.y)
@@ -686,8 +686,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   }
 
-  private def mapRightClicked(screenX: Int, screenY: Int):Unit = {
-
+  private def showCraftingDialog(location:MapLocation):Dialog = {
     val outcomeLabel = new Label("???",skin)
     val actionMixTable = new Table().center()
     val availableUnitsTable = new Table().center()
@@ -749,6 +748,111 @@ class MapScreen(game: NuclearNation) extends Screen{
       })
     }
 
+    val dialog = new Dialog("", skin) {
+      override def result(result:Object) {
+        if (result.asInstanceOf[Boolean]) {
+          val outcome = analyzeOutcome(actionMixTable)
+          outcome match {
+            case ActionMixOutcome(Objective.BASIC_ATTACK,_)=>
+              val units = ListBuffer[UnitType]()
+              for (_<-0 until mixSoldierCard.count){
+                units += UnitType.SOLDIER
+              }
+              sendExpedition(capital.mapCell,location.mapCell,objective = Objective.BASIC_ATTACK,units = units.toList)
+            case ActionMixOutcome(Objective.BUILD_ROAD,_)=>
+              val units = ListBuffer[UnitType]()
+              for (_<-0 until mixEngineerCard.count){
+                units += UnitType.ENGINEER
+              }
+              val t = game.assetManager.get("unitConstruction/engineerUnit.png",classOf[Texture])
+              sendExpedition(capital.mapCell,location.mapCell,objective = Objective.BUILD_ROAD,units = units.toList,speed = 100,texture = t)
+            case _=>
+          }
+        }
+        availableSoldierCard.setCount(game.soldierCounter)
+        mixSoldierCard.setCount(0)
+
+        availableEngineerCard.setCount(game.engineerCounter)
+        mixEngineerCard.setCount(0)
+
+        availableScientistCard.setCount(game.scientistCounter)
+        mixScientistCard.setCount(0)
+
+        isPaused = false
+      }
+    }
+
+
+    resetGroups()
+
+
+    addUnitLeftClickListener(availableSoldierCard,mixSoldierCard,availableUnitsTable,actionMixTable,dialog)
+    addUnitLeftClickListener(availableEngineerCard,mixEngineerCard,availableUnitsTable,actionMixTable,dialog)
+    addUnitLeftClickListener(availableScientistCard,mixScientistCard,availableUnitsTable,actionMixTable,dialog)
+
+    val recipesMainTable = new Table()
+    val targetTable = new Table()
+
+    //          dialog.getContentTable.debugAll()
+
+
+    dialog.getContentTable.add(recipesMainTable).fill()
+    dialog.getContentTable.add(targetTable).pad(0,10,0,0)
+
+    val actionLabel = new Label(s"Design your action upon: ${location.name}",skin)
+    val recipesListTable = new Table().top()
+    game.recipes.foreach(r=>{
+      val recipeButton = new TextButton(s"${r.name} x${r.getCount()}",skin)
+      recipesListTable.add(recipeButton).pad(5,0,0,0)
+      recipeButton.setDisabled(!r.enabled)
+      recipeButton.addCaptureListener(new ClickListener(){
+        override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
+          super.clicked(event, x, y)
+          r.doCrafting()
+          recipeButton.setText(s"${r.name} x${r.getCount()}")
+        }
+      })
+      recipesListTable.row()
+    })
+
+    recipesMainTable.add(new Label("Available recipes",skin))
+    recipesMainTable.row()
+    recipesMainTable.add(recipesListTable).grow().pad(10,0,0,0)
+    //          recipesMainTable.debugAll()
+    actionLabel.setAlignment(Align.center)
+    targetTable.add(actionLabel).fillX()
+    targetTable.row()
+    val l = new Label("Available units:",skin)
+    l.setAlignment(Align.center)
+    targetTable.add(l).fillX()
+    targetTable.row()
+    targetTable.add(availableUnitsTable)
+    targetTable.row()
+    targetTable.add(new Label("Action mix units:",skin))
+    targetTable.row()
+    targetTable.add(actionMixTable)
+    targetTable.row()
+    targetTable.add(new Label("Outcome:",skin))
+    targetTable.row()
+    outcomeLabel.setAlignment(Align.center)
+    targetTable.add(outcomeLabel).expandX()
+    targetTable.row()
+    targetTable.add(new Label("HINT: use SHIFT to transfer up to 10 units",skin)).fillX().pad(30,0,30,0)
+
+    dialog.button("OK", true).button("CANCEL",false)
+    dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
+    dialog.pack()
+    //          isPaused = true
+    stage.addActor(dialog)
+    dialog.setPosition(cameraCenterX - dialog.getPrefWidth/2,cameraCenterY - dialog.getPrefHeight/2)
+    dialog
+
+  }
+
+
+  private def mapRightClicked(screenX: Int, screenY: Int):Unit = {
+
+
     Gdx.app.log("INFO","Right clicked on map")
 
     val clickInfo = getClickInfo(screenX,screenY)
@@ -760,125 +864,8 @@ class MapScreen(game: NuclearNation) extends Screen{
         case Some(ri: RaiderCampInfo) => {
           game.setScreen(new ActionMixScreen(ri, game, this))
         }
-        case Some(ci: CityInfo) => {
-            val dialog = new Dialog("", skin) {
-              override def result(result:Object) {
-                if (result.asInstanceOf[Boolean]) {
-                  val outcome = analyzeOutcome(actionMixTable)
-                  outcome match {
-                    case ActionMixOutcome(Objective.BASIC_ATTACK,_)=>
-                      val units = ListBuffer[UnitType]()
-                      for (_<-0 until mixSoldierCard.count){
-                        units += UnitType.SOLDIER
-                      }
-                      sendExpedition(capital.mapCell,ci.mapCell,objective = Objective.BASIC_ATTACK,units = units.toList)
-                    case ActionMixOutcome(Objective.BUILD_ROAD,_)=>
-                      val units = ListBuffer[UnitType]()
-                      for (_<-0 until mixEngineerCard.count){
-                        units += UnitType.ENGINEER
-                      }
-                      val t = game.assetManager.get("unitConstruction/engineerUnit.png",classOf[Texture])
-                      sendExpedition(capital.mapCell,ci.mapCell,objective = Objective.BUILD_ROAD,units = units.toList,speed = 100,texture = t)
-                    case _=>
-                  }
-                }
-                availableSoldierCard.setCount(game.soldierCounter)
-                mixSoldierCard.setCount(0)
-
-                availableEngineerCard.setCount(game.engineerCounter)
-                mixEngineerCard.setCount(0)
-
-                availableScientistCard.setCount(game.scientistCounter)
-                mixScientistCard.setCount(0)
-
-                isPaused = false
-              }
-            }
-
-
-          resetGroups()
-
-
-          addUnitLeftClickListener(availableSoldierCard,mixSoldierCard,availableUnitsTable,actionMixTable,dialog)
-          addUnitLeftClickListener(availableEngineerCard,mixEngineerCard,availableUnitsTable,actionMixTable,dialog)
-          addUnitLeftClickListener(availableScientistCard,mixScientistCard,availableUnitsTable,actionMixTable,dialog)
-
-          val recipesMainTable = new Table()
-          val targetTable = new Table()
-
-//          dialog.getContentTable.debugAll()
-
-
-          dialog.getContentTable.add(recipesMainTable).fill()
-          dialog.getContentTable.add(targetTable).pad(0,10,0,0)
-
-          val actionLabel = new Label(s"Design your action upon: ${ci.name}",skin)
-          val recipesListTable = new Table().top()
-          game.recipes.foreach(r=>{
-            val coords = camera.project(new Vector3(10,10,10))
-            val recipeButton = new TextButton(s"${r.name} x${r.getCount()}",skin)
-            val toolTip = new TextTooltip(r.description,skin)
-            toolTip.setInstant(true)
-            recipesListTable.add(recipeButton).pad(5,0,0,0)
-            recipeButton.setDisabled(!r.enabled)
-            recipeButton.addCaptureListener(new ClickListener(){
-              override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
-                super.clicked(event, x, y)
-                r.doCrafting()
-                recipeButton.setText(s"${r.name} x${r.getCount()}")
-              }
-            })
-            recipesListTable.row()
-          })
-
-          recipesMainTable.add(new Label("Available recipes",skin))
-          recipesMainTable.row()
-          recipesMainTable.add(recipesListTable).grow().pad(10,0,0,0)
-//          recipesMainTable.debugAll()
-          actionLabel.setAlignment(Align.center)
-          targetTable.add(actionLabel).fillX()
-          targetTable.row()
-          val l = new Label("Available units:",skin)
-          l.setAlignment(Align.center)
-          targetTable.add(l).fillX()
-          targetTable.row()
-          targetTable.add(availableUnitsTable)
-          targetTable.row()
-          targetTable.add(new Label("Action mix units:",skin))
-          targetTable.row()
-          targetTable.add(actionMixTable)
-          targetTable.row()
-          targetTable.add(new Label("Outcome:",skin))
-          targetTable.row()
-          outcomeLabel.setAlignment(Align.center)
-          targetTable.add(outcomeLabel).expandX()
-          targetTable.row()
-          targetTable.add(new Label("HINT: use SHIFT to transfer up to 10 units",skin)).fillX().pad(30,0,30,0)
-
-          dialog.button("OK", true).button("CANCEL",false)
-          dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
-          dialog.pack()
-//          isPaused = true
-          stage.addActor(dialog)
-          dialog.setPosition(cameraCenterX - dialog.getPrefWidth/2,cameraCenterY - dialog.getPrefHeight/2)
-
-        }
-        case Some(ri: RuinsInfo) =>
-          val dialog = new Dialog("", skin) {
-            override def result(result:Object) {
-              if (result.asInstanceOf[Boolean]) {
-                game.setScreen(new ActionMixScreen(ri, game, MapScreen.this))
-              }
-            }
-          }
-
-          dialog.button("Send Expedition", true)
-          dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
-          dialog.pack()
-          dialog.setModal(false)
-          stage.addActor(dialog)
-          dialog.setPosition(clickInfo.pixelX - dialog.getPrefWidth/2,clickInfo.pixelY - dialog.getPrefHeight/2)
-
+        case Some(ci: CityInfo) =>
+          showCraftingDialog(ci)
         case _ =>
       }
     } else { //map cell is not discovered
