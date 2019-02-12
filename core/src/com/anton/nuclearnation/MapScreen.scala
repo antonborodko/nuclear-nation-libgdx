@@ -794,7 +794,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     val targetTable = new Table()
 
     dialog.getContentTable.add(recipesMainTable).fill()
-    dialog.getContentTable.add(targetTable).pad(0,10,0,0)
+    dialog.getContentTable.add(targetTable).pad(0,10,0,0).width(500).height(500).grow()
 
     val recipesListTable = new Table().top()
     game.recipes.foreach(r=>{
@@ -804,8 +804,29 @@ class MapScreen(game: NuclearNation) extends Screen{
       recipeButton.addCaptureListener(new ClickListener(){
         override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
           super.clicked(event, x, y)
-          r.doCrafting()
           recipeButton.setText(s"${r.name} x${r.getCount()}")
+          recipeButton.setUserObject(r)
+          targetTable.clearChildren()
+          val l = new Label(r.description,skin)
+          l.setWrap(true)
+          targetTable.add(l).grow()
+          targetTable.row()
+          val createButton = new TextButton("Create",skin)
+          targetTable.add(createButton).bottom().right()
+          createButton.addListener(new ClickListener(){
+            override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
+              super.clicked(event, x, y)
+              r.doCrafting()
+              recipesListTable
+                .getChildren
+                .toArray
+                .filter(b=>b.isInstanceOf[TextButton] && b.getUserObject != null)
+                .foreach(b=>{
+                  val recipe = b.getUserObject.asInstanceOf[Recipe]
+                  b.asInstanceOf[TextButton].setText(s"${recipe.name} x${recipe.getCount()}")
+              })
+            }
+          })
         }
       })
       recipesListTable.row()
@@ -814,6 +835,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     recipesMainTable.add(new Label("Available recipes",skin))
     recipesMainTable.row()
     recipesMainTable.add(recipesListTable).grow().pad(10,0,0,0)
+
 
     dialog.button("OK", true).button("CANCEL",false)
     dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
