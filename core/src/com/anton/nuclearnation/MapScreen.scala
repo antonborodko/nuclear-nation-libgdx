@@ -800,7 +800,6 @@ class MapScreen(game: NuclearNation) extends Screen{
     game.recipes.foreach(r=>{
       val recipeButton = new TextButton(s"${r.name} x${r.getCount()}",skin)
       recipesListTable.add(recipeButton).pad(5,0,0,0)
-      recipeButton.setDisabled(!r.enabled)
       recipeButton.addCaptureListener(new ClickListener(){
         override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
           super.clicked(event, x, y)
@@ -813,6 +812,7 @@ class MapScreen(game: NuclearNation) extends Screen{
           targetTable.row()
           val createButton = new TextButton("Create",skin)
           targetTable.add(createButton).bottom().right()
+          createButton.setDisabled(!r.enabled)
           createButton.addListener(new ClickListener(){
             override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
               super.clicked(event, x, y)
