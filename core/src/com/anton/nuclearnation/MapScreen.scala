@@ -793,13 +793,9 @@ class MapScreen(game: NuclearNation) extends Screen{
     val recipesMainTable = new Table()
     val targetTable = new Table()
 
-    //          dialog.getContentTable.debugAll()
-
-
     dialog.getContentTable.add(recipesMainTable).fill()
     dialog.getContentTable.add(targetTable).pad(0,10,0,0)
 
-    val actionLabel = new Label(s"Design your action upon: ${location.name}",skin)
     val recipesListTable = new Table().top()
     game.recipes.foreach(r=>{
       val recipeButton = new TextButton(s"${r.name} x${r.getCount()}",skin)
@@ -818,26 +814,6 @@ class MapScreen(game: NuclearNation) extends Screen{
     recipesMainTable.add(new Label("Available recipes",skin))
     recipesMainTable.row()
     recipesMainTable.add(recipesListTable).grow().pad(10,0,0,0)
-    //          recipesMainTable.debugAll()
-    actionLabel.setAlignment(Align.center)
-    targetTable.add(actionLabel).fillX()
-    targetTable.row()
-    val l = new Label("Available units:",skin)
-    l.setAlignment(Align.center)
-    targetTable.add(l).fillX()
-    targetTable.row()
-    targetTable.add(availableUnitsTable)
-    targetTable.row()
-    targetTable.add(new Label("Action mix units:",skin))
-    targetTable.row()
-    targetTable.add(actionMixTable)
-    targetTable.row()
-    targetTable.add(new Label("Outcome:",skin))
-    targetTable.row()
-    outcomeLabel.setAlignment(Align.center)
-    targetTable.add(outcomeLabel).expandX()
-    targetTable.row()
-    targetTable.add(new Label("HINT: use SHIFT to transfer up to 10 units",skin)).fillX().pad(30,0,30,0)
 
     dialog.button("OK", true).button("CANCEL",false)
     dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
