@@ -225,8 +225,8 @@ class MapScreen(game: NuclearNation) extends Screen{
     override def keyUp(keycode: Int): Boolean = {
 
       keycode match {
-        case Input.Keys.U=>
-          game.setScreen(new UnitConstructionScreen(game,MapScreen.this))
+        case Input.Keys.C=>
+          showCraftingDialog(capital)
           true
         case Input.Keys.SPACE=>
           centerScreen()
