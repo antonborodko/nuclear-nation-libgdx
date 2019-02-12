@@ -810,6 +810,10 @@ class MapScreen(game: NuclearNation) extends Screen{
           l.setWrap(true)
           targetTable.add(l).grow()
           targetTable.row()
+          if (r.locationCondition.isDefined){
+            targetTable.add(new Label("Choose location to use:",skin)).grow()
+            targetTable.row()
+          }
           val createButton = new TextButton("Create",skin)
           targetTable.add(createButton).bottom().right()
           createButton.setDisabled(!r.enabled)
