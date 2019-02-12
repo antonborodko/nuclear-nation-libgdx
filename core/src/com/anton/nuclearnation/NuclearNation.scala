@@ -44,9 +44,9 @@ class NuclearNation extends Game {
   var engineerCounter:Int = initialUnitCount
 
 
-  val soldierRecipe = Recipe("Basic soldier","A basic soldier. Good for performing day to day tasks that don't require much intelligence",()=>true,_=>true,()=>this.soldierCounter+=1,()=>soldierCounter)
-  val scientistRecipe = Recipe("Basic scientist","Scientists try to learn about the old world",()=>true,_=>true,()=>this.scientistCounter+=1,()=>scientistCounter)
-  val engineerRecipe = Recipe("Basic engineer","Engineers are good in making and breaking things",()=>true,_=>true,()=>this.engineerCounter+=1,()=>engineerCounter)
+  val soldierRecipe = Recipe("Basic soldier","A basic soldier. Good for performing day to day tasks that don't require much intelligence",()=>true,None,()=>this.soldierCounter+=1,()=>soldierCounter)
+  val scientistRecipe = Recipe("Basic scientist","Scientists try to learn about the old world",()=>true,None,()=>this.scientistCounter+=1,()=>scientistCounter)
+  val engineerRecipe = Recipe("Basic engineer","Engineers are good in making and breaking things",()=>true,None,()=>this.engineerCounter+=1,()=>engineerCounter)
 
   val recipes = List[Recipe](soldierRecipe,scientistRecipe,engineerRecipe)
 
