@@ -28,8 +28,9 @@ import com.badlogic.gdx.maps.tiled.renderers.{IsometricStaggeredTiledMapRenderer
 import com.badlogic.gdx.scenes.scene2d.{Group, InputEvent, InputListener, Stage}
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle
+import com.badlogic.gdx.scenes.scene2d.ui.TextTooltip.TextTooltipStyle
 import com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle
-import com.badlogic.gdx.scenes.scene2d.ui.{Button, Dialog, Image, Label, ScrollPane, Skin, Table, TextButton, TextTooltip, TooltipManager, Value}
+import com.badlogic.gdx.scenes.scene2d.ui.{Button, Dialog, Image, Label, ScrollPane, Skin, Table, TextButton, TextTooltip, Tooltip, TooltipManager, Value}
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.Timer.Task
 import com.badlogic.gdx.utils.viewport.StretchViewport
@@ -543,6 +544,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     stage.getActors.toArray.filter(actor=>actor.isInstanceOf[ExpeditionActor]).foreach(a => {
 
       val expeditionActor = a.asInstanceOf[ExpeditionActor]
+
       val destinationPixelX = expeditionActor.destinationCell.x * desertLayer.getTileWidth + expeditionActor.getPrefWidth/2
       val destinationPixelY = expeditionActor.destinationCell.y * desertLayer.getTileHeight + expeditionActor.getPrefHeight/2
 
@@ -813,11 +815,10 @@ class MapScreen(game: NuclearNation) extends Screen{
           val actionLabel = new Label(s"Design your action upon: ${ci.name}",skin)
           val recipesListTable = new Table().top()
           game.recipes.foreach(r=>{
+            val coords = camera.project(new Vector3(10,10,10))
             val recipeButton = new TextButton(s"${r.name} x${r.getCount()}",skin)
-            val toolTip = new TextTooltip(r.description, skin)
+            val toolTip = new TextTooltip(r.description,skin)
             toolTip.setInstant(true)
-            toolTip.getManager.
-            recipeButton.addListener(toolTip)
             recipesListTable.add(recipeButton).pad(5,0,0,0)
             recipeButton.setDisabled(!r.enabled)
             recipeButton.addCaptureListener(new ClickListener(){
