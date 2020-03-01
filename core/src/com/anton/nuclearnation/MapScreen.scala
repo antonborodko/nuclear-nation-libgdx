@@ -351,10 +351,10 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   println("Map generated")
 
-  val renderer = new OrthogonalTiledMapRenderer(map, 1f)
+  val renderer = new OrthogonalTiledMapRenderer(map, 0.5f)
 
-  val mapWidthPixels = (desertLayer.getWidth * desertLayer.getTileWidth).asInstanceOf[Int]
-  val mapHeightPixels = (desertLayer.getHeight * desertLayer.getTileHeight).asInstanceOf[Int]
+  val mapWidthPixels = (desertLayer.getWidth * desertLayer.getTileWidth * 0.5).asInstanceOf[Int]
+  val mapHeightPixels = (desertLayer.getHeight * desertLayer.getTileHeight * 0.5).asInstanceOf[Int]
 
   var cameraCenterX = 0f
   var cameraCenterY = 0f
@@ -598,8 +598,8 @@ class MapScreen(game: NuclearNation) extends Screen{
     locations.foreach(location=>{
       val mapCell = location.mapCell
       if (mapCell.state == MapCellState.VISITED){
-        val pixelX : Int = (location.mapCell.x * desertLayer.getTileWidth).asInstanceOf[Int]
-        val pixelY : Int = (location.mapCell.y * desertLayer.getTileHeight).asInstanceOf[Int]
+        val pixelX : Int = (location.mapCell.x * desertLayer.getTileWidth * 0.5).asInstanceOf[Int]
+        val pixelY : Int = (location.mapCell.y * desertLayer.getTileHeight * 0.5).asInstanceOf[Int]
         gameFont.draw(stage.getBatch,location.name,pixelX,pixelY)
       }
     })
