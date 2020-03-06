@@ -184,7 +184,7 @@ class CardGameScreen(currentLocation:MapLocation, game:NuclearNation, mapScreen:
 
 
       val dialog = new Dialog("", skin) {
-        override def result(result:Object) {
+        override def result(result:Object):Unit = {
           if (chance<successChance) {
             if (currentSubjectIndex == subjects.size-1) {
               mapScreen.discoverTech(currentLocation.asInstanceOf[RuinsInfo])

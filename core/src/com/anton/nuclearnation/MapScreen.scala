@@ -114,15 +114,9 @@ class MapScreen(game: NuclearNation) extends Screen{
   val scrapLabelButton = new TextButton("Scrap: ",skin)
   scrapLabelButton.setDisabled(true)
 
-  val randomCaravanSpawnChance =  sys.env.get("RANDOM_CARAVAN_SPAWN_CHANCE") match {
-    case Some(v)=>v.toLowerCase().toInt
-    case None=>1
-  }
+  val randomCaravanSpawnChance =  sys.env.getOrElse("RANDOM_CARAVAN_SPAWN_CHANCE", "1").toLowerCase().toInt
 
-  val ownedCaravanSpawnChance =  sys.env.get("OWNED_CARAVAN_SPAWN_CHANCE") match {
-    case Some(v)=>v.toLowerCase().toInt
-    case None=>30
-  }
+  val ownedCaravanSpawnChance =  sys.env.getOrElse("OWNED_CARAVAN_SPAWN_CHANCE","30").toLowerCase().toInt
 
 
   val caravanSpeed =  sys.env.get("CARAVAN_SPEED") match {
@@ -458,7 +452,7 @@ class MapScreen(game: NuclearNation) extends Screen{
   }
 
 
-  def visitTile(tileX: Int, tileY: Int, radiusTiles:Int=DEFAULT_DISCOVERABLE_RADIUS)  {
+  def visitTile(tileX: Int, tileY: Int, radiusTiles:Int=DEFAULT_DISCOVERABLE_RADIUS):Unit =   {
     val tile = mapData.getCell(tileX,tileY) match {
       case Some(t)=>t
       case None=>
@@ -749,7 +743,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     }
 
     val dialog = new Dialog("", skin) {
-      override def result(result:Object) {
+      override def result(result:Object):Unit =  {
         if (result.asInstanceOf[Boolean]) {
           val outcome = analyzeOutcome(actionMixTable)
           outcome match {
@@ -891,10 +885,10 @@ class MapScreen(game: NuclearNation) extends Screen{
       Some(texture),
       originCell,
       destCell,
-      owner = owner,
-      units = units,
-      objective = objective,
-      speed = speed
+      owner,
+      units,
+      objective,
+      speed
     )
     val actorCoords = actor.screenToLocalCoordinates(new Vector2(originCell.x * desertLayer.getTileWidth  + actor.getPrefWidth/2,originCell.y * desertLayer.getTileHeight + actor.getPrefHeight/2))
     actor.setPosition(actorCoords.x,actorCoords.y)
@@ -967,7 +961,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     townLayer.setCell(ancientRuins.mapCell.x,ancientRuins.mapCell.y,null)
 
     val dialog = new Dialog("", skin) {
-      override def result(result:Object) {
+      override def result(result:Object):Unit =  {
 
       }
     }

@@ -174,7 +174,7 @@ class SituationScreen(currentLocation:MapLocation, defendersType:DefendersType, 
         override def touchDown (event:InputEvent, x:Float, y:Float, pointer:Int, button:Int):Boolean= {
           val title = if (battleOutcome == BattleOutcome.VICTORY) "You've defeated the enemy" else "You lost"
           val dialog = new Dialog(title, skin) {
-            override def result(result:Object) {
+            override def result(result:Object):Unit =  {
               if (battleOutcome == BattleOutcome.VICTORY){
                 currentLocation match{
                   case city:CityInfo=>mapScreen.conquerCity(city)

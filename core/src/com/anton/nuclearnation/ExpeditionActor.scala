@@ -25,7 +25,7 @@ class ExpeditionActor(
       mapScreen.isPaused = true
 
       val dialog = new Dialog("", game.skin) {
-        override def result(result:Object) {
+        override def result(result:Object):Unit =  {
           mapScreen.isPaused = false
         }
       }
