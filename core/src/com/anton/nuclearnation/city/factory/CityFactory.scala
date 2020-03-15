@@ -9,7 +9,7 @@ import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.util.Random
 
 trait CityFactory{
-  val cityNames: ListBuffer[String] = ListBuffer(
+  protected var cityNames: ListBuffer[String] = ListBuffer(
     "The Nether",
     "Everwinter",
     "Seclusion",
@@ -41,21 +41,22 @@ trait CityFactory{
     "Blackridge",
     "Elysium"
   )
-  val coordsGenerator = new MapCoordsGenerator(3)
+  protected val coordsGenerator = new MapCoordsGenerator(3)
 
-  def getCity() : City
+  def getCity : City
 
-  val random = new Random()
-  def getName :String = {
+  protected val random = new Random()
+
+  protected def getName :String = {
     val name = cityNames.toList(random.nextInt(cityNames.length))
     cityNames -= name
     name
   }
-  def getPop(from:Int,to:Int):Int  = {
+  protected def getPop(from:Int,to:Int):Int  = {
     from + random.nextInt((to - from) + 1)
   }
 
-  def getCell:MapCellData = {
+  protected def getCell:MapCellData = {
     val coords = coordsGenerator.getCoords
     Global.mapData.getCell(coords._1,coords._2).get
   }
