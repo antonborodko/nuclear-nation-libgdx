@@ -4,6 +4,7 @@ import java.lang.Math
 
 import com.anton.nuclearnation.ControlledBy.ControlledBy
 import com.anton.nuclearnation.MapScreen._
+import com.anton.nuclearnation.global.Global
 import com.badlogic.gdx.Input.{Buttons, Keys}
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver
@@ -38,15 +39,14 @@ import scala.collection.mutable.ListBuffer
 
 class MapScreen(game: NuclearNation) extends Screen{
 
-  val technologies:List[Technology] = List(Technology("Advanced tactics"),Technology("Automatic weapons"))
-
   val assetManager = game.assetManager
 
   val map = new TiledMap
   val layers = map.getLayers
 
-  val mapWidthTiles = 30
-  val mapHeightTiles = 30
+  val mapHeightTiles = Global.mapHeightTiles
+  val mapWidthTiles = Global.mapWidthTiles
+
 
   val desertTileTexture = assetManager.get("desert_tile.png",classOf[Texture])
   val ruinedBuildingTexture = assetManager.get("ruined-building.png",classOf[Texture])
@@ -72,9 +72,6 @@ class MapScreen(game: NuclearNation) extends Screen{
   desertTileCell.setTile(new StaticTiledMapTile(region))
   fogOfWarCell.setTile(new StaticTiledMapTile(new TextureRegion(fogOfWarTexture)))
 
-  val coordsGenerator = new MapCoordsGenerator(mapWidthTiles,mapHeightTiles,3)
-
-  val mapData = new MapData(mapWidthTiles,mapHeightTiles)
 
 
   val gameFont = assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf",classOf[BitmapFont])
@@ -173,24 +170,18 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   val locations = ListBuffer[MapLocation]()
 
-  val cityNames = List[String]("New Reno","Modoc","Arroyo","Den","Heaven","Nuke","Tumbleweed")
-
-  val capitalCoords = coordsGenerator.getCoords
-
   val capitalCell = mapData.cells.find(cell=>cell.x == capitalCoords._1 && cell.y == capitalCoords._2).get
-  val capital = CityInfo("Hope",capitalCell,100, isOwnedByPlayer = true)
+  val capital = City("Hope",capitalCell,50,ControlledBy.PLAYER)
   capitalCell.location = Some(capital)
   locations += capital
 
-  cityNames.foreach(cityName=> {
-    val coords = coordsGenerator.getCoords
-    val cityCell = mapData.getCell(coords._1,coords._2).get
-    val city = CityInfo(cityName, cityCell,100)
-    cityCell.location = Some(city)
-    locations += city
-    Gdx.app.log("INFO",s"Generated city $cityName with population ${city.population} at coords $coords")
-  })
-
+  //generating
+  val coords = coordsGenerator.getCoords
+  val cityCell = mapData.getCell(coords._1,coords._2).get
+  val city = City(cityName, cityCell,100)
+  cityCell.location = Some(city)
+  locations += city
+  Gdx.app.log("INFO",s"Generated city $cityName with population ${city.population} at coords $coords")
 
   for (
     x <- 0 until mapWidthTiles;
@@ -201,7 +192,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     val location = mapData.getCell(x,y).get.location
 
     location match {
-      case Some(_:CityInfo) => {
+      case Some(_:City) => {
         val townRegion = new TextureRegion(townImage)
         val townTile = new StaticTiledMapTile(townRegion)
         val townCell = new Cell
@@ -395,29 +386,12 @@ class MapScreen(game: NuclearNation) extends Screen{
 
 
   private def mapRightClicked(screenX: Int, screenY: Int):Unit = {
-
-
     Gdx.app.log("INFO","Right clicked on map")
-
     val clickInfo = getClickInfo(screenX,screenY)
-
-    val mapCell = mapData.getCell(clickInfo.tileX,clickInfo.tileY)
-
+    val mapCell = Global.mapData.getCell(clickInfo.tileX,clickInfo.tileY)
 
   }
 
-
-
-  def deleteCamp(camp: RaiderCampInfo) = {
-    if (locations.contains(camp)){
-      locations -= camp
-      camp.mapCell.location = None
-      val desertTile = new StaticTiledMapTile(new TextureRegion(desertTileTexture))
-      val desertCell = new Cell
-      desertCell.setTile(desertTile)
-      townLayer.setCell(camp.mapCell.x,camp.mapCell.y,desertCell)
-    }
-  }
 
 }
 
@@ -431,11 +405,5 @@ object MapScreen{
     def mapCell:MapCellData
     def name:String
   }
-  case class RaiderCampInfo( name:String,mapCell: MapCellData) extends MapLocation()
-  case class CityInfo(name:String,mapCell: MapCellData, population: Int, var isOwnedByPlayer:Boolean = false) extends MapLocation()
-  case class RuinsInfo(mapCell: MapCellData,name:String = "Pre-war ruins") extends MapLocation()
-  case class CoveredAreaInfo(mapCell: MapCellData,name:String="") extends MapLocation
-
-  case class Technology(name:String, var enabled:Boolean = false)
-
+  case class City(name:String, mapCell: MapCellData, population: Int, val ownedBy:ControlledBy = ControlledBy.COMPUTER) extends MapLocation()
 }

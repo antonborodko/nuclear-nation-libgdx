@@ -1,16 +1,18 @@
 package com.anton.nuclearnation
 
+import com.anton.nuclearnation.global.Global
+
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
 
-class MapCoordsGenerator(mapWidthTiles:Int, mapHeightTiles:Int, distanceBetweenSettlements:Int) {
+class MapCoordsGenerator(distanceBetweenSettlements:Int) {
 
   val availableTiles : ListBuffer[(Int,Int)] = ListBuffer()
 
   //filling available tiles
   for (
-    x <- 0 until mapWidthTiles;
-    y <- 0 until mapHeightTiles
+    x <- 0 until Global.mapWidthTiles;
+    y <- 0 until Global.mapHeightTiles
   ) yield {
     availableTiles += Tuple2(x,y)
   }
