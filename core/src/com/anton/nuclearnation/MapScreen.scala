@@ -4,8 +4,6 @@ import java.lang.Math
 
 import com.anton.nuclearnation.ControlledBy.ControlledBy
 import com.anton.nuclearnation.MapScreen._
-import com.anton.nuclearnation.Objective.Objective
-import com.anton.nuclearnation.UnitType.UnitType
 import com.badlogic.gdx.Input.{Buttons, Keys}
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver
@@ -50,8 +48,6 @@ class MapScreen(game: NuclearNation) extends Screen{
   val mapWidthTiles = 30
   val mapHeightTiles = 30
 
-  val DEFAULT_DISCOVERABLE_RADIUS = if (sys.env.get("DEFAULT_DISCOVERABLE_RADIUS").isEmpty) 1 else sys.env("DEFAULT_DISCOVERABLE_RADIUS").toInt
-
   val desertTileTexture = assetManager.get("desert_tile.png",classOf[Texture])
   val ruinedBuildingTexture = assetManager.get("ruined-building.png",classOf[Texture])
   val desertLayer = new TiledMapTileLayer(mapHeightTiles, mapWidthTiles, desertTileTexture.getWidth, desertTileTexture.getHeight)
@@ -64,7 +60,6 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   val tradeCaravanTexture = assetManager.get("tradeCaravan.png",classOf[Texture])
   val militaryCaravanTexture = assetManager.get("militaryCaravan.png",classOf[Texture])
-
 
   val region = new TextureRegion(desertTileTexture)
 
@@ -89,20 +84,8 @@ class MapScreen(game: NuclearNation) extends Screen{
   val stage = new Stage(new StretchViewport(1600,960,new OrthographicCamera()))
   val camera = stage.getCamera.asInstanceOf[OrthographicCamera]
 
-  val craftingButton = new TextButton("Crafting",skin)
   val centerOnCapitalButton = new TextButton("Re-center",skin)
   val pauseButton = new TextButton("Pause",skin)
-
-
-  val assetChain = new AssetChain(this)
-
-  val availableSoldierCard = new SoldierAssetCard(game.soldierCounter,game,Some(UnitType.SOLDIER))
-  val availableEngineerCard = new EngineerAssetCard(game.engineerCounter,game,Some(UnitType.ENGINEER))
-  val availableScientistCard = new ScientistAssetCard(game.scientistCounter,game,Some(UnitType.SCIENTIST))
-
-  val mixSoldierCard = new SoldierAssetCard(0,game,Some(UnitType.SOLDIER))
-  val mixEngineerCard = new EngineerAssetCard(0,game,Some(UnitType.ENGINEER))
-  val mixScientistCard = new ScientistAssetCard(0,game,Some(UnitType.SCIENTIST))
 
   var isPaused = false
 
@@ -114,28 +97,12 @@ class MapScreen(game: NuclearNation) extends Screen{
   val scrapLabelButton = new TextButton("Scrap: ",skin)
   scrapLabelButton.setDisabled(true)
 
-  val randomCaravanSpawnChance =  sys.env.getOrElse("RANDOM_CARAVAN_SPAWN_CHANCE", "1").toLowerCase().toInt
-
-  val ownedCaravanSpawnChance =  sys.env.getOrElse("OWNED_CARAVAN_SPAWN_CHANCE","30").toLowerCase().toInt
-
-
-  val caravanSpeed =  sys.env.get("CARAVAN_SPEED") match {
-    case Some(v)=>v.toLowerCase().toInt
-    case None=>100
-  }
-
+  val mapScale = 0.5f;
 
   val mapDebugOutputEnabled = sys.env.get("ENABLE_MAP_DEBUG_OUTPUT") match {
     case Some(v)=>v.toLowerCase().toBoolean
     case None=>false
   }
-
-
-  craftingButton.addCaptureListener(new ClickListener(){
-    override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
-      showCraftingDialog(capital)
-    }
-  })
 
   centerOnCapitalButton.addCaptureListener(new ClickListener(){
     override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
@@ -151,49 +118,10 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   val buttonsGroup = new Group()
   val tileGroup = new Group()
-  buttonsGroup.addActor(craftingButton)
   buttonsGroup.addActor(centerOnCapitalButton)
   buttonsGroup.addActor(pauseButton)
   stage.addActor(tileGroup)
   stage.addActor(buttonsGroup)
-
-  stage.addActor(scrapLabelButton)
-
-
-  Timer.schedule(() => {
-    val cities = locations.filter(l => l.isInstanceOf[CityInfo])
-    //spawning random expeditions unless paused
-    if (!isPaused){
-      if (Random.nextInt(100)<randomCaravanSpawnChance){
-        val randomSourceCity = cities(Random.nextInt(cities.size)).asInstanceOf[CityInfo]
-        val citiesExcludingSource = cities.filter(l=>l!=randomSourceCity)
-        val randomDestCity = citiesExcludingSource(Random.nextInt(citiesExcludingSource.size)).asInstanceOf[CityInfo]
-
-        sendExpedition(randomSourceCity.mapCell,randomDestCity.mapCell,tradeCaravanTexture,owner = ControlledBy.COMPUTER,units = scala.List[UnitType](),Objective.TRADE,speed = caravanSpeed)
-      }
-
-      //spawning more frequent expeditions between cities with roads
-
-      if (roads.nonEmpty && Random.nextInt(100)<ownedCaravanSpawnChance) {
-        val randomRoad =  roads(Random.nextInt(roads.size))
-        val randomSourceCity = randomRoad._1
-        val randomDestCity = randomRoad._2
-
-        val objective = Random.shuffle(List(Objective.TRADE, Objective.PATROL)).head
-
-        val texture = objective match {
-          case Objective.PATROL => militaryCaravanTexture
-          case _ => tradeCaravanTexture
-        }
-
-        sendExpedition(randomSourceCity, randomDestCity, texture, owner = ControlledBy.COMPUTER, units = scala.List[UnitType](), objective, speed = caravanSpeed)
-      }
-      scrap += Random.nextInt(10)
-      scrapLabelButton.setText(s"Scrap: $scrap")
-      scrapLabelButton.pack()
-    }
-
-  },0,1)
 
   def pauseGame(): Unit ={
     isPaused = !isPaused
@@ -207,7 +135,7 @@ class MapScreen(game: NuclearNation) extends Screen{
         mapRightClicked(screenX,screenY)
         true
       } else if (button == Input.Buttons.LEFT) {
-          mapLeftClicked(screenX, screenY)
+//          mapLeftClicked(screenX, screenY)
           true
       } else {
         false
@@ -220,7 +148,6 @@ class MapScreen(game: NuclearNation) extends Screen{
 
       keycode match {
         case Input.Keys.C=>
-          showCraftingDialog(capital)
           true
         case Input.Keys.SPACE=>
           centerScreen()
@@ -246,43 +173,22 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   val locations = ListBuffer[MapLocation]()
 
-  val cityNames = List[String]("New Reno","Modoc","Arroyo")
-  val raiderCampsNames = List[String]("Mad Dogs","Knives","Jokers")
+  val cityNames = List[String]("New Reno","Modoc","Arroyo","Den","Heaven","Nuke","Tumbleweed")
 
   val capitalCoords = coordsGenerator.getCoords
 
   val capitalCell = mapData.cells.find(cell=>cell.x == capitalCoords._1 && cell.y == capitalCoords._2).get
-  val capital = CityInfo("Hope",capitalCell,isOwnedByPlayer = true)
-  capitalCell.state = MapCellState.VISITED
+  val capital = CityInfo("Hope",capitalCell,100, isOwnedByPlayer = true)
   capitalCell.location = Some(capital)
   locations += capital
-
-
-  for (_<-0 until 10) yield {
-    val coords = coordsGenerator.getCoords
-    val cell = mapData.getCell(coords._1,coords._2).get
-    val ruin = RuinsInfo(cell)
-    cell.location = Some(ruin)
-    locations += ruin
-  }
-
 
   cityNames.foreach(cityName=> {
     val coords = coordsGenerator.getCoords
     val cityCell = mapData.getCell(coords._1,coords._2).get
-    val city = CityInfo(cityName, cityCell)
+    val city = CityInfo(cityName, cityCell,100)
     cityCell.location = Some(city)
     locations += city
-    Gdx.app.log("INFO",s"Generated city $cityName at coords $coords")
-  })
-
-  raiderCampsNames.foreach(raiderCampName=> {
-    val coords = coordsGenerator.getCoords
-    val raiderCell = mapData.getCell(coords._1,coords._2).get
-    val raiderCamp = RaiderCampInfo(raiderCampName, raiderCell)
-    raiderCell.location = Some(raiderCamp)
-    locations += raiderCamp
-    Gdx.app.log("INFO",s"Generated raider camp $raiderCampName at coords $coords")
+    Gdx.app.log("INFO",s"Generated city $cityName with population ${city.population} at coords $coords")
   })
 
 
@@ -294,19 +200,7 @@ class MapScreen(game: NuclearNation) extends Screen{
 
     val location = mapData.getCell(x,y).get.location
 
-    if (game.DISABLE_FOG_OF_WAR){
-      mapData.getCell(x,y).get.state = MapCellState.VISITED
-    }
-
     location match {
-      case Some(_:RuinsInfo) => {
-        val ruinRegion = new TextureRegion(ruinedBuildingTexture)
-        val ruinTile = new StaticTiledMapTile(ruinRegion)
-        val ruinCell = new Cell
-        ruinCell.setTile(ruinTile)
-        townLayer.setCell(x,y,ruinCell)
-      }
-
       case Some(_:CityInfo) => {
         val townRegion = new TextureRegion(townImage)
         val townTile = new StaticTiledMapTile(townRegion)
@@ -315,40 +209,17 @@ class MapScreen(game: NuclearNation) extends Screen{
         townLayer.setCell(x,y,townCell)
       }
 
-      case Some(_:RaiderCampInfo) => {
-        val campRegion = new TextureRegion(raiderCampImage)
-        val raiderTile = new StaticTiledMapTile(campRegion)
-        val raiderCell = new Cell
-        raiderCell.setTile(raiderTile)
-        townLayer.setCell(x,y,raiderCell)
-      }
-
       case _=>
 
     }
-
-    if (mapData.cells.find(cell=>cell.x == x && cell.y == y).get.state == MapCellState.HIDDEN){
-      fogOfWarLayer.setCell(x,y,fogOfWarCell)
-    }
-
   }
   map.getLayers.add(townLayer)
   map.getLayers.add(desertLayer)
 
-  //uncovering random locations
-  val randomUncoveredLocations = Random.shuffle(locations).take(3)
+  val renderer = new OrthogonalTiledMapRenderer(map, mapScale)
 
-  randomUncoveredLocations.foreach(location => {
-    discoverTile(location.mapCell.x,location.mapCell.y)
-  })
-
-
-  println("Map generated")
-
-  val renderer = new OrthogonalTiledMapRenderer(map, 0.5f)
-
-  val mapWidthPixels = (desertLayer.getWidth * desertLayer.getTileWidth * 0.5).asInstanceOf[Int]
-  val mapHeightPixels = (desertLayer.getHeight * desertLayer.getTileHeight * 0.5).asInstanceOf[Int]
+  val mapWidthPixels = (desertLayer.getWidth * desertLayer.getTileWidth * mapScale).asInstanceOf[Int]
+  val mapHeightPixels = (desertLayer.getHeight * desertLayer.getTileHeight * mapScale).asInstanceOf[Int]
 
   var cameraCenterX = 0f
   var cameraCenterY = 0f
@@ -372,8 +243,8 @@ class MapScreen(game: NuclearNation) extends Screen{
   }
 
   def centerScreen(): Unit ={
-    cameraCenterX = capitalCell.x * desertLayer.getTileWidth - desertLayer.getTileWidth/2
-    cameraCenterY = capitalCell.y * desertLayer.getTileHeight - desertLayer.getTileHeight /2
+    cameraCenterX = capitalCell.x * desertLayer.getTileWidth * mapScale - desertLayer.getTileWidth/2  * mapScale
+    cameraCenterY = capitalCell.y * desertLayer.getTileHeight * mapScale - desertLayer.getTileHeight /2 * mapScale
   }
 
 
@@ -395,7 +266,6 @@ class MapScreen(game: NuclearNation) extends Screen{
     Gdx.input.setInputProcessor(multiplexer)
 
     centerScreen()
-    visitArea(capital.mapCell.x,capital.mapCell.y)
 
   }
 
@@ -439,64 +309,6 @@ class MapScreen(game: NuclearNation) extends Screen{
 
   case class ActorMapCoords(tileX:Int,tileY:Int)
 
-  def visitArea(centerTileX:Int,centerTileY:Int): Unit ={
-    //println(s"Called visitArea with coords $centerTileX,$centerTileY")
-    for (
-      x<-centerTileX-1 to centerTileX+1;
-      y<-centerTileY-1 to centerTileY+1
-    ) yield {
-      //println(s"Calling visitTile with coords $x,$y")
-      visitTile(x,y,1)
-    }
-
-  }
-
-
-  def visitTile(tileX: Int, tileY: Int, radiusTiles:Int=DEFAULT_DISCOVERABLE_RADIUS):Unit =   {
-    val tile = mapData.getCell(tileX,tileY) match {
-      case Some(t)=>t
-      case None=>
-        //println(s"*** Tile not defined: $tileX,$tileY ****")
-        return
-    }
-
-    tile.state = MapCellState.VISITED
-    fogOfWarLayer.setCell(tileX,tileY,null)
-
-    //removing actor over current tile if exists
-    tileGroup.getChildren.items.filter(a=>a!=null).find(a=>{
-      val userObject = Option(a.getUserObject)
-      userObject match {
-        case Some(coords: ActorMapCoords) =>
-          coords.tileX == tileX && coords.tileY == tileY
-        case _ =>
-          false
-      }
-    }) match {
-      case Some(a)=>
-        //println(s"Removing actor over $tileX,$tileY")
-        a.remove()
-      case None=>
-    }
-
-    //getting covered tiles within radius
-    val tilesAround = for (
-      x<-tileX - radiusTiles to tileX + radiusTiles;
-      y<-tileY - radiusTiles to tileY + radiusTiles
-    ) yield {
-      if (!(x == tileX && y == tileY)){
-        val cell = mapData.getCell(x,y)
-        cell
-      } else {
-        None
-      }
-    }
-    tilesAround.filter(t=>t.isDefined).foreach(t=>{
-      if (t.isDefined && t.get.state == MapCellState.HIDDEN) {
-        discoverTile(t.get.x,t.get.y)
-      }
-    })
-  }
 
   private def setCameraPosition(camera: OrthographicCamera, delta: Float): Unit ={
 
@@ -535,67 +347,11 @@ class MapScreen(game: NuclearNation) extends Screen{
     stage.getBatch.begin()
     stage.getBatch.setProjectionMatrix(camera.combined)
 
-    stage.getActors.toArray.filter(actor=>actor.isInstanceOf[ExpeditionActor]).foreach(a => {
-
-      val expeditionActor = a.asInstanceOf[ExpeditionActor]
-
-      val destinationPixelX = expeditionActor.destinationCell.x * desertLayer.getTileWidth + expeditionActor.getPrefWidth/2
-      val destinationPixelY = expeditionActor.destinationCell.y * desertLayer.getTileHeight + expeditionActor.getPrefHeight/2
-
-      val actor = expeditionActor
-      if(actor.getX != destinationPixelX || actor.getY() != destinationPixelY) {
-
-        val destination = new Vector2(destinationPixelX,destinationPixelY)
-        val oldDirection = new Vector2(destination).sub(new Vector2(actor.getX,actor.getY)).nor()
-
-        val deltaX = oldDirection.x * expeditionActor.speed * delta
-        val deltaY = oldDirection.y * expeditionActor.speed * delta
-        val newPositionX = actor.getX + deltaX
-        val newPositionY = actor.getY + deltaY
-
-        val newPos = new Vector2(newPositionX,newPositionY)
-
-        val tileX = (newPositionX / desertLayer.getTileWidth).toInt
-        val tileY = (newPositionY / desertLayer.getTileHeight).toInt
-
-        val newDirection = new Vector2(destination).sub(newPos).nor()
-
-
-        if (expeditionActor.owner == ControlledBy.PLAYER) {
-          visitTile(tileX,tileY)
-        }
-        expeditionActor.moveBy(deltaX,deltaY)
-
-        if (expeditionActor.objective == Objective.BUILD_ROAD){
-          val originCell = actor.originCell
-          drawRoadLine(new Vector2(originCell.x * desertLayer.getTileWidth + townImage.getWidth /2, originCell.y * desertLayer.getTileHeight + townImage.getHeight/2),
-            new Vector2(actor.getX + actor.getWidth/2, actor.getY + actor.getHeight/2), 3)
-        }
-
-        if (newDirection.hasSameDirection(oldDirection)){
-          val cell = mapData.getCell(tileX,tileY).get
-          if ((expeditionActor.owner == ControlledBy.COMPUTER && cell.state == MapCellState.VISITED) || expeditionActor.owner == ControlledBy.PLAYER) {
-            actor.setVisible(true)
-          } else {
-            actor.setVisible(false)
-          }
-        } else {
-          checkExpeditionTile(tileX,tileY,expeditionActor)
-          expeditionActor.remove()
-        }
-
-
-      }
-    })
-
     //drawing names where applicable
     locations.foreach(location=>{
-      val mapCell = location.mapCell
-      if (mapCell.state == MapCellState.VISITED){
-        val pixelX : Int = (location.mapCell.x * desertLayer.getTileWidth * 0.5).asInstanceOf[Int]
-        val pixelY : Int = (location.mapCell.y * desertLayer.getTileHeight * 0.5).asInstanceOf[Int]
-        gameFont.draw(stage.getBatch,location.name,pixelX,pixelY)
-      }
+      val pixelX : Int = (location.mapCell.x * desertLayer.getTileWidth * mapScale).asInstanceOf[Int]
+      val pixelY : Int = (location.mapCell.y * desertLayer.getTileHeight * mapScale).asInstanceOf[Int]
+      gameFont.draw(stage.getBatch,location.name,pixelX,pixelY)
     })
 
     if (mapDebugOutputEnabled){
@@ -603,9 +359,8 @@ class MapScreen(game: NuclearNation) extends Screen{
     }
     stage.getBatch.end()
 
-    val craftingConstructionButtonCoords = camera.unproject(new Vector3(stage.getViewport.getScreenWidth - craftingButton.getPrefWidth,stage.getViewport.getScreenHeight,0))
-    craftingButton.setPosition(craftingConstructionButtonCoords.x,craftingConstructionButtonCoords.y)
-    centerOnCapitalButton.setPosition(craftingButton.getX - centerOnCapitalButton.getPrefWidth-5,craftingButton.getY)
+    val centerOnCapitalButtonCoords = camera.unproject(new Vector3(stage.getViewport.getScreenWidth - centerOnCapitalButton.getPrefWidth,stage.getViewport.getScreenHeight,0))
+    centerOnCapitalButton.setPosition(centerOnCapitalButtonCoords.x,centerOnCapitalButtonCoords.y)
     pauseButton.setPosition(centerOnCapitalButton.getX - pauseButton.getPrefWidth - 5,centerOnCapitalButton.getY)
     val scrapLabelCoords = camera.unproject(new Vector3(stage.getViewport.getScreenWidth - scrapLabelButton.getPrefWidth,scrapLabelButton.getPrefHeight,0))
     scrapLabelButton.setPosition(scrapLabelCoords.x,scrapLabelCoords.y)
@@ -638,213 +393,6 @@ class MapScreen(game: NuclearNation) extends Screen{
     MapClickInfo(coordX,coordY,clickedTileX,clickedTileY)
   }
 
-  private def mapLeftClicked(screenX:Int,screenY:Int): Unit ={
-
-    //clearing dialogs
-    stage
-      .getActors
-      .toArray
-      .filter(a=>a.isInstanceOf[Dialog])
-      .foreach(a=>
-        a.remove()
-      )
-
-    val clickInfo = getClickInfo(screenX,screenY)
-    val mapCell = mapData.getCell(clickInfo.tileX,clickInfo.tileY)
-    if (mapCell.get.state != MapCellState.HIDDEN) {
-      mapCell.get.location match {
-        case Some(ci: CityInfo) => {
-          game.setScreen(new CityScreen(ci, game, this))
-        }
-        case _ =>
-      }
-    }
-  }
-
-  case class ActionMixOutcome(objective: Objective,description:String)
-
-  def analyzeOutcome(solutionGroup: Table): ActionMixOutcome ={
-
-    //only use "size", otherwise exception will occur!!
-    solutionGroup.getCells.toArray.count(c => c.getActor != null) match{
-      case 1=>
-        if (solutionGroup.getCells.toArray.exists(a => a.getActor.isInstanceOf[SoldierAssetCard])){
-          ActionMixOutcome(Objective.BASIC_ATTACK,"BASIC ATTACK")
-        } else  if (solutionGroup.getCells.toArray.exists(a => a.getActor.isInstanceOf[EngineerAssetCard])){
-          ActionMixOutcome(Objective.BUILD_ROAD,"BUILD ROAD")
-        } else {
-          ActionMixOutcome(Objective.UNKNOWN,"???")
-        }
-      case _=> ActionMixOutcome(Objective.UNKNOWN,"???")
-    }
-
-  }
-
-  private def showCraftingDialog(location:MapLocation):Dialog = {
-    val outcomeLabel = new Label("???",skin)
-    val actionMixTable = new Table().center()
-    val availableUnitsTable = new Table().center()
-
-    def resetGroups(dialog:Option[Dialog] = None): Unit ={
-      availableUnitsTable.clearChildren()
-
-      if (availableSoldierCard.count>0) availableUnitsTable.add(availableSoldierCard).pad(10,10,10,10)
-      if (availableEngineerCard.count>0) availableUnitsTable.add(availableEngineerCard).pad(10,10,10,10)
-      if (availableScientistCard.count>0) availableUnitsTable.add(availableScientistCard).pad(10,10,10,10)
-
-      actionMixTable.clearChildren()
-
-      if (mixSoldierCard.count>0) actionMixTable.add(mixSoldierCard).pad(10,10,10,10)
-      if (mixEngineerCard.count>0) actionMixTable.add(mixEngineerCard).pad(10,10,10,10)
-      if (mixScientistCard.count>0) actionMixTable.add(mixScientistCard).pad(10,10,10,10)
-
-      //adding dummy cell for keeping height
-      if (actionMixTable.getChildren.size == 0){
-        val dummy = new Image()
-        actionMixTable.add(dummy).size(availableSoldierCard.getPrefWidth,availableSoldierCard.getPrefHeight)
-      }
-
-      //adding dummy cell for keeping height
-      if (availableUnitsTable.getChildren.size == 0){
-        val dummy = new Image()
-        availableUnitsTable.add(dummy).size(availableSoldierCard.getPrefWidth,availableSoldierCard.getPrefHeight)
-      }
-
-      if (dialog.isDefined){
-        dialog.get.pack()
-      }
-    }
-
-    def addUnitLeftClickListener(availableCard:AssetCard, mixCard:AssetCard,availableGroup:Table, solutionGroup:Table,dialog:Dialog,outcomeLabel: Label = outcomeLabel): Unit = {
-      availableCard.clearListeners()
-      mixCard.clearListeners()
-      availableCard.addCaptureListener(new ClickListener(Buttons.LEFT) {
-        override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
-          val repeats = scala.math.min(if (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Keys.SHIFT_RIGHT)) 10 else 1,availableCard.count)
-          for (_ <-0 until repeats) {
-            availableCard.updateCount(-1)
-            mixCard.updateCount(1)
-          }
-          resetGroups(Some(dialog))
-          outcomeLabel.setText(analyzeOutcome(solutionGroup).description)
-          mixCard.addListener(new ClickListener(Buttons.LEFT){
-            override def clicked(event: InputEvent, x: Float, y: Float): Unit= {
-              val repeats = scala.math.min(if (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Keys.SHIFT_RIGHT)) 10 else 1,mixCard.count)
-              for (_ <-0 until repeats) {
-                availableCard.updateCount(1)
-                mixCard.updateCount(-1)
-              }
-              resetGroups(Some(dialog))
-              outcomeLabel.setText(analyzeOutcome(solutionGroup).description)
-            }
-          })
-        }
-      })
-    }
-
-    val dialog = new Dialog("", skin) {
-      override def result(result:Object):Unit =  {
-        if (result.asInstanceOf[Boolean]) {
-          val outcome = analyzeOutcome(actionMixTable)
-          outcome match {
-            case ActionMixOutcome(Objective.BASIC_ATTACK,_)=>
-              val units = ListBuffer[UnitType]()
-              for (_<-0 until mixSoldierCard.count){
-                units += UnitType.SOLDIER
-              }
-              sendExpedition(capital.mapCell,location.mapCell,objective = Objective.BASIC_ATTACK,units = units.toList)
-            case ActionMixOutcome(Objective.BUILD_ROAD,_)=>
-              val units = ListBuffer[UnitType]()
-              for (_<-0 until mixEngineerCard.count){
-                units += UnitType.ENGINEER
-              }
-              val t = game.assetManager.get("unitConstruction/engineerUnit.png",classOf[Texture])
-              sendExpedition(capital.mapCell,location.mapCell,objective = Objective.BUILD_ROAD,units = units.toList,speed = 100,texture = t)
-            case _=>
-          }
-        }
-        availableSoldierCard.setCount(game.soldierCounter)
-        mixSoldierCard.setCount(0)
-
-        availableEngineerCard.setCount(game.engineerCounter)
-        mixEngineerCard.setCount(0)
-
-        availableScientistCard.setCount(game.scientistCounter)
-        mixScientistCard.setCount(0)
-
-        isPaused = false
-      }
-    }
-
-
-    resetGroups()
-
-
-    addUnitLeftClickListener(availableSoldierCard,mixSoldierCard,availableUnitsTable,actionMixTable,dialog)
-    addUnitLeftClickListener(availableEngineerCard,mixEngineerCard,availableUnitsTable,actionMixTable,dialog)
-    addUnitLeftClickListener(availableScientistCard,mixScientistCard,availableUnitsTable,actionMixTable,dialog)
-
-    val recipesMainTable = new Table()
-    val targetTable = new Table()
-
-    dialog.getContentTable.add(recipesMainTable).fill()
-    dialog.getContentTable.add(targetTable).pad(0,10,0,0).width(500).height(500).grow()
-
-    val recipesListTable = new Table().top()
-    game.recipes.foreach(r=>{
-      val recipeButton = new TextButton(s"${r.name} x${r.getCount()}",skin)
-      recipesListTable.add(recipeButton).pad(5,0,0,0)
-      recipeButton.addCaptureListener(new ClickListener(){
-        override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
-          super.clicked(event, x, y)
-          recipeButton.setText(s"${r.name} x${r.getCount()}")
-          recipeButton.setUserObject(r)
-          targetTable.clearChildren()
-          val l = new Label(r.description,skin)
-          l.setWrap(true)
-          targetTable.add(l).grow()
-          targetTable.row()
-          if (r.locationCondition.isDefined){
-            targetTable.add(new Label("Choose location to use:",skin)).grow()
-            targetTable.row()
-          }
-          val createButton = new TextButton("Create",skin)
-          targetTable.add(createButton).bottom().right()
-          createButton.setDisabled(!r.enabled)
-          createButton.addListener(new ClickListener(){
-            override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
-              super.clicked(event, x, y)
-              r.doCrafting()
-              recipesListTable
-                .getChildren
-                .toArray
-                .filter(b=>b.isInstanceOf[TextButton] && b.getUserObject != null)
-                .foreach(b=>{
-                  val recipe = b.getUserObject.asInstanceOf[Recipe]
-                  b.asInstanceOf[TextButton].setText(s"${recipe.name} x${recipe.getCount()}")
-              })
-            }
-          })
-        }
-      })
-      recipesListTable.row()
-    })
-
-    recipesMainTable.add(new Label("Available recipes",skin))
-    recipesMainTable.row()
-    recipesMainTable.add(recipesListTable).grow().pad(10,0,0,0)
-
-
-    dialog.button("OK", true).button("CANCEL",false)
-    dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
-    dialog.pack()
-    //          isPaused = true
-    stage.addActor(dialog)
-    dialog.setPosition(cameraCenterX - dialog.getPrefWidth/2,cameraCenterY - dialog.getPrefHeight/2)
-    dialog
-
-  }
-
 
   private def mapRightClicked(screenX: Int, screenY: Int):Unit = {
 
@@ -855,132 +403,8 @@ class MapScreen(game: NuclearNation) extends Screen{
 
     val mapCell = mapData.getCell(clickInfo.tileX,clickInfo.tileY)
 
-    if (mapCell.get.state != MapCellState.HIDDEN) {
-      mapCell.get.location match {
-        case Some(ri: RaiderCampInfo) => {
-          game.setScreen(new ActionMixScreen(ri, game, this))
-        }
-        case Some(ci: CityInfo) =>
-          showCraftingDialog(ci)
-        case _ =>
-      }
-    } else { //map cell is not discovered
-        game.setScreen(new ActionMixScreen(CoveredAreaInfo(mapCell.get), game, this))
-    }
 
   }
-
-  def sendExpedition(originCell:MapCellData = mapData.getCell(capital.mapCell.x,capital.mapCell.y).get,
-                     destCell:MapCellData,
-                     texture:Texture = expeditionTexture,
-                     owner:ControlledBy.ControlledBy = ControlledBy.PLAYER,
-                     units:scala.List[UnitType],
-                     objective: Objective.Objective,
-                     speed: Int = 600
-                    ): Unit ={
-
-    val actor = new ExpeditionActor(
-      game,
-      this,
-      Some(texture),
-      originCell,
-      destCell,
-      owner,
-      units,
-      objective,
-      speed
-    )
-    val actorCoords = actor.screenToLocalCoordinates(new Vector2(originCell.x * desertLayer.getTileWidth  + actor.getPrefWidth/2,originCell.y * desertLayer.getTileHeight + actor.getPrefHeight/2))
-    actor.setPosition(actorCoords.x,actorCoords.y)
-    stage.addActor(actor)
-  }
-
-  private def discoverTile(x:Int,y:Int): Unit ={
-    val t = mapData.getCell(x,y)
-    if (t.isEmpty){
-      println(s"*** Unable to discover: tile is empty ** $x,$y")
-    }
-    if (t.isDefined && t.get.state == MapCellState.HIDDEN){
-//      println(s"Discovering tile $x,$y")
-      fogOfWarLayer.setCell(x, y, null)
-      t.get.state = MapCellState.DISCOVERED
-      val image = Option(townLayer.getCell(x,y)) match {
-        case Some(_)=>
-          new Image(townLayer.getCell(x,y).getTile.getTextureRegion)
-        case None=>new Image(desertLayer.getCell(x,y).getTile.getTextureRegion)
-      }
-
-      image.setColor(Color.GRAY)
-      image.setUserObject(ActorMapCoords(x,y))
-      tileGroup.addActor(image)
-      val coords = new Vector3(x * desertLayer.getTileWidth, y * desertLayer.getTileHeight, 0)
-      image.setPosition(coords.x, coords.y)
-    }
-  }
-
-
-
-
-  private def checkExpeditionTile(tileX:Int,tileY:Int,expedition:ExpeditionActor): Unit ={
-    if (expedition.owner == ControlledBy.COMPUTER) return
-    val cell = mapData.getCell(tileX,tileY)
-    expedition.objective match {
-      case Objective.COMBAT | Objective.BASIC_ATTACK =>
-        cell match {
-          case Some(c)=>
-            c.location match {
-              case Some(rci:RaiderCampInfo)=>{
-                game.setScreen(new SituationScreen(rci,DefendersType.RAIDERS,game,this,expedition.units))
-              }
-              case Some(ci:CityInfo)=>{
-                game.setScreen(new SituationScreen(ci,DefendersType.SOLDIERS,game,this,expedition.units))
-              }
-              case Some(ri:RuinsInfo)=>
-                game.setScreen(new CardGameScreen(ri,game,this,expedition.units))
-
-              case _=>
-            }
-          case None=>
-            println(s"Unknown cell visited $tileX,$tileY")
-        }
-      case Objective.BUILD_ROAD =>
-        if (!roads.contains((expedition.originCell, expedition.destinationCell)) && !roads.contains((expedition.destinationCell, expedition.originCell))){
-          roads += Tuple2(expedition.originCell,expedition.destinationCell)
-        }
-
-      case _=>
-
-    }
-
-
-  }
-
-  def discoverTech(ancientRuins:RuinsInfo): Unit ={
-    locations -= ancientRuins
-    ancientRuins.mapCell.location = None
-    townLayer.setCell(ancientRuins.mapCell.x,ancientRuins.mapCell.y,null)
-
-    val dialog = new Dialog("", skin) {
-      override def result(result:Object):Unit =  {
-
-      }
-    }
-    val index = Random.nextInt(technologies.size)
-    dialog.text(s"Technology discovered: ${technologies(index).name}")
-    dialog.button("OK", true)
-    dialog.key(Keys.ESCAPE, false).key(Keys.ENTER, true)
-    dialog.getContentTable.pad(20)
-    dialog.getTitleTable.pad(20)
-    dialog.pack()
-    stage.addActor(dialog)
-    dialog.setPosition(cameraCenterX - dialog.getPrefWidth/2,cameraCenterY - dialog.getPrefHeight/2)
-  }
-
-  def conquerCity(city: CityInfo) = {
-    city.isOwnedByPlayer = true
-    visitArea(city.mapCell.x,city.mapCell.y)
-  }
-
 
 
 
@@ -995,30 +419,20 @@ class MapScreen(game: NuclearNation) extends Screen{
     }
   }
 
-
-
 }
 
 object MapScreen{
 
 
   case class MapClickInfo(pixelX:Float, pixelY: Float, tileX:Int,tileY:Int)
-  case class ExpeditionActor(
-                              originCell:MapCellData,
-                              destinationCell:MapCellData,
-                              actor:ExpeditionActor,
-                              speed:Int = 600,
-                              owner:ControlledBy.ControlledBy = ControlledBy.PLAYER,
-                              objective:Objective.Objective,
-                              units:scala.List[UnitType],
-                           )
+
 
   sealed abstract class MapLocation(){
     def mapCell:MapCellData
     def name:String
   }
   case class RaiderCampInfo( name:String,mapCell: MapCellData) extends MapLocation()
-  case class CityInfo(name:String,mapCell: MapCellData,var isOwnedByPlayer:Boolean = false) extends MapLocation()
+  case class CityInfo(name:String,mapCell: MapCellData, population: Int, var isOwnedByPlayer:Boolean = false) extends MapLocation()
   case class RuinsInfo(mapCell: MapCellData,name:String = "Pre-war ruins") extends MapLocation()
   case class CoveredAreaInfo(mapCell: MapCellData,name:String="") extends MapLocation
 
