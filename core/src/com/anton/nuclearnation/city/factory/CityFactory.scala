@@ -9,6 +9,9 @@ import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.util.Random
 
 object CityFactory {
+
+  protected val coordsGenerator = new MapCoordsGenerator(5)
+
   protected val cityNames: ListBuffer[String] = ListBuffer(
     "The Nether",
     "Everwinter",
@@ -45,7 +48,7 @@ object CityFactory {
 
 trait CityFactory{
 
-  protected val coordsGenerator = new MapCoordsGenerator(5)
+
 
   def getCity : City
 
@@ -62,7 +65,7 @@ trait CityFactory{
   }
 
   protected def getCell:MapCellData = {
-    val coords = coordsGenerator.getCoords
+    val coords = CityFactory.coordsGenerator.getCoords
     Global.mapData.getCell(coords._1,coords._2).get
   }
 }
