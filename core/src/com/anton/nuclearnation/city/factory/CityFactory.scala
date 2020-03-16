@@ -8,8 +8,8 @@ import scala.collection.mutable
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.util.Random
 
-trait CityFactory{
-  protected var cityNames: ListBuffer[String] = ListBuffer(
+object CityFactory {
+  protected val cityNames: ListBuffer[String] = ListBuffer(
     "The Nether",
     "Everwinter",
     "Seclusion",
@@ -30,7 +30,6 @@ trait CityFactory{
     "Witherbury",
     "Emitton",
     "Blightown",
-    "Blackridge",
     "Wreckville",
     "Snowmelt",
     "Nefaria",
@@ -39,17 +38,23 @@ trait CityFactory{
     "The Boons",
     "Wickhills",
     "Blackridge",
-    "Elysium"
+    "Elysium",
+    "Grieford"
   )
-  protected val coordsGenerator = new MapCoordsGenerator(3)
+}
+
+trait CityFactory{
+
+  protected val coordsGenerator = new MapCoordsGenerator(5)
 
   def getCity : City
 
   protected val random = new Random()
 
   protected def getName :String = {
-    val name = cityNames.toList(random.nextInt(cityNames.length))
-    cityNames -= name
+    val name = CityFactory.cityNames(random.nextInt(CityFactory.cityNames.length))
+    CityFactory.cityNames -= name
+    println(CityFactory.cityNames.length)
     name
   }
   protected def getPop(from:Int,to:Int):Int  = {

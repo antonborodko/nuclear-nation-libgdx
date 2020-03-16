@@ -169,7 +169,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     override def scrolled(amount: Int): Boolean = {true}
   }
 
-  val locations = ListBuffer[MapLocation]()
+  val locations = Global.locations
 
   val capitalCity = ManualCityFactory(CityConfig(Some("Hope"),50,50,ControlledBy.PLAYER)).getCity
   locations += capitalCity
@@ -187,8 +187,8 @@ class MapScreen(game: NuclearNation) extends Screen{
   locations += MediumCityFactory().getCity
 
   //generating 2 strong cities
-  StrongCityFactory().getCity
-  StrongCityFactory().getCity
+  locations += StrongCityFactory().getCity
+  locations += StrongCityFactory().getCity
 
   for (
     x <- 0 until mapWidthTiles;
