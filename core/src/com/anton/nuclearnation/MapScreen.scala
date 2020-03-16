@@ -4,7 +4,7 @@ import java.lang.Math
 
 import com.anton.nuclearnation.ControlledBy.ControlledBy
 import com.anton.nuclearnation.MapScreen._
-import com.anton.nuclearnation.city.factory.{CityConfig, ManualCityFactory, MediumCityFactory, StrongCityFactory, WeakCityFactory}
+import com.anton.nuclearnation.city.factory.{CityConfig, CityFactory, ManualCityFactory, MediumCityFactory, StrongCityFactory, WeakCityFactory}
 import com.anton.nuclearnation.global.Global
 import com.badlogic.gdx.Input.{Buttons, Keys}
 import com.badlogic.gdx.assets.AssetManager
@@ -169,26 +169,23 @@ class MapScreen(game: NuclearNation) extends Screen{
     override def scrolled(amount: Int): Boolean = {true}
   }
 
-  val locations = Global.locations
-
   val capitalCity = ManualCityFactory(CityConfig(Some("Hope"),50,50,ControlledBy.PLAYER)).getCity
-  locations += capitalCity
 
   //generating 3 weak cities
-  locations += WeakCityFactory().getCity
-  locations += WeakCityFactory().getCity
-  locations += WeakCityFactory().getCity
+  WeakCityFactory().getCity
+  WeakCityFactory().getCity
+  WeakCityFactory().getCity
 
   //generating 5 medium cities
-  locations += MediumCityFactory().getCity
-  locations += MediumCityFactory().getCity
-  locations += MediumCityFactory().getCity
-  locations += MediumCityFactory().getCity
-  locations += MediumCityFactory().getCity
+  MediumCityFactory().getCity
+  MediumCityFactory().getCity
+  MediumCityFactory().getCity
+  MediumCityFactory().getCity
+  MediumCityFactory().getCity
 
   //generating 2 strong cities
-  locations += StrongCityFactory().getCity
-  locations += StrongCityFactory().getCity
+  StrongCityFactory().getCity
+  StrongCityFactory().getCity
 
   for (
     x <- 0 until mapWidthTiles;
@@ -346,7 +343,7 @@ class MapScreen(game: NuclearNation) extends Screen{
     stage.getBatch.setProjectionMatrix(camera.combined)
 
     //drawing names where applicable
-    locations.foreach(location=>{
+    CityFactory.locations.foreach(location=>{
       val pixelX : Int = (location.mapCell.x * desertLayer.getTileWidth * mapScale).asInstanceOf[Int]
       val pixelY : Int = (location.mapCell.y * desertLayer.getTileHeight * mapScale).asInstanceOf[Int]
       gameFont.draw(stage.getBatch,location.name,pixelX,pixelY)
@@ -413,6 +410,8 @@ object MapScreen{
     def name:String
   }
   case class City(name:String, mapCell: MapCellData, population: Int, val ownedBy:ControlledBy = ControlledBy.COMPUTER) extends MapLocation{
-      mapCell.location = Some(this)
+    //registering itself in appropriate lists
+    mapCell.location = Some(this)
+    CityFactory.locations +=this
   }
 }

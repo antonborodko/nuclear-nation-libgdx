@@ -9,5 +9,5 @@ object Global {
   val mapWidthTiles = 30
   val mapHeightTiles = 30
   val mapData = new MapData(mapWidthTiles,mapHeightTiles)
-  val locations = ListBuffer[MapLocation]()
+
 }

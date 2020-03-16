@@ -1,7 +1,7 @@
 package com.anton.nuclearnation.city.factory
 
 import com.anton.nuclearnation.{ControlledBy, MapCellData, MapCoordsGenerator}
-import com.anton.nuclearnation.MapScreen.City
+import com.anton.nuclearnation.MapScreen.{City, MapLocation}
 import com.anton.nuclearnation.global.Global
 
 import scala.collection.mutable
@@ -9,6 +9,8 @@ import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.util.Random
 
 object CityFactory {
+
+  val locations = ListBuffer[MapLocation]()
 
   protected val coordsGenerator = new MapCoordsGenerator(5)
 
@@ -47,8 +49,6 @@ object CityFactory {
 }
 
 trait CityFactory{
-
-
 
   def getCity : City
 
