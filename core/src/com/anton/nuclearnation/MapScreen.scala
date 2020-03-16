@@ -74,7 +74,6 @@ class MapScreen(game: NuclearNation) extends Screen{
   fogOfWarCell.setTile(new StaticTiledMapTile(new TextureRegion(fogOfWarTexture)))
 
 
-
   val gameFont = assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf",classOf[BitmapFont])
 
   val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
@@ -343,10 +342,13 @@ class MapScreen(game: NuclearNation) extends Screen{
     stage.getBatch.setProjectionMatrix(camera.combined)
 
     //drawing names where applicable
-    CityFactory.locations.foreach(location=>{
-      val pixelX : Int = (location.mapCell.x * desertLayer.getTileWidth * mapScale).asInstanceOf[Int]
-      val pixelY : Int = (location.mapCell.y * desertLayer.getTileHeight * mapScale).asInstanceOf[Int]
-      gameFont.draw(stage.getBatch,location.name,pixelX,pixelY)
+    CityFactory.cities.foreach(city=>{
+      val pixelX : Int = (city.mapCell.x * desertLayer.getTileWidth * mapScale).asInstanceOf[Int]
+      val pixelY : Int = (city.mapCell.y * desertLayer.getTileHeight * mapScale).asInstanceOf[Int]
+      val height = desertLayer.getTileHeight * mapScale
+      val width = desertLayer.getTileWidth * mapScale
+      gameFont.draw(stage.getBatch,city.name,pixelX,pixelY)
+      gameFont.draw(stage.getBatch,city.population.toString,pixelX + height /2,pixelY + width /2)
     })
 
     if (mapDebugOutputEnabled){
@@ -412,6 +414,6 @@ object MapScreen{
   case class City(name:String, mapCell: MapCellData, population: Int, val ownedBy:ControlledBy = ControlledBy.COMPUTER) extends MapLocation{
     //registering itself in appropriate lists
     mapCell.location = Some(this)
-    CityFactory.locations +=this
+    CityFactory.cities +=this
   }
 }

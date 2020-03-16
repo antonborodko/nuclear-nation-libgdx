@@ -10,7 +10,7 @@ import scala.util.Random
 
 object CityFactory {
 
-  val locations = ListBuffer[MapLocation]()
+  val cities = ListBuffer[City]()
 
   protected val coordsGenerator = new MapCoordsGenerator(5)
 
