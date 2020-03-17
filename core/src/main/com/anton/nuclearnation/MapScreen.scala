@@ -12,7 +12,7 @@ import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver
 import com.badlogic.gdx._
 import com.badlogic.gdx.graphics.Pixmap.Format
 import com.badlogic.gdx.graphics._
-import com.badlogic.gdx.graphics.g2d.{BitmapFont, Sprite, TextureRegion}
+import com.badlogic.gdx.graphics.g2d.{BitmapFont, GlyphLayout, Sprite, TextureRegion}
 import com.badlogic.gdx.graphics.g2d.freetype.{FreeTypeFontGenerator, FreeTypeFontGeneratorLoader, FreetypeFontLoader}
 import com.badlogic.gdx.maps.MapLayers
 import com.badlogic.gdx.maps.tiled.TiledMap
@@ -94,7 +94,9 @@ class MapScreen(game: NuclearNation) extends Screen{
   val scrapLabelButton = new TextButton("Scrap: ",skin)
   scrapLabelButton.setDisabled(true)
 
-  val mapScale = 0.5f;
+  val mapScale = 1.0f;
+
+  val glyphLayout = new GlyphLayout
 
   val mapDebugOutputEnabled = sys.env.get("ENABLE_MAP_DEBUG_OUTPUT") match {
     case Some(v)=>v.toLowerCase().toBoolean
@@ -347,8 +349,12 @@ class MapScreen(game: NuclearNation) extends Screen{
       val pixelY : Int = (city.mapCell.y * desertLayer.getTileHeight * mapScale).asInstanceOf[Int]
       val height = desertLayer.getTileHeight * mapScale
       val width = desertLayer.getTileWidth * mapScale
-      gameFont.draw(stage.getBatch,city.name,pixelX,pixelY)
-      gameFont.draw(stage.getBatch,city.population.toString,pixelX + height /2,pixelY + width /2)
+      val font = assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf",classOf[BitmapFont])
+      gameFont.setColor(1,1,1,1)
+      val str = s"${city.name} (${city.population})"
+      glyphLayout.setText(gameFont,str)
+      val strWidth = glyphLayout.width
+      gameFont.draw(stage.getBatch,s"${city.name} (${city.population})",pixelX - strWidth /2,pixelY)
     })
 
     if (mapDebugOutputEnabled){
