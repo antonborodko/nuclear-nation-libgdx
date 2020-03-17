@@ -5,6 +5,7 @@ import com.anton.nuclearnation.MapScreen.{City, MapLocation}
 import com.anton.nuclearnation.global.Global
 
 import scala.collection.mutable
+import com.badlogic.gdx.utils.Array
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.util.Random
 
@@ -14,7 +15,7 @@ object CityFactory {
 
   protected val coordsGenerator = new MapCoordsGenerator(5)
 
-  protected val cityNames: ListBuffer[String] = ListBuffer(
+  val cityNames: Array[String] =Array.`with`(
     "The Nether",
     "Everwinter",
     "Seclusion",
@@ -46,6 +47,8 @@ object CityFactory {
     "Elysium",
     "Grieford"
   )
+
+
 }
 
 trait CityFactory{
@@ -55,9 +58,9 @@ trait CityFactory{
   protected val random = new Random()
 
   protected def getName :String = {
-    val name = CityFactory.cityNames(random.nextInt(CityFactory.cityNames.length))
-    CityFactory.cityNames -= name
-    println(CityFactory.cityNames.length)
+    val name = CityFactory.cityNames.get(random.nextInt(CityFactory.cityNames.size))
+    CityFactory.cityNames.removeValue(name,false)
+    println(CityFactory.cityNames.size)
     name
   }
   protected def getPop(from:Int,to:Int):Int  = {
