@@ -75,7 +75,7 @@ class MapScreen(game: NuclearNation) extends Screen{
   fogOfWarCell.setTile(new StaticTiledMapTile(new TextureRegion(fogOfWarTexture)))
 
 
-  val gameFont = assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf",classOf[BitmapFont])
+  val mapFont = assetManager.get("fonts/lunchtime-doubly-so/lunchds.ttf",classOf[BitmapFont])
 
   val skin = assetManager.get("data/commodore64/skin/uiskin.json",classOf[Skin])
 
@@ -103,6 +103,9 @@ class MapScreen(game: NuclearNation) extends Screen{
     case Some(v)=>v.toLowerCase().toBoolean
     case None=>false
   }
+
+  mapFont.getRegion().getTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
+  mapFont.getData.setScale(mapScale)
 
   centerOnCapitalButton.addCaptureListener(new ClickListener(){
     override def clicked (event:InputEvent, x:Float, y:Float):Unit= {
@@ -345,21 +348,23 @@ class MapScreen(game: NuclearNation) extends Screen{
     stage.getBatch.setProjectionMatrix(camera.combined)
 
     //drawing names where applicable
-    gameFont.setColor(1,1,1,1)
-    gameFont.getRegion().getTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
-    gameFont.getData.setScale(mapScale)
     CityFactory.cities.foreach(city=>{
       val pixelX : Int = (city.mapCell.x * desertLayer.getTileWidth * mapScale).asInstanceOf[Int]
       val pixelY : Int = (city.mapCell.y * desertLayer.getTileHeight * mapScale).asInstanceOf[Int]
       val width = desertLayer.getTileWidth * mapScale
       val str = s"${city.name} (${city.population})"
-      glyphLayout.setText(gameFont,str)
+      if (city.ownedBy == ControlledBy.PLAYER){
+        mapFont.setColor(66f/256f,132f/256f,245f/256f,1)
+      } else {
+        mapFont.setColor(1,1,1,1)
+      }
+      glyphLayout.setText(mapFont,str)
       val strWidth = glyphLayout.width
-      gameFont.draw(stage.getBatch,str,pixelX - strWidth/2 + width/2,pixelY)
+      mapFont.draw(stage.getBatch,str,pixelX - strWidth/2 + width/2,pixelY)
     })
 
     if (mapDebugOutputEnabled){
-      gameFont.draw(stage.getBatch,s"Camera position: ($cameraCenterX,$cameraCenterY), camera viewport size: ${camera.viewportWidth}/${camera.viewportHeight} ,player position: ($cameraCenterX,$cameraCenterY)",camera.unproject(new Vector3(0,0,0)).x,camera.unproject(new Vector3(0,0,0)).y)
+      mapFont.draw(stage.getBatch,s"Camera position: ($cameraCenterX,$cameraCenterY), camera viewport size: ${camera.viewportWidth}/${camera.viewportHeight} ,player position: ($cameraCenterX,$cameraCenterY)",camera.unproject(new Vector3(0,0,0)).x,camera.unproject(new Vector3(0,0,0)).y)
     }
     stage.getBatch.end()
 
