@@ -5,7 +5,6 @@ import java.lang.Math
 import com.anton.nuclearnation.ControlledBy.ControlledBy
 import com.anton.nuclearnation.MapScreen._
 import com.anton.nuclearnation.city.factory.{CityConfig, CityFactory, ManualCityFactory, MediumCityFactory, StrongCityFactory, WeakCityFactory}
-import com.anton.nuclearnation.global.Global
 import com.badlogic.gdx.Input.{Buttons, Keys}
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver
@@ -36,6 +35,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.Timer.Task
 import com.badlogic.gdx.utils.viewport.StretchViewport
 import com.badlogic.gdx.utils.{Align, Timer}
+import main.com.anton.nuclearnation.global.Global
 
 import scala.collection.mutable.ListBuffer
 

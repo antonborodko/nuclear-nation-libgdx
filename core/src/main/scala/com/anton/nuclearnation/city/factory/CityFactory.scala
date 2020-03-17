@@ -2,10 +2,11 @@ package com.anton.nuclearnation.city.factory
 
 import com.anton.nuclearnation.{ControlledBy, MapCellData, MapCoordsGenerator}
 import com.anton.nuclearnation.MapScreen.{City, MapLocation}
-import com.anton.nuclearnation.global.Global
 
 import scala.collection.mutable
 import com.badlogic.gdx.utils.Array
+import main.com.anton.nuclearnation.global.Global
+
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.util.Random
 
