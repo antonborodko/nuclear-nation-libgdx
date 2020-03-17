@@ -11,8 +11,8 @@ class MapCoordsGenerator(distanceBetweenSettlements:Int) {
 
   //filling available tiles (except the map boundaries)
   for (
-    x <- 1 until Global.mapWidthTiles -1;
-    y <- 1 until Global.mapHeightTiles-1
+    x <- 1 until Global.mapWidthTiles - 1;
+    y <- 1 until Global.mapHeightTiles - 1
   ) yield {
     availableTiles += Tuple2(x,y)
   }

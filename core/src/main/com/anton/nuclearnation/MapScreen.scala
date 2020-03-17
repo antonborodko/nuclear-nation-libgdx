@@ -95,7 +95,7 @@ class MapScreen(game: NuclearNation) extends Screen{
   val scrapLabelButton = new TextButton("Scrap: ",skin)
   scrapLabelButton.setDisabled(true)
 
-  val mapScale = 0.75f;
+  val mapScale = 0.5f;
 
   val glyphLayout = new GlyphLayout
 
