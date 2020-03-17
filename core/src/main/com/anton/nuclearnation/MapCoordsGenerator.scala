@@ -9,10 +9,10 @@ class MapCoordsGenerator(distanceBetweenSettlements:Int) {
 
   val availableTiles : ListBuffer[(Int,Int)] = ListBuffer()
 
-  //filling available tiles
+  //filling available tiles (except the map boundaries)
   for (
-    x <- 0 until Global.mapWidthTiles;
-    y <- 0 until Global.mapHeightTiles
+    x <- 1 until Global.mapWidthTiles -1;
+    y <- 1 until Global.mapHeightTiles-1
   ) yield {
     availableTiles += Tuple2(x,y)
   }
