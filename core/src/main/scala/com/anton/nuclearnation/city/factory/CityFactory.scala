@@ -2,10 +2,10 @@ package com.anton.nuclearnation.city.factory
 
 import com.anton.nuclearnation.{ControlledBy, MapCellData, MapCoordsGenerator}
 import com.anton.nuclearnation.MapScreen.{City, MapLocation}
+import com.anton.nuclearnation.global.Global
 
 import scala.collection.mutable
 import com.badlogic.gdx.utils.Array
-import main.com.anton.nuclearnation.global.Global
 
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.util.Random
@@ -61,7 +61,6 @@ trait CityFactory{
   protected def getName :String = {
     val name = CityFactory.cityNames.get(random.nextInt(CityFactory.cityNames.size))
     CityFactory.cityNames.removeValue(name,false)
-    println(CityFactory.cityNames.size)
     name
   }
   protected def getPop(from:Int,to:Int):Int  = {

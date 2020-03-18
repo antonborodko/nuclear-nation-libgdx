@@ -5,6 +5,8 @@ import java.lang.Math
 import com.anton.nuclearnation.ControlledBy.ControlledBy
 import com.anton.nuclearnation.MapScreen._
 import com.anton.nuclearnation.city.factory.{CityConfig, CityFactory, ManualCityFactory, MediumCityFactory, StrongCityFactory, WeakCityFactory}
+import com.anton.nuclearnation.global.Global
+import com.anton.nuclearnation.nation.NationLevelTracker
 import com.badlogic.gdx.Input.{Buttons, Keys}
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver
@@ -35,7 +37,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.Timer.Task
 import com.badlogic.gdx.utils.viewport.StretchViewport
 import com.badlogic.gdx.utils.{Align, Timer}
-import main.com.anton.nuclearnation.global.Global
 
 import scala.collection.mutable.ListBuffer
 
@@ -353,7 +354,7 @@ class MapScreen(game: NuclearNation) extends Screen{
       val pixelY : Int = (city.mapCell.y * desertLayer.getTileHeight * mapScale).asInstanceOf[Int]
       val width = desertLayer.getTileWidth * mapScale
       val str = s"${city.name} (${city.population})"
-      if (city.ownedBy == ControlledBy.PLAYER){
+      if (city.controlledBy == ControlledBy.PLAYER){
         mapFont.setColor(66f/256f,132f/256f,245f/256f,1)
       } else {
         mapFont.setColor(1,1,1,1)
@@ -423,9 +424,10 @@ object MapScreen{
     def mapCell:MapCellData
     def name:String
   }
-  case class City(name:String, mapCell: MapCellData, population: Int, val ownedBy:ControlledBy = ControlledBy.COMPUTER) extends MapLocation{
+  case class City(name:String, mapCell: MapCellData, population: Int, val controlledBy:ControlledBy = ControlledBy.COMPUTER) extends MapLocation{
     //registering itself in appropriate lists
     mapCell.location = Some(this)
     CityFactory.cities +=this
+    Global.messageDispatcher.dispatchMessage(NationLevelTracker.CITY_CREATED_EVENT,this)
   }
 }

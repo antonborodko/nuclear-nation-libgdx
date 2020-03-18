@@ -1,4 +1,4 @@
-package main.com.anton.nuclearnation.global
+package com.anton.nuclearnation.global
 
 import com.anton.nuclearnation.MapData
 import com.badlogic.gdx.ai.msg.MessageDispatcher

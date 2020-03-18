@@ -1,6 +1,6 @@
 package com.anton.nuclearnation
 
-import main.com.anton.nuclearnation.global.Global
+import com.anton.nuclearnation.global.Global
 
 import scala.collection.mutable.ListBuffer
 import scala.util.Random

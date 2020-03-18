@@ -1,6 +1,8 @@
 package com.anton.nuclearnation.city.factory
 import com.anton.nuclearnation.{ControlledBy, MapScreen}
 import com.anton.nuclearnation.MapScreen.City
+import com.anton.nuclearnation.global.Global
+import com.anton.nuclearnation.nation.NationLevelTracker
 import com.badlogic.gdx.Gdx
 
 class ManualCityFactory(cityConfig: CityConfig) extends CityFactory {
