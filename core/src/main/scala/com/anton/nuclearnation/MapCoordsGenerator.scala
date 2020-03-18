@@ -5,7 +5,7 @@ import com.anton.nuclearnation.global.Global
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
 
-class MapCoordsGenerator(distanceBetweenSettlements:Int) {
+class MapCoordsGenerator private (var distanceBetweenSettlements:Int) {
 
   val availableTiles : ListBuffer[(Int,Int)] = ListBuffer()
 
@@ -35,5 +35,17 @@ class MapCoordsGenerator(distanceBetweenSettlements:Int) {
       }
     }
     randomTile
+  }
+}
+
+object MapCoordsGenerator{
+  var generator: Option[MapCoordsGenerator] = None
+  def apply(distanceBetweenSettlements: Int): MapCoordsGenerator = {
+    if (generator.isEmpty) {
+      generator = Some(new MapCoordsGenerator(distanceBetweenSettlements))
+    } else {
+      generator.get.distanceBetweenSettlements = distanceBetweenSettlements
+    }
+    generator.get
   }
 }

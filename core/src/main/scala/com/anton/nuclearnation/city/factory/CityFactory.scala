@@ -14,7 +14,7 @@ object CityFactory {
 
   val cities = ListBuffer[City]()
 
-  protected val coordsGenerator = new MapCoordsGenerator(5)
+  protected val coordsGenerator = MapCoordsGenerator(5)
 
   val cityNames: Array[String] =Array.`with`(
     "The Nether",
