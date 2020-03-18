@@ -178,20 +178,20 @@ class MapScreen(game: NuclearNation) extends Screen{
   val capitalCity = ManualCityFactory(CityConfig(Some("Hope"),50,50,ControlledBy.PLAYER)).getCity
 
   //generating 3 weak cities
-  WeakCityFactory().getCity
-  WeakCityFactory().getCity
-  WeakCityFactory().getCity
+  WeakCityFactory.getCity
+  WeakCityFactory.getCity
+  WeakCityFactory.getCity
 
   //generating 5 medium cities
-  MediumCityFactory().getCity
-  MediumCityFactory().getCity
-  MediumCityFactory().getCity
-  MediumCityFactory().getCity
-  MediumCityFactory().getCity
+  MediumCityFactory.getCity
+  MediumCityFactory.getCity
+  MediumCityFactory.getCity
+  MediumCityFactory.getCity
+  MediumCityFactory.getCity
 
   //generating 2 strong cities
-  StrongCityFactory().getCity
-  StrongCityFactory().getCity
+  StrongCityFactory.getCity
+  StrongCityFactory.getCity
 
   for (
     x <- 0 until mapWidthTiles;
