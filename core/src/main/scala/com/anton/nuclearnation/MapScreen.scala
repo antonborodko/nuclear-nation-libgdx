@@ -428,6 +428,6 @@ object MapScreen{
     //registering itself in appropriate lists
     mapCell.location = Some(this)
     CityFactory.cities +=this
-    Global.messageDispatcher.dispatchMessage(NationLevelTracker.CITY_CREATED_EVENT,this)
+    Global.messageDispatcher.dispatchMessage(Global.Events.CITY_CREATED_EVENT,this)
   }
 }
