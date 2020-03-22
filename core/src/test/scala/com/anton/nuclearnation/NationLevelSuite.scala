@@ -42,6 +42,7 @@ class NationLevelSuite extends AnyFunSuite {
     val level = Level2
     val newLevel = level.updateState(Level3.getMinimalCities, Level2.getMinimalPopulation)
     assert(newLevel.isInstanceOf[Level2.type], s"Nation level was upgraded. Returned nation level: ${newLevel}")
+
   }
 
   test("Check that level doesn't get upgraded per population only ") {
