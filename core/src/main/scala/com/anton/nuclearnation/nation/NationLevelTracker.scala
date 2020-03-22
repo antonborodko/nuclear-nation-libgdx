@@ -12,11 +12,9 @@ object NationLevelTracker extends Telegraph {
   var playerCitiesCounter = 0
   var totalPopulation = 0
 
+  var nationLevel:NationLevel = Level1
+
   Global.messageDispatcher.addListener(this,CITY_CREATED_EVENT)
-
-  def updateLevel(): Unit ={
-
-  }
 
   override def handleMessage(msg: Telegram): Boolean = {
     if (msg.message == CITY_CREATED_EVENT){
@@ -26,7 +24,7 @@ object NationLevelTracker extends Telegraph {
         totalPopulation += city.population
         Gdx.app.log("INFO",s"""The city of "${city.name}" has joined the nation of $playerCitiesCounter cities and population of $totalPopulation""")
       }
-      updateLevel()
+      nationLevel = nationLevel.updateState()
     }
     true
   }
@@ -34,12 +32,11 @@ object NationLevelTracker extends Telegraph {
   sealed trait NationLevel{
     def name:String
 
-    def updateState(cities: Int, population: Int): NationLevel = {
-
+    def updateState(cities: Int = playerCitiesCounter, population: Int = totalPopulation): NationLevel = {
 
       //checking higher level criteria if available
-      if (getHigherLevel.isDefined && getHigherLevel.get.isMatchingCriteria(cities,population)){
-          return getHigherLevel.get
+      if (getNextLevel.isDefined && getNextLevel.get.isMatchingCriteria(cities,population)){
+          return getNextLevel.get
       }
 
       //checking current criteria
@@ -49,44 +46,62 @@ object NationLevelTracker extends Telegraph {
 
       //checking lower level criteria if available. If not - the game is over, as this is the lowest level and no
       //other level matches
-      if (getLowerLevel.isDefined && getLowerLevel.get.isMatchingCriteria(cities,population)){
-        return getLowerLevel.get
+      if (getPreviousLevel.isDefined && getPreviousLevel.get.isMatchingCriteria(cities,population)){
+        return getPreviousLevel.get
       }
       Global.messageDispatcher.dispatchMessage(Global.Events.GAME_OVER_EVENT)
       this
     }
 
-    protected def getHigherLevel: Option[NationLevel]
-    protected def getLowerLevel: Option[NationLevel]
-    protected def isMatchingCriteria(cities:Int, population: Int) : Boolean
+    def isMatchingCriteria(cities:Int, population: Int) : Boolean = {
+      cities >= getMinimalCities && population >= getMinimalPopulation
+    }
+
+    def getMaxLevel: NationLevel = {
+      if (getNextLevel.isDefined){
+        getNextLevel.get.getMaxLevel
+      } else {
+        this
+      }
+    }
+
+    def getNextLevel: Option[NationLevel]
+    def getPreviousLevel: Option[NationLevel]
+
+
+    def getMinimalCities : Int
+    def getMinimalPopulation: Int
 
   }
 
   object Level1 extends NationLevel {
-    override def name: String = "Isolated farmers"
+    override def name: String = "Isolated town"
 
-    override protected def getHigherLevel: Option[NationLevel] = None
-    override protected def getLowerLevel: Option[NationLevel] = Some(Level2)
+    def getNextLevel: Option[NationLevel] = Some(Level2)
+    def getPreviousLevel: Option[NationLevel] = None
 
-    override protected def isMatchingCriteria(cities: Int, population: Int): Boolean = cities>=1
+    override def getMinimalCities: Int = 1
+    override def getMinimalPopulation: Int = 1
   }
 
   object Level2 extends NationLevel {
     override def name: String = "Sparkle of hope"
 
-    override protected def getHigherLevel: Option[NationLevel] = Some(Level3)
-    override protected def getLowerLevel: Option[NationLevel] = Some(Level1)
+    def getNextLevel: Option[NationLevel] = Some(Level3)
+    def getPreviousLevel: Option[NationLevel] = Some(Level1)
 
-    override protected def isMatchingCriteria(cities: Int, population: Int): Boolean = cities>= 2 && population>=100
+    override def getMinimalCities: Int = 2
+    override def getMinimalPopulation: Int = 100
   }
 
   object Level3 extends NationLevel {
-    override def name: String = "Tiny nation"
+    override def name: String = "Tiny alliance"
 
-    override protected def getHigherLevel: Option[NationLevel] = None
-    override protected def getLowerLevel: Option[NationLevel] = Some(Level2)
+    def getNextLevel: Option[NationLevel] = None
+    def getPreviousLevel: Option[NationLevel] = Some(Level2)
 
-    override protected def isMatchingCriteria(cities: Int, population: Int): Boolean = cities >= 3 && population >=200
+    override def getMinimalCities: Int = 3
+    override def getMinimalPopulation: Int = 200
   }
 
 

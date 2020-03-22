@@ -1,16 +1,35 @@
 package com.anton.nuclearnation
 
+import com.anton.nuclearnation.nation.NationLevelTracker.{Level1, Level2}
+import org.junit.runner.RunWith
 import org.scalatest.funsuite.AnyFunSuite
+import org.scalatestplus.junit.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class NationLevelSuite extends AnyFunSuite {
 
-  test("An empty Set should have size 0") {
-    assert(Set.empty.size == 0)
+  test("Check downgrade of nation level") {
+    val level = Level2
+    val newLevel = level.updateState(Level1.getMinimalCities, Level1.getMinimalPopulation)
+    assert(newLevel.isInstanceOf[Level1.type], "Nation level was not downgraded")
   }
 
-  test("Invoking head on an empty Set should produce NoSuchElementException") {
-    assertThrows[NoSuchElementException] {
-      Set.empty.head
-    }
+  test("Check upgrade of nation level") {
+    val level = Level1
+    val newLevel = level.updateState(Level2.getMinimalCities, Level2.getMinimalPopulation)
+    assert(newLevel.isInstanceOf[Level2.type], s"Nation level was not upgraded. Returned nation level: ${newLevel}")
+  }
+
+  test("Check that minimum doesn't get downgraded") {
+    val level = Level1
+    val newLevel = level.updateState(Level1.getMinimalCities-1, Level1.getMinimalPopulation)
+    assert(newLevel.isInstanceOf[Level1.type], s"Nation level was changed. Returned nation level: ${newLevel}")
+  }
+
+  test("Check that maximum level doesn't get upgraded") {
+    val maxLevel = Level1.getMaxLevel
+    println(s"Max level is ${maxLevel}")
+    val newLevel = maxLevel.updateState(maxLevel.getMinimalCities+10, maxLevel.getMinimalPopulation+100)
+    assert(newLevel.isInstanceOf[maxLevel.type], s"Nation level was changed. Returned nation level: ${newLevel}")
   }
 }
