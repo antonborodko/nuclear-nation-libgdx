@@ -1,6 +1,6 @@
 package com.anton.nuclearnation
 
-import com.anton.nuclearnation.nation.NationLevelTracker.{Level1, Level2}
+import com.anton.nuclearnation.nation.NationLevelTracker.{Level1, Level2, Level3}
 import org.junit.runner.RunWith
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatestplus.junit.JUnitRunner
@@ -20,10 +20,34 @@ class NationLevelSuite extends AnyFunSuite {
     assert(newLevel.isInstanceOf[Level2.type], s"Nation level was not upgraded. Returned nation level: ${newLevel}")
   }
 
-  test("Check that minimum doesn't get downgraded") {
+  test("Check that minimum level doesn't get downgraded") {
     val level = Level1
     val newLevel = level.updateState(Level1.getMinimalCities-1, Level1.getMinimalPopulation)
     assert(newLevel.isInstanceOf[Level1.type], s"Nation level was changed. Returned nation level: ${newLevel}")
+  }
+
+  test("Check that level gets downgraded per city") {
+    val level = Level2
+    val newLevel = level.updateState(Level2.getMinimalCities-1, Level2.getMinimalPopulation)
+    assert(newLevel.isInstanceOf[Level1.type], s"Nation level was not downgraded. Returned nation level: ${newLevel}")
+  }
+
+  test("Check that level gets downgraded per population") {
+    val level = Level2
+    val newLevel = level.updateState(Level2.getMinimalCities, Level2.getMinimalPopulation-1)
+    assert(newLevel.isInstanceOf[Level1.type], s"Nation level was not downgraded. Returned nation level: ${newLevel}")
+  }
+
+  test("Check that level gets doesn't get upgraded by cities only") {
+    val level = Level2
+    val newLevel = level.updateState(Level3.getMinimalCities, Level2.getMinimalPopulation)
+    assert(newLevel.isInstanceOf[Level2.type], s"Nation level was upgraded. Returned nation level: ${newLevel}")
+  }
+
+  test("Check that level doesn't get upgraded per population only ") {
+    val level = Level2
+    val newLevel = level.updateState(Level2.getMinimalCities, Level3.getMinimalPopulation)
+    assert(newLevel.isInstanceOf[Level2.type], s"Nation level was upgraded. Returned nation level: ${newLevel}")
   }
 
   test("Check that maximum level doesn't get upgraded") {
